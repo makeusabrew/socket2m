@@ -15,6 +15,10 @@ var connectedUsers = {};
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
+
+    /**
+     * login
+     */
     socket.on('login', function(data) {
         var details = qs.parse(data);
         db.collection('users', function(err, collection) {
@@ -27,6 +31,22 @@ io.sockets.on('connection', function(socket) {
                 }
             });
         });
+    });
+
+    /**
+     * lobby / user list
+     */
+    socket.on('userlist', function() {
+        socket.emit('userlist', connectedUsers);
+    });
+
+    /**
+     * disconnect / cleanup
+     */
+    socket.on('disconnect', function() {
+        if (connectedUsers[socket.id] != null) {
+            delete collectedUsers[socket.id];
+        }
     });
 });
 
