@@ -2,12 +2,12 @@ var socket = io.connect(null, {port: 7979});
 var currentState = null;
 
 socket.on('statechange', function(state) {
-    $.get('/partials/'+state+'.html', {}, function(response) {
+    $.get('/states/'+state+'.html', {}, function(response) {
         $("#wrapper").html(response);
 
         var script = document.createElement("script");
         script.type = 'text/javascript';
-        script.src = '/partials/'+state+'.js';
+        script.src = '/states/'+state+'.js';
         $("body").append(script);
 
         currentState = state;
