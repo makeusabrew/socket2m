@@ -27,7 +27,9 @@ io.sockets.on('connection', function(socket) {
                     socket.emit('msg', 'Invalid details');
                 } else {
                     connectedUsers[socket.id] = result;
+                    socket.join('lobby');
                     socket.emit('statechange', 'lobby');
+                    socket.broadcast.to('lobby').emit('user:join', result);
                 }
             });
         });
@@ -45,7 +47,8 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('disconnect', function() {
         if (connectedUsers[socket.id] != null) {
-            delete collectedUsers[socket.id];
+            io.sockets.in('lobby').emit('user:leave', connectedUsers[socket.id]._id);
+            delete connectedUsers[socket.id];
         }
     });
 });
