@@ -1,4 +1,5 @@
 var http = require('http'),
+    qs   = require('querystring'),
     sio  = require('socket.io');
 
 var app = http.createServer(function(req, res) {
@@ -11,4 +12,8 @@ app.listen(7979);
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
+    socket.on('login', function(data) {
+        var details = qs.parse(data);
+        console.log(details);
+    });
 });
