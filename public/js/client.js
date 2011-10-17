@@ -5,15 +5,19 @@ socket.on('statechange', function(state) {
     $.get('/states/'+state+'.html', {}, function(response) {
         $("#wrapper").html(response);
 
-        var script = document.createElement("script");
-        script.type = 'text/javascript';
-        script.src = '/states/'+state+'.js';
-        $("body").append(script);
+        loadScript('/states/'+state+'.js');
 
         currentState = state;
         console.log("changed state to "+state);
     });
 });
+
+function loadScript(src) {
+    var script = document.createElement("script");
+    script.type = 'text/javascript';
+    script.src = src;
+    $("body").append(script);
+}
 
 /**
  * very crude message handling for now

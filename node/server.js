@@ -42,7 +42,7 @@ io.sockets.on('connection', function(socket) {
     /**
      * lobby / user list
      */
-    socket.on('userlist', function() {
+    socket.on('lobby:ready', function() {
         socket.emit('userlist', {
             "user": authedUsers[socket.id],
             "users": authedUsers
@@ -72,7 +72,10 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('challenge:respond', function(accepted) {
         var challenge = null;
-        for (var i = 0, j = challenges.length; i < j; i++) {
+
+        // we can't just do a normal for loop here, because challenges
+        // won't be zero-indexed after the first one has been deleted
+        for (var i in challenges) {
             if (challenges[i].to == socket.id) {
                 // excellent, this is the challenge we're after
                 var challenge = challenges[i];
@@ -88,7 +91,6 @@ io.sockets.on('connection', function(socket) {
                 io.sockets.sockets[challenge.from]
             ];
             if (accepted) {
-                // @todo new game logic
                 db.collection('games', function(err, collection) {
                     var game = {
                         "started"       : new Date(),
@@ -101,8 +103,8 @@ io.sockets.on('connection', function(socket) {
                             "socket_id" : challenge.to
                         }
                     };
-                    collection.insert(game, function(err, game) {
-                        game = game[0];
+                    collection.insert(game, function(err, result) {
+                        game = result[0];
                         games[game._id] = game;
                     });
                 });
@@ -120,13 +122,42 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
-     * game start
+     * game start request
      */
-    socket.on('game:start', function() {
+    socket.on('startgame', function() {
         // is this user allowed - e.g. do they have an active game?
         var game = findGameForSocketId(socket.id);
         if (game != null) {
             socket.emit('statechange', 'game');
+        } else {
+            console.log("could not find game for socket ID "+socket.id);
+        }
+    });
+
+    /**
+     * game - client ready
+     */
+    socket.on('game:ready', function() {
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            console.log("Socket ID "+socket.id+" ready to play");
+            socket.join("game_"+game._id);
+            var _sockets = io.sockets.in('game_'+game._id).sockets;
+            var playerCount = 0;
+            for (var i in _sockets) {
+                playerCount ++;
+            }
+            console.log("players present: "+playerCount);
+            if (playerCount == 2) {
+                var players = null;
+                getGamePlayers(game, function(docs) {
+                    players = docs;
+                    io.sockets.in('game_'+game._id).emit('game:start', {
+                        "user": authedUsers[socket.id],
+                        "players": players
+                    });
+                });
+            }
         } else {
             console.log("could not find game for socket ID "+socket.id);
         }
@@ -159,4 +190,18 @@ function findGameForSocketId(sid) {
         }
     }
     return null;
+}
+
+function getGamePlayers(game, cb) {
+    var players = null;
+    db.collection('users', function(err, collection) {
+        collection.find({ $or : [{"_id": game.challenger.db_id}, {"_id": game.challengee.db_id}]}, function(err, cursor) {
+            cursor.toArray(function(err, docs) {
+                for (var i = 0, j = docs.length; i < j; i++) {
+                    delete docs[i].password;
+                }
+                cb(docs);
+            });
+        });
+    });
 }

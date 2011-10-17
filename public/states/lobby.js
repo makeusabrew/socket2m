@@ -55,9 +55,10 @@
     socket.on('challenge:response', function(accepted) {
         if (accepted) {
             console.log("requesting game start...");
-            socket.emit('game:start');
+            socket.emit('startgame');
         }
     });
 
-    socket.emit('userlist');
 })();
+
+socket.emit('lobby:ready');
