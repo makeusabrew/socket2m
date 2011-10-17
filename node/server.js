@@ -39,7 +39,17 @@ io.sockets.on('connection', function(socket) {
      * lobby / user list
      */
     socket.on('userlist', function() {
-        socket.emit('userlist', connectedUsers);
+        socket.emit('userlist', {
+            "user": connectedUsers[socket.id],
+            "users": connectedUsers
+        });
+    });
+
+    /**
+     * receive challenge request
+     */
+    socket.on('challenge', function(to) {
+        //
     });
 
     /**

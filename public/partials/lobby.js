@@ -1,17 +1,34 @@
 (function() {
+    var user = null;
     function addUser(user) {
         return $("<li data-id='"+user._id+"'>"+user.username+"</li>");
     }
 
-    socket.emit('userlist');
+    function bindListeners() {
+        $("#users ul").unbind('dblclick');
+        $("#users ul").bind('dblclick', function(e) {
+            var elem = $(e.target);
+            if (elem.data('id') != null && elem.data('id') != user._id) {
+                // excellent! challenge time
+                if (confirm("Do you want to challenge "+elem.html()+"?")) {
+                    // boom!
+                    console.log("issuing challenge to "+elem.data('id'));
+                    socket.emit('challenge', elem.data('id'));
+                }
+            }
+        });
+    }
 
-    socket.on('userlist', function(users) {
+    socket.on('userlist', function(data) {
+        user = data.user;
         console.log('adding users');
         var ul = $("<ul></ul>");
-        for (var i in users) {
-            ul.append(addUser(users[i]));
+        for (var i in data.users) {
+            ul.append(addUser(data.users[i]));
         }
         $("#users").append(ul);
+
+        bindListeners();
     });
 
     socket.on('user:join', function(user) {
@@ -19,6 +36,8 @@
         li.hide();
         $("#users ul").append(li);
         li.fadeIn('slow');
+
+        bindListeners();
     });
 
     socket.on('user:leave', function(id) {
@@ -27,4 +46,5 @@
         });
     });
 
+    socket.emit('userlist');
 })();
