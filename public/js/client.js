@@ -10,3 +10,10 @@ socket.on('statechange', function(state) {
         console.log("changed state to "+state);
     });
 });
+
+/**
+ * very crude message handling for now
+ */
+socket.on('msg', function(msg) {
+    alert(msg);
+});
