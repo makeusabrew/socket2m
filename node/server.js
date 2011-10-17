@@ -12,8 +12,10 @@ var io = sio.listen(app);
 app.listen(7979);
 
 var connectedUsers = {};
+var challenges = [];
 
 io.sockets.on('connection', function(socket) {
+    //console.log(io.sockets);
     socket.emit('statechange', 'login');
 
     /**
@@ -48,8 +50,58 @@ io.sockets.on('connection', function(socket) {
     /**
      * receive challenge request
      */
-    socket.on('challenge', function(to) {
-        //
+    socket.on('challenge:issue', function(to) {
+        // make sure the ID we're challenging is in the lobby
+        var _sockets = io.sockets.in('lobby').sockets;
+        var found = false;
+        for (var i in _sockets) {
+            // in here, i == _sockets[i].id
+            if (connectedUsers[i]._id == to) {
+                // excellent! Issue the challenge from the challenger's user object
+                challenges.push({
+                    "from" : socket.id,
+                    "to"   : i
+                });
+                _sockets[i].emit('challenge:receive', connectedUsers[socket.id]);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            console.log("Could not find ID to challenge in lobby "+to);
+        }
+    });
+
+    /**
+     * process challenge response
+     */
+    socket.on('challenge:respond', function(accepted) {
+        var challenge = null;
+        for (var i = 0, j = challenges.length; i < j; i++) {
+            if (challenges[i].to == socket.id) {
+                // excellent, this is the challenge we're after
+                var challenge = challenges[i];
+                delete challenges[i];
+                break;
+            }
+        }
+
+        if (challenge != null) {
+            
+            console.log("challenge from "+challenge.from+" to "+challenge.to+": "+accepted);
+            var _sockets = [socket, io.sockets.sockets[challenge.from]];
+            if (accepted) {
+                // @todo new game logic
+                for (var i = 0; i < 2; i++) {
+                    _sockets[i].leave('lobby');
+                }
+            }
+            for (var i = 0; i < 2; i++) {
+                _sockets[i].emit('challenge:response', accepted);
+            }
+        } else {
+            console.log("Could not find challenge");
+        }
     });
 
     /**

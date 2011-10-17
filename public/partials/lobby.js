@@ -13,7 +13,7 @@
                 if (confirm("Do you want to challenge "+elem.html()+"?")) {
                     // boom!
                     console.log("issuing challenge to "+elem.data('id'));
-                    socket.emit('challenge', elem.data('id'));
+                    socket.emit('challenge:issue', elem.data('id'));
                 }
             }
         });
@@ -44,6 +44,17 @@
         $("#users ul li[data-id='"+id+"']").fadeOut('slow', function() {
             $(this).remove();
         });
+    });
+
+    socket.on('challenge:receive', function(from) {
+        socket.emit('challenge:respond', confirm("Incoming challenge from "+from.username+" - accept?"));
+    });
+
+    socket.on('challenge:response', function(accepted) {
+        if (accepted) {
+            console.log("requesting game start...");
+            socket.emit('game:start');
+        }
     });
 
     socket.emit('userlist');
