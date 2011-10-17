@@ -11,7 +11,7 @@ var app = http.createServer(function(req, res) {
 var io = sio.listen(app);
 app.listen(7979);
 
-var connectedUsers = {};
+var authedUsers = {};
 var challenges = [];
 
 io.sockets.on('connection', function(socket) {
@@ -28,7 +28,8 @@ io.sockets.on('connection', function(socket) {
                 if (result == null) {
                     socket.emit('msg', 'Invalid details');
                 } else {
-                    connectedUsers[socket.id] = result;
+                    result.sid = socket.id;
+                    authedUsers[socket.id] = result;
                     socket.join('lobby');
                     socket.emit('statechange', 'lobby');
                     socket.broadcast.to('lobby').emit('user:join', result);
@@ -42,8 +43,8 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('userlist', function() {
         socket.emit('userlist', {
-            "user": connectedUsers[socket.id],
-            "users": connectedUsers
+            "user": authedUsers[socket.id],
+            "users": authedUsers
         });
     });
 
@@ -53,21 +54,14 @@ io.sockets.on('connection', function(socket) {
     socket.on('challenge:issue', function(to) {
         // make sure the ID we're challenging is in the lobby
         var _sockets = io.sockets.in('lobby').sockets;
-        var found = false;
-        for (var i in _sockets) {
-            // in here, i == _sockets[i].id
-            if (connectedUsers[i]._id == to) {
-                // excellent! Issue the challenge from the challenger's user object
-                challenges.push({
-                    "from" : socket.id,
-                    "to"   : i
-                });
-                _sockets[i].emit('challenge:receive', connectedUsers[socket.id]);
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        if (_sockets[to] != null) {
+            // excellent! Issue the challenge from the challenger's user object
+            challenges.push({
+                "from" : socket.id,
+                "to"   : to 
+            });
+            _sockets[to].emit('challenge:receive', authedUsers[socket.id]);
+        } else {
             console.log("Could not find ID to challenge in lobby "+to);
         }
     });
@@ -87,9 +81,11 @@ io.sockets.on('connection', function(socket) {
         }
 
         if (challenge != null) {
-            
             console.log("challenge from "+challenge.from+" to "+challenge.to+": "+accepted);
-            var _sockets = [socket, io.sockets.sockets[challenge.from]];
+            var _sockets = [
+                io.sockets.sockets[challenge.to],
+                io.sockets.sockets[challenge.from]
+            ];
             if (accepted) {
                 // @todo new game logic
                 for (var i = 0; i < 2; i++) {
@@ -108,9 +104,9 @@ io.sockets.on('connection', function(socket) {
      * disconnect / cleanup
      */
     socket.on('disconnect', function() {
-        if (connectedUsers[socket.id] != null) {
-            io.sockets.in('lobby').emit('user:leave', connectedUsers[socket.id]._id);
-            delete connectedUsers[socket.id];
+        if (authedUsers[socket.id] != null) {
+            io.sockets.in('lobby').emit('user:leave', socket.id);
+            delete authedUsers[socket.id];
         }
     });
 });

@@ -1,19 +1,21 @@
 (function() {
     var user = null;
     function addUser(user) {
-        return $("<li data-id='"+user._id+"'>"+user.username+"</li>");
+        return $("<li data-id='"+user.sid+"'>"+user.username+"</li>");
     }
 
     function bindListeners() {
         $("#users ul").unbind('dblclick');
         $("#users ul").bind('dblclick', function(e) {
             var elem = $(e.target);
-            if (elem.data('id') != null && elem.data('id') != user._id) {
+            // jQuery.data() barfs at large ID values, so we have to use attr. Oh well.
+            var targetId = elem.attr("data-id");
+            if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
                 if (confirm("Do you want to challenge "+elem.html()+"?")) {
                     // boom!
-                    console.log("issuing challenge to "+elem.data('id'));
-                    socket.emit('challenge:issue', elem.data('id'));
+                    console.log("issuing challenge to "+targetId);
+                    socket.emit('challenge:issue', targetId);
                 }
             }
         });
