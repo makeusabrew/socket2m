@@ -13,6 +13,7 @@ app.listen(7979);
 
 var authedUsers = {};
 var challenges = [];
+var games = {};
 
 io.sockets.on('connection', function(socket) {
     //console.log(io.sockets);
@@ -88,6 +89,24 @@ io.sockets.on('connection', function(socket) {
             ];
             if (accepted) {
                 // @todo new game logic
+                db.collection('games', function(err, collection) {
+                    var game = {
+                        "started"       : new Date(),
+                        "challenger" : {
+                            "db_id"     : authedUsers[challenge.from]._id,
+                            "socket_id" : challenge.from
+                        },
+                        "challengee" : {
+                            "db_id"     : authedUsers[challenge.to]._id,
+                            "socket_id" : challenge.to
+                        }
+                    };
+                    collection.insert(game, function(err, game) {
+                        game = game[0];
+                        games[game._id] = game;
+                    });
+                });
+
                 for (var i = 0; i < 2; i++) {
                     _sockets[i].leave('lobby');
                 }
@@ -97,6 +116,19 @@ io.sockets.on('connection', function(socket) {
             }
         } else {
             console.log("Could not find challenge");
+        }
+    });
+
+    /**
+     * game start
+     */
+    socket.on('game:start', function() {
+        // is this user allowed - e.g. do they have an active game?
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            socket.emit('statechange', 'game');
+        } else {
+            console.log("could not find game for socket ID "+socket.id);
         }
     });
 
@@ -118,3 +150,13 @@ db.open(function(err, client) {
         throw err;
     }
 });
+
+function findGameForSocketId(sid) {
+    for (var i in games) {
+        if (games[i].challenger.socket_id == sid ||
+            games[i].challengee.socket_id == sid) {
+            return games[i];
+        }
+    }
+    return null;
+}
