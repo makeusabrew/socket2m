@@ -25,6 +25,19 @@ Bullet = function() {
         _y += _vy * delta;
 
         _vy += 20 * delta;
+
+        if (_x < GameManager.getLeft()   ||
+            _x > GameManager.getRight()  ||
+            _y < GameManager.getTop()    ||
+            _y > GameManager.getBottom()) {
+            
+            _alive = false;
+        }
+
+    }
+
+    this.isDead = function() {
+        return !_alive;
     }
 
     this.render = function() {

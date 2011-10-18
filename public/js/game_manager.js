@@ -20,8 +20,22 @@ var GameManager = (function() {
             _player.fireWeapon();
         }
 
+        var removed = false;
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].tick(_delta);
+
+            if (_entities[i].isDead()) {
+                console.log("found dead entity index "+i);
+
+                // delete to preserve indices
+                removed = true;
+                delete _entities[i];
+            }
+        }
+
+        if (removed) {
+            // reshuffle indices
+            _entities.splice(0, 0);
         }
     }
 
@@ -59,6 +73,22 @@ var GameManager = (function() {
 
     self.getBuffer = function() {
         return _buffer;
+    }
+
+    self.getLeft = function() {
+        return 0;
+    }
+
+    self.getTop = function() {
+        return 0;
+    }
+
+    self.getBottom = function() {
+        return self.getTop() + _buffer.getHeight();
+    }
+
+    self.getRight = function() {
+        return self.getLeft() + _buffer.getWidth();
     }
 
     return self;
