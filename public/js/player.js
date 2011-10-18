@@ -1,14 +1,14 @@
 Player = function(options) {
-    var _id = options.id,
-        _x = options.x,
-        _y = options.y,
-        _a = options.a
-        _v = options.v,
-        _c = options.c,
-        _username = options.username,
+    this._id = options.id,
+    this._x = options.x,
+    this._y = options.y,
+    this._a = options.a
+    this._v = options.v,
+    this._c = options.c,
+    this._username = options.username,
 
-        _cWeapon = 0,
-        _weapons = {
+    this._cWeapon = 0,
+    this._weapons = {
             "0" : Weapon.factory()
         };
 
@@ -18,7 +18,7 @@ Player = function(options) {
     }
 
     this.render = function() {
-        GameManager.getBuffer().fillRect(_x, _y, 16, 32, _c);
+        GameManager.getBuffer().fillRect(this._x, this._y, 16, 32, this._c);
     }
 
     this.fireWeapon = function() {
@@ -26,19 +26,24 @@ Player = function(options) {
             return;
         }
         var options = {
-            x: _x,
-            y: _y,
-            a: _a,
-            v: _v
+            x: this._x,
+            y: this._y,
+            a: this._a,
+            v: this._v
         };
         this.getWeapon().fire(options);
     }
 
     this.getWeapon = function() {
-        return _weapons[_cWeapon];
+        return this._weapons[this._cWeapon];
+    }
+
+    this.getUsername = function() {
+        return this._username;
     }
 };
 
 Player.factory = function(options) {
+    console.log("P opts", options);
     return new Player(options);
 };

@@ -27,29 +27,35 @@
         // we need to start a game loop
         // in the game loop, check isKeyDown space bar, then request
         // a bullet:spawn event
-        GameManager.setPlayer(
-            Player.factory({
-                "id": 1,
-                "x" : 16,
-                "y" : 668,
-                "a" : 315,
-                "v" : 10,
-                "c" : "rgb(0, 255, 0)",
-                "username" : "foo"
-            })
-        );
+        var p1 = Player.factory({
+            "id": players[0]._id,
+            "x" : 16,
+            "y" : 668,
+            "a" : 315,
+            "v" : 10,
+            "c" : "rgb(0, 255, 0)",
+            "username" : players[0].username
+        });
+        var p2 = Player.factory({
+            "id": players[1]._id,
+            "x" : 908,
+            "y" : 668,
+            "a" : 225,
+            "v" : 10,
+            "c" : "rgb(0, 0, 255)",
+            "username" : players[1].username
+        });
 
-        GameManager.setOpponent(
-            Player.factory({
-                "id": 2,
-                "x" : 908,
-                "y" : 668,
-                "a" : 225,
-                "v" : 10,
-                "c" : "rgb(0, 0, 255)",
-                "username" : "bar"
-            })
-        );
+        console.log(p1.getUsername(), p2.getUsername());
+
+        if (players[0]._id == user._id) {
+            // we're "player 1" - face right
+            GameManager.setPlayer(p1);
+            GameManager.setOpponent(p2);
+        } else {
+            GameManager.setPlayer(p2);
+            GameManager.setOpponent(p1);
+        }
 
         GameManager.initBuffer("viewport");
 
