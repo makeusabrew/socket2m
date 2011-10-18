@@ -13,6 +13,7 @@ var GameManager = (function() {
 
     self.tick = function() {
         var tickTime = new Date().getTime();
+        // we want a delta in *seconds*, to make it easier to scale our values
         _delta = (tickTime - _lastTick) / 1000;
         _lastTick = tickTime;
 
@@ -20,9 +21,21 @@ var GameManager = (function() {
             _player.fireWeapon();
         }
 
+        if (Input.isKeyDown("LEFT_ARROW")) {
+            _player.decreaseAngle();
+        } else if (Input.isKeyDown("RIGHT_ARROW")) {
+            _player.increaseAngle();
+        }
+
+        if (Input.isKeyDown("DOWN_ARROW")) {
+            _player.decreaseVelocity();
+        } else if (Input.isKeyDown("UP_ARROW")) {
+            _player.increaseVelocity();
+        }
+
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
-        // this means it isn't fast - anything we can do?
+        // this means it isn't fast - anything we can do? @todo
         for (var i = _entities.length-1; i >= 0; i--) {
             _entities[i].tick(_delta);
 

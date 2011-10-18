@@ -19,7 +19,11 @@
         $("#game h2").html("Game On!");
 
         Input.captureKeys([
-            'SPACE_BAR'
+            'SPACE_BAR',
+            'UP_ARROW',
+            'DOWN_ARROW',
+            'LEFT_ARROW',
+            'RIGHT_ARROW'
         ]);
         Input.bindKeys(window);
 

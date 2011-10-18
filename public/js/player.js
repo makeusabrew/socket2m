@@ -1,3 +1,8 @@
+/**
+ * N.B the underscores on all the variables indicate those which should be private, but for reasons
+ * I haven't quite got to the bottom of, couldn't be - looked like assignment by reference-esque issues
+ * one to debug later...
+ */
 Player = function(options) {
     this._id = options.id,
     this._x = options.x,
@@ -18,7 +23,16 @@ Player = function(options) {
     }
 
     this.render = function() {
-        GameManager.getBuffer().fillRect(this._x, this._y, 16, 32, this._c);
+        var buffer = GameManager.getBuffer();
+
+        // draw me (aka: a rectangle)
+        buffer.fillRect(this._x, this._y, 16, 32, this._c);
+
+        // draw where I'm aiming
+        var aimX = this._x + Math.cos((this._a/180)*Math.PI) * this._v;
+        var aimY = this._y + Math.sin((this._a/180)*Math.PI) * this._v;
+
+        buffer.square(aimX, aimY, 5, "rgb(0, 0, 0)");
     }
 
     this.fireWeapon = function() {
@@ -42,9 +56,25 @@ Player = function(options) {
     this.getUsername = function() {
         return this._username;
     }
+
+    this.decreaseAngle = function() {
+        this._a --;
+    }
+
+    this.increaseAngle = function() {
+        this._a ++;
+    }
+
+    this.decreaseVelocity = function() {
+        this._v --;
+    }
+
+    this.increaseVelocity = function() {
+        this._v ++;
+    }
 };
 
 Player.factory = function(options) {
-    console.log("P opts", options);
+    console.log("Player::factory", options);
     return new Player(options);
 };

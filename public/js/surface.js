@@ -1,6 +1,6 @@
 Surface = function(elemId) {
     var _elem,
-        buffer;
+        _buffer;
         
     _elem = document.getElementById(elemId);
     if (!_elem.getContext) {
