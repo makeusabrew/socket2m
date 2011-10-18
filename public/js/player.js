@@ -29,7 +29,8 @@ Player = function(options) {
             x: this._x,
             y: this._y,
             a: this._a,
-            v: this._v
+            v: this._v,
+            o: this._id
         };
         this.getWeapon().fire(options);
     }

@@ -1,8 +1,8 @@
 var GameManager = (function() { 
     var self = this,
-        frame = 0,
-        lastTick = 0,
-        tickTime = 0,
+        _frame = 0,
+        _lastTick = 0,
+        _delta = 0,
 
         _buffer = null,
 
@@ -12,12 +12,16 @@ var GameManager = (function() {
         _entities = [];
 
     self.tick = function() {
+        var tickTime = new Date().getTime();
+        _delta = (tickTime - _lastTick) / 1000;
+        _lastTick = tickTime;
+
         if (Input.isKeyDown("SPACE_BAR")) {
             _player.fireWeapon();
         }
 
         for (var i = 0, j = _entities.length; i < j; i++) {
-            _entities[i].tick();
+            _entities[i].tick(_delta);
         }
     }
 
