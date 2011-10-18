@@ -32,7 +32,7 @@
         var p1 = Player.factory({
             "id": players[0]._id,
             "x" : 16,
-            "y" : 668,
+            "y" : 568,
             "a" : 315,
             "v" : 100,
             "c" : "rgb(0, 255, 0)",
@@ -41,7 +41,7 @@
         var p2 = Player.factory({
             "id": players[1]._id,
             "x" : 908,
-            "y" : 668,
+            "y" : 568,
             "a" : 225,
             "v" : 100,
             "c" : "rgb(0, 0, 255)",

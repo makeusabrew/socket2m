@@ -3,12 +3,15 @@ var currentState = null;
 
 socket.on('statechange', function(state) {
     $.get('/states/'+state+'.html', {}, function(response) {
-        $("#wrapper").html(response);
+        $("#wrapper").fadeOut('normal', function() {
+            $(this).html(response).fadeIn('normal');
 
-        loadScript('/states/'+state+'.js');
+            loadScript('/states/'+state+'.js');
 
-        currentState = state;
-        console.log("changed state to "+state);
+            currentState = state;
+            console.log("changed state to "+state);
+        });
+
     });
 });
 

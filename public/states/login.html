@@ -1,12 +1,23 @@
 <div id='login'>
-    <h2>Please Login</h2>
+    <div class='page-header'>
+        <h2>Login</h2>
+    </div>
+    <p>You can't register just yet. Sorry about that.</p>
     <form method="post" action="">
-        <label for="username">Username *</label>
-        <input type="text" name="username" id="username" required="" placeholder="" />
-
-        <label for="password">Password *</label>
-        <input type="password" name="password" id="password" required="" />
-
-        <input type="submit" value="Login" />
+        <div class="clearfix">
+            <label for="username">Username *</label>
+            <div class="input">
+                <input type="text" name="username" id="username" required="" placeholder="" />
+            </div>
+        </div>
+        <div class="clearfix">
+            <label for="password">Password *</label>
+            <div class="input">
+                <input type="password" name="password" id="password" required="" />
+            </div>
+        </div>
+        <div class="actions">
+            <input type="submit" value="Login" class="btn primary" />
+        </div>
     </form>
 </div>
