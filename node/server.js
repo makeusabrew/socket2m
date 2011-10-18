@@ -75,11 +75,13 @@ io.sockets.on('connection', function(socket) {
 
         // we can't just do a normal for loop here, because challenges
         // won't be zero-indexed after the first one has been deleted
-        for (var i in challenges) {
+        //for (var i in challenges) {
+        for (var i = 0, j = challenges.length; i < j; i++) {
             if (challenges[i].to == socket.id) {
                 // excellent, this is the challenge we're after
                 var challenge = challenges[i];
-                delete challenges[i];
+                //delete challenges[i];
+                challenges.splice(i, 1);
                 break;
             }
         }
@@ -160,6 +162,24 @@ io.sockets.on('connection', function(socket) {
             }
         } else {
             console.log("could not find game for socket ID "+socket.id);
+        }
+    });
+
+    /**
+     * game - bullet spawn request (exciting)
+     */
+    socket.on('game:bullet:spawn', function(options) {
+        /**
+         * @todo - verify authenticity of the spawn request
+         * - can the player fire? (too soon?)
+         * - can the player fire from here?
+         * - etc
+         */
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            io.sockets.in('game_'+game._id).emit('game:bullet:spawn', options);
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:bullet:spawn");
         }
     });
 

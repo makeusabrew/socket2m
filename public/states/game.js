@@ -7,6 +7,8 @@
 
 
     socket.on('game:start', function(data) {
+        // the below is temporary - we get a race condition if both sockets start at almost the same time
+        // so we have to defend against a double init
         if (started) {
             return;
         }
@@ -27,10 +29,6 @@
         ]);
         Input.bindKeys(window);
 
-        // refs #503
-        // we need to start a game loop
-        // in the game loop, check isKeyDown space bar, then request
-        // a bullet:spawn event
         var p1 = Player.factory({
             "id": players[0]._id,
             "x" : 16,
@@ -57,10 +55,12 @@
             GameManager.setPlayer(p1);
             GameManager.setOpponent(p2);
         } else {
+            // we're p2 so... well, you get it
             GameManager.setPlayer(p2);
             GameManager.setOpponent(p1);
         }
 
+        // bind any canvas rendering to #viewport
         GameManager.initBuffer("viewport");
 
         console.log("ready to tick");
@@ -68,11 +68,11 @@
 
     });
 
-    socket.on('bullet:spawn', function(bullet) {
-        //
+    socket.on('game:bullet:spawn', function(options) {
+        GameManager.actuallySpawnBullet(options);
     });
 
-    socket.on('bullet:die', function(bullet) {
+    socket.on('game:bullet:die', function(options) {
         //
     });
 })();

@@ -49,6 +49,7 @@ var GameManager = (function() {
     self.render = function() {
         _buffer.clear();
         _player.render();
+        _player.renderSight();
         _opponent.render();
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].render();
@@ -72,6 +73,11 @@ var GameManager = (function() {
     }
 
     self.spawnBullet = function(options) {
+        console.log("requesting bullet");
+        socket.emit("game:bullet:spawn", options);
+    }
+
+    self.actuallySpawnBullet = function(options) {
         console.log("spawning bullet", options);
         var bullet = Bullet.factory();
         bullet.spawn(options);

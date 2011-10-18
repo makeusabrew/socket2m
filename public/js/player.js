@@ -14,8 +14,8 @@ Player = function(options) {
 
     this._cWeapon = 0,
     this._weapons = {
-            "0" : Weapon.factory()
-        };
+        "0" : Weapon.factory()
+    };
 
 
     this.tick = function() {
@@ -23,16 +23,16 @@ Player = function(options) {
     }
 
     this.render = function() {
-        var buffer = GameManager.getBuffer();
-
         // draw me (aka: a rectangle)
-        buffer.fillRect(this._x, this._y, 16, 32, this._c);
+        GameManager.getBuffer().fillRect(this._x, this._y, 16, 32, this._c);
+    }
 
+    this.renderSight = function() {
         // draw where I'm aiming
         var aimX = this._x + Math.cos((this._a/180)*Math.PI) * this._v;
         var aimY = this._y + Math.sin((this._a/180)*Math.PI) * this._v;
 
-        buffer.square(aimX, aimY, 5, "rgb(0, 0, 0)");
+        GameManager.getBuffer().square(aimX, aimY, 5, "rgb(0, 0, 0)");
     }
 
     this.fireWeapon = function() {
