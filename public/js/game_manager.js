@@ -4,7 +4,7 @@ var GameManager = (function() {
         _lastTick = 0,
         _delta = 0,
 
-        _buffer = null,
+        _surface = null,
 
         _player = null,
         _opponent = null,
@@ -47,7 +47,7 @@ var GameManager = (function() {
     }
 
     self.render = function() {
-        _buffer.clear();
+        _surface.clear();
         _player.render();
         _player.renderSight();
         _opponent.render();
@@ -56,12 +56,12 @@ var GameManager = (function() {
         }
     }
 
-    self.initBuffer = function(elem) {
-        self.setBuffer(new Surface(elem));
+    self.initSurface = function(elem) {
+        self.setSurface(new Surface(elem));
     }
 
-    self.setBuffer = function(buffer) {
-        _buffer = buffer;
+    self.setSurface = function(surface) {
+        _surface = surface;
     }
 
     self.setPlayer = function(player) {
@@ -81,11 +81,12 @@ var GameManager = (function() {
         console.log("spawning bullet", options);
         var bullet = Bullet.factory();
         bullet.spawn(options);
+        SoundManager.playSound("weapon:fire");
         _entities.push(bullet);
     }
 
-    self.getBuffer = function() {
-        return _buffer;
+    self.getSurface = function() {
+        return _surface;
     }
 
     self.getLeft = function() {
@@ -97,11 +98,11 @@ var GameManager = (function() {
     }
 
     self.getBottom = function() {
-        return self.getTop() + _buffer.getHeight();
+        return self.getTop() + _surface.getHeight();
     }
 
     self.getRight = function() {
-        return self.getLeft() + _buffer.getWidth();
+        return self.getLeft() + _surface.getWidth();
     }
 
     return self;

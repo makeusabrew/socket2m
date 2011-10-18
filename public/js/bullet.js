@@ -41,7 +41,7 @@ Bullet = function() {
     }
 
     this.render = function() {
-        var buffer = GameManager.getBuffer();
+        var buffer = GameManager.getSurface();
         buffer.square(_x, _y, 3, "rgb(255, 0, 0)");
     }
 };

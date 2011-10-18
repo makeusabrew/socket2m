@@ -61,7 +61,10 @@
         }
 
         // bind any canvas rendering to #viewport
-        GameManager.initBuffer("viewport");
+        GameManager.initSurface("viewport");
+
+        // preload some sfx
+        SoundManager.preloadSound("/sounds/bang_3.wav", "weapon:fire");
 
         console.log("ready to tick");
         animate();
@@ -77,5 +80,4 @@
     });
 })();
 
-console.log("ready for game");
 socket.emit('game:ready');

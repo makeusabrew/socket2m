@@ -24,7 +24,7 @@ Player = function(options) {
 
     this.render = function() {
         // draw me (aka: a rectangle)
-        GameManager.getBuffer().fillRect(this._x, this._y, 16, 32, this._c);
+        GameManager.getSurface().fillRect(this._x, this._y, 16, 32, this._c);
     }
 
     this.renderSight = function() {
@@ -32,7 +32,7 @@ Player = function(options) {
         var aimX = this._x + Math.cos((this._a/180)*Math.PI) * this._v;
         var aimY = this._y + Math.sin((this._a/180)*Math.PI) * this._v;
 
-        GameManager.getBuffer().square(aimX, aimY, 5, "rgb(0, 0, 0)");
+        GameManager.getSurface().square(aimX, aimY, 5, "rgb(0, 0, 0)");
     }
 
     this.fireWeapon = function() {
