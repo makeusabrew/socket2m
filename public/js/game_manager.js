@@ -20,22 +20,16 @@ var GameManager = (function() {
             _player.fireWeapon();
         }
 
-        var removed = false;
-        for (var i = 0, j = _entities.length; i < j; i++) {
+        // we need a backwards loop to allow for deletion of multiple
+        // array indices during each iteration
+        // this means it isn't fast - anything we can do?
+        for (var i = _entities.length-1; i >= 0; i--) {
             _entities[i].tick(_delta);
 
             if (_entities[i].isDead()) {
                 console.log("found dead entity index "+i);
-
-                // delete to preserve indices
-                removed = true;
-                delete _entities[i];
+                _entities.splice(i, 1);
             }
-        }
-
-        if (removed) {
-            // reshuffle indices
-            _entities.splice(0, 0);
         }
     }
 
