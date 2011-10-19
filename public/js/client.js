@@ -59,3 +59,11 @@ window.requestAnimFrame = (function(){
                 window.setTimeout(callback, 1000 / 60);
             };
 })();
+
+loadScript("/js/input.js");
+loadScript("/js/game_manager.js");
+loadScript("/js/player.js");
+loadScript("/js/bullet.js");
+loadScript("/js/weapon.js");
+loadScript("/js/surface.js");
+loadScript("/js/sound_manager.js");
