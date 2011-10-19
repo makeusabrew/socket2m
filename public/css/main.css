@@ -9,3 +9,12 @@
 #lobby ul li.me {
     cursor:default;
 }
+
+#debug {
+    padding:0.1em;
+    background:#000;
+    color:#fff;
+    position:fixed;
+    bottom:0;
+    right:0;
+}

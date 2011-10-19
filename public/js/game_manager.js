@@ -15,6 +15,12 @@ var GameManager = (function() {
         var tickTime = new Date().getTime();
         // we want a delta in *seconds*, to make it easier to scale our values
         _delta = (tickTime - _lastTick) / 1000;
+
+        if (tickTime % 20 == 0) {
+            var fps = Math.round(10 / _delta) / 10;
+            $("#debug #fps").html(fps+" fps");
+        }
+
         _lastTick = tickTime;
 
         if (Input.isKeyDown("SPACE_BAR")) {
