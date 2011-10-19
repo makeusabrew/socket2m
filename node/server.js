@@ -145,18 +145,23 @@ io.sockets.on('connection', function(socket) {
             console.log("Socket ID "+socket.id+" ready to play");
             socket.join("game_"+game._id);
 
-            var playerCount = io.sockets.clients('game_'+game._id).length;
-            console.log("players present: "+playerCount);
-            if (playerCount == 2) {
+            //var playerCount = io.sockets.clients('game_'+game._id).length;
+            //console.log("players present: "+playerCount);
+            //if (playerCount == 2) {
+            // this logic is wonky - we can't just emit the last connected socket,
+            // otherwise both players think they're the same user
+            // instead, we need to emit to each socket separately
+            // @todo fixme
                 var players = null;
                 getGamePlayers(game, function(docs) {
                     players = docs;
-                    io.sockets.in('game_'+game._id).emit('game:start', {
+                    //io.sockets.in('game_'+game._id).emit('game:start', {
+                    socket.emit('game:start', {
                         "user": authedUsers[socket.id],
                         "players": players
                     });
                 });
-            }
+            //}
         } else {
             console.log("could not find game for socket ID "+socket.id);
         }
