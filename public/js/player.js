@@ -15,6 +15,16 @@ Player = function(options) {
     this._cWeapon = 0,
     this._weapons = {
         "0" : Weapon.factory()
+    },
+
+    this.aim = {
+        x: 0,
+        y: 0
+    },
+
+    this.oldAim = {
+        x: 0,
+        y: 0
     };
 
 
@@ -28,11 +38,15 @@ Player = function(options) {
     }
 
     this.renderSight = function() {
-        // draw where I'm aiming
-        var aimX = this._x + Math.cos((this._a/180)*Math.PI) * this._v;
-        var aimY = this._y + Math.sin((this._a/180)*Math.PI) * this._v;
+        var surface = GameManager.getSurface();
+        // clear old
+        surface.clearRect(this.oldAim.x, this.oldAim.y, 5, 5);
 
-        GameManager.getSurface().square(aimX, aimY, 5, "rgb(0, 0, 0)");
+        // draw where I'm aiming
+        this.oldAim.x = this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
+        this.oldAim.y = this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
+
+        GameManager.getSurface().square(this.aim.x, this.aim.y, 5, "rgb(0, 0, 0)");
     }
 
     this.fireWeapon = function() {

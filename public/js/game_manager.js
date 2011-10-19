@@ -53,7 +53,7 @@ var GameManager = (function() {
     }
 
     self.render = function() {
-        _surface.clear();
+        //_surface.clear();
         _player.render();
         _player.renderSight();
         _opponent.render();

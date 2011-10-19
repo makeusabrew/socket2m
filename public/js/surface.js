@@ -19,25 +19,25 @@ Surface = function(elemId) {
         _buffer.lineTo(x1, y1);
         _buffer.closePath();
         _buffer.stroke();
-    };
+    }
 
     this.fillRect = function(x, y, w, h, colour) {
         _buffer.fillStyle = colour;
         _buffer.fillRect(x, y, w, h);
-    };
+    }
 
     this.getWidth = function() {
         return _buffer.canvas.clientWidth;
-    };
+    }
 
     this.getHeight = function() {
         return _buffer.canvas.clientHeight;
-    };
+    }
 
     this.pixel = function(x, y, colour) {
         _buffer.fillStyle = colour;
         this.fillRect(x, y, 1, 1);
-    };
+    }
 
     this.square = function(x, y, size, colour) {
         _buffer.fillStyle = colour;
@@ -46,9 +46,13 @@ Surface = function(elemId) {
 
     this.drawImage = function(img, x, y, w, h) {
         _buffer.drawImage(img, x, y, w, h);
-    };
+    }
 
     this.clear = function() {
         _buffer.clearRect(0, 0, _elem.width, _elem.height);
-    };
+    }
+
+    this.clearRect = function(x, y, w, h) {
+        _buffer.clearRect(x, y, w, h);
+    }
 };
