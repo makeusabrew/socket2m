@@ -19,7 +19,7 @@ socket.on('statechange', function(state) {
         if (faded && data) {
             console.log("fade & data complete");
             $("#wrapper").html(data).fadeIn('fast');
-            loadScript('/states/'+state+'.js');
+            loadScript('/states/js/'+state+'.js');
             currentState = state;
             console.log("changed state to "+state);
         }
