@@ -144,11 +144,8 @@ io.sockets.on('connection', function(socket) {
         if (game != null) {
             console.log("Socket ID "+socket.id+" ready to play");
             socket.join("game_"+game._id);
-            var _sockets = io.sockets.in('game_'+game._id).sockets;
-            var playerCount = 0;
-            for (var i in _sockets) {
-                playerCount ++;
-            }
+
+            var playerCount = io.sockets.clients('game_'+game._id).length;
             console.log("players present: "+playerCount);
             if (playerCount == 2) {
                 var players = null;
