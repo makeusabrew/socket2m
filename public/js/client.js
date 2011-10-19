@@ -12,6 +12,9 @@ socket.on('statechange', function(state) {
         }
         if (faded && received && data) {
             $("#wrapper").html(data).fadeIn('normal');
+            loadScript('/states/'+state+'.js');
+            currentState = state;
+            console.log("changed state to "+state);
         }
     }
         
@@ -21,10 +24,7 @@ socket.on('statechange', function(state) {
     });
 
     $.get('/states/'+state+'.html', {}, function(response) {
-        loadScript('/states/'+state+'.js');
         received = true;
-        currentState = state;
-        console.log("changed state to "+state);
         checkComplete(response);
     });
 });
