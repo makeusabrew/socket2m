@@ -2,30 +2,35 @@ var socket = io.connect(null, {port: 7979});
 var currentState = null;
 
 socket.on('statechange', function(state) {
-    var faded    = false,
-        received = false,
-        data     = null;
 
-    var checkComplete = function(response) {
-        if (response != null) {
-            data = response;
+    var faded    = false,
+        data     = null,
+        checkComplete = function(_faded, _data) {
+
+        if (_faded != null) {
+            console.log("fade out complete");
+            faded = _faded;
         }
-        if (faded && received && data) {
-            $("#wrapper").html(data).fadeIn('normal');
+        if (_data != null) {
+            console.log("data complete");
+            data = _data;
+        }
+
+        if (faded && data) {
+            console.log("fade & data complete");
+            $("#wrapper").html(data).fadeIn('fast');
             loadScript('/states/'+state+'.js');
             currentState = state;
             console.log("changed state to "+state);
         }
     }
         
-    $("#wrapper").fadeOut('normal', function() {
-        faded = true;
-        checkComplete();
+    $("#wrapper").fadeOut('fast', function() {
+        checkComplete(true, null);
     });
 
     $.get('/states/'+state+'.html', {}, function(response) {
-        received = true;
-        checkComplete(response);
+        checkComplete(null, response);
     });
 });
 
