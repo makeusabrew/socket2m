@@ -80,11 +80,15 @@ Player = function(options) {
     }
 
     this.decreaseVelocity = function() {
-        this._v --;
+        if (this._v > 25) {
+            this._v --;
+        }
     }
 
     this.increaseVelocity = function() {
-        this._v ++;
+        if (this._v < 200) {
+            this._v ++;
+        }
     }
 };
 
