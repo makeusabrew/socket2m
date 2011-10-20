@@ -1,7 +1,8 @@
 var http    = require('http'),
     qs      = require('querystring'),
     mongo   = require('mongodb'),
-    sio     = require('socket.io');
+    sio     = require('socket.io'),
+    crypto  = require('crypto');
 
 var app = http.createServer(function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -16,7 +17,6 @@ var challenges = [];
 var games = {};
 
 io.sockets.on('connection', function(socket) {
-    //console.log(io.sockets);
     socket.emit('statechange', 'login');
 
     /**
@@ -25,6 +25,11 @@ io.sockets.on('connection', function(socket) {
     socket.on('login', function(data) {
         var details = qs.parse(data);
         db.collection('users', function(err, collection) {
+
+            var hash = crypto.createHash('sha1');
+            hash.update(details.password);
+            details.password = hash.digest('hex');
+
             collection.findOne(details, function(err, result) {
                 if (result == null) {
                     socket.emit('msg', 'Invalid details');
@@ -59,6 +64,9 @@ io.sockets.on('connection', function(socket) {
             collection.findOne(match, function(err, result) {
                 if (result == null) {
                     // superb. register
+                    var hash = crypto.createHash('sha1');
+                    hash.update(details.password);
+                    details.password = hash.digest('hex');
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
