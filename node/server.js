@@ -133,15 +133,26 @@ io.sockets.on('connection', function(socket) {
             ];
             if (accepted) {
                 db.collection('games', function(err, collection) {
+                    
                     var game = {
                         "started"       : new Date(),
                         "challenger" : {
                             "db_id"     : authedUsers[challenge.from]._id,
-                            "socket_id" : challenge.from
+                            "username"  : authedUsers[challenge.from].username,
+                            "socket_id" : challenge.from,
+                            "platform"  : Math.floor(Math.random()*3),
+                            "x"         : 16,
+                            "a"         : 315,
+                            "v"         : Math.floor(Math.random()* 150) + 25
                         },
                         "challengee" : {
                             "db_id"     : authedUsers[challenge.to]._id,
-                            "socket_id" : challenge.to
+                            "username"  : authedUsers[challenge.to].username,
+                            "socket_id" : challenge.to,
+                            "platform"  : Math.floor(Math.random()*3),
+                            "x"         : 908,
+                            "a"         : 225,
+                            "v"         : Math.floor(Math.random()* 150) + 25
                         }
                     };
                     collection.insert(game, function(err, result) {
@@ -189,16 +200,13 @@ io.sockets.on('connection', function(socket) {
             var _sockets = io.sockets.clients('game_'+game._id);
             console.log("players present: "+_sockets.length);
             if (_sockets.length == 2) {
-                var players = null;
-                getGamePlayers(game, function(docs) {
-                    players = docs;
-                    for (var i = 0; i < 2; i++) {
-                        _sockets[i].emit('game:start', {
-                            "user": authedUsers[_sockets[i].id],
-                            "players": players
-                        });
-                    }
-                });
+                for (var i = 0; i < 2; i++) {
+                    _sockets[i].emit('game:start', {
+                        "user": authedUsers[_sockets[i].id],
+                        "challenger": game.challenger,
+                        "challengee": game.challengee
+                    });
+                }
             }
         } else {
             console.log("could not find game for socket ID "+socket.id);
@@ -272,6 +280,7 @@ function findGameForSocketId(sid) {
     return null;
 }
 
+/*
 function getGamePlayers(game, cb) {
     var players = null;
     db.collection('users', function(err, collection) {
@@ -285,3 +294,4 @@ function getGamePlayers(game, cb) {
         });
     });
 }
+*/

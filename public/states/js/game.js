@@ -16,7 +16,8 @@
             console.log(data);
             started = true;
 
-            players = data.players;
+            challenger = data.challenger;
+            challengee = data.challengee;
             user = data.user;
             $("#game h2").html("Game On!");
 
@@ -30,27 +31,27 @@
             Input.bindKeys(window);
 
             var p1 = Player.factory({
-                "id": players[0]._id,
-                "x" : 16,
-                "y" : 568,
-                "a" : 315,
-                "v" : 100,
+                "id": challenger._id,
+                "x" : challenger.x,
+                "y" : ((challenger.platform+1)*200)-32,
+                "a" : challenger.a,
+                "v" : challenger.v,
                 "c" : "rgb(0, 255, 0)",
-                "username" : players[0].username
+                "username" : challenger.username
             });
             var p2 = Player.factory({
-                "id": players[1]._id,
-                "x" : 908,
-                "y" : 568,
-                "a" : 225,
-                "v" : 100,
+                "id": challengee._id,
+                "x" : challengee.x,
+                "y" : ((challengee.platform+1)*200)-32,
+                "a" : challengee.a,
+                "v" : challengee.v,
                 "c" : "rgb(0, 0, 255)",
-                "username" : players[1].username
+                "username" : challengee.username
             });
 
             console.log(p1.getUsername()+ " Vs "+p2.getUsername());
 
-            if (players[0]._id == user._id) {
+            if (challenger.socket_id == user.sid) {
                 // we're "player 1" - face right
                 GameManager.setPlayer(p1);
                 GameManager.setOpponent(p2);
