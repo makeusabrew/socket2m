@@ -32,7 +32,7 @@ io.sockets.on('connection', function(socket) {
 
             collection.findOne(details, function(err, result) {
                 if (result == null) {
-                    socket.emit('msg', 'Invalid details');
+                    socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
                 } else {
                     result.sid = socket.id;
                     authedUsers[socket.id] = result;
@@ -234,7 +234,7 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-var db = new mongo.Db('nodeshooter', new mongo.Server('localhost', mongo.Connection.DEFAULT_PORT, {}), {});
+var db = new mongo.Db('socket2m', new mongo.Server('localhost', mongo.Connection.DEFAULT_PORT, {}), {});
 db.open(function(err, client) {
     if (err) {
         console.log("error opening mongoDb connection "+err);
