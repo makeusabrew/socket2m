@@ -1,6 +1,5 @@
 (function() {
     this.mbalert = function(str) {
-        //
         var div = $([
             "<div class='modal hide fade'>",
                 "<div class='modal-body'>",

@@ -40,6 +40,36 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
+     * login -> register
+     */
+    socket.on('login:register', function() {
+        socket.emit('statechange', 'register');
+    });
+
+    /**
+     * register - do registration
+     */
+    socket.on('register:register', function(data) {
+        var details = qs.parse(data);
+        var match = {
+            "username" : details.username,
+            "email"    : details.email
+        };
+        db.collection('users', function(err, collection) {
+            collection.findOne(match, function(err, result) {
+                if (result == null) {
+                    // superb. register
+                    collection.insert(details);
+                    socket.emit('msg', 'Congratulations, you\'re registered!');
+                    socket.emit('statechange', 'login');
+                } else {
+                    socket.emit('msg', 'Username or Email already in use');
+                }
+            });
+        });
+    });
+
+    /**
      * lobby / user list
      */
     socket.on('lobby:ready', function() {
