@@ -232,6 +232,21 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
+     * game - bullet has killed opponent
+     */
+    socket.on('game:player:kill', function(id) {
+        /**
+         * @todo - verify authenticity of the kill request!
+         */
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            io.sockets.in('game_'+game._id).emit('game:player:kill', id);
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:player:kill");
+        }
+    });
+
+    /**
      * cancel a game - only supported reason being the opponent left
      */
     socket.on('game:cancel', function() {

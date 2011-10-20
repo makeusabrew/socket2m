@@ -8,7 +8,8 @@ Bullet = function() {
         _alive,
         _owner,
         _vx,
-        _vy;
+        _vy,
+        _w;
 
     this.spawn = function(options) {
         _x = options.x;
@@ -17,9 +18,14 @@ Bullet = function() {
         _v = options.v;
         _owner = options.o;
         _alive = true;
+        _w = 3;
 
         _vx = Math.cos((_a/180)*Math.PI) * _v;
         _vy = Math.sin((_a/180)*Math.PI) * _v;
+    }
+
+    this.getOwner = function() {
+        return _owner;
     }
 
     this.tick = function(delta) {
@@ -35,7 +41,6 @@ Bullet = function() {
             
             _alive = false;
         }
-
     }
 
     this.isDead = function() {
@@ -44,10 +49,30 @@ Bullet = function() {
 
     this.render = function() {
         var buffer = GameManager.getSurface();
-        buffer.clearRect(_ox, _oy, 3, 3);
+        buffer.clearRect(_ox, _oy, _w, _w);
         _ox = _x | 0;
         _oy = _y | 0;
-        buffer.square(_ox, _oy, 3, "rgb(255, 0, 0)");
+        buffer.square(_ox, _oy, _w, "rgb(255, 0, 0)");
+    }
+
+    this.kill = function() {
+        _alive = false;
+    }
+
+    this.getLeft = function() {
+        return _x;
+    }
+
+    this.getTop = function() {
+        return _y;
+    }
+
+    this.getRight = function() {
+        return this.getLeft() + _w;
+    }
+
+    this.getBottom = function() {
+        return this.getTop () + _w;
     }
 };
 

@@ -31,7 +31,7 @@
             Input.bindKeys(window);
 
             var p1 = Player.factory({
-                "id": challenger._id,
+                "id": challenger.socket_id,
                 "x" : challenger.x,
                 "y" : ((challenger.platform+1)*200)-32,
                 "a" : challenger.a,
@@ -40,7 +40,7 @@
                 "username" : challenger.username
             });
             var p2 = Player.factory({
-                "id": challengee._id,
+                "id": challengee.socket_id,
                 "x" : challengee.x,
                 "y" : ((challengee.platform+1)*200)-32,
                 "a" : challengee.a,
@@ -78,6 +78,10 @@
 
         'game:bullet:die': function(options) {
             //
+        },
+
+        'game:player:kill': function(id) {
+            GameManager.actuallyKillPlayer(id);
         },
         
         'user:leave': function(id) {

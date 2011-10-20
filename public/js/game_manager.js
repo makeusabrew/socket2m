@@ -46,8 +46,28 @@ var GameManager = (function() {
         for (var i = _entities.length-1; i >= 0; i--) {
             _entities[i].tick(_delta);
 
+
+            if (!_entities[i].isDead()) {
+                // what about players? let's cheat temporarily because
+                // we know all entities are bullets, and we also know
+                // that all bullets want to do is hit their opponents...
+                if (_entities[i].getOwner() == _player.getId() &&
+                    self.entitiesTouching(_entities[i], _opponent)) {
+
+                    // hooray! We are. let's do our thing 
+                    self.killPlayer(_opponent.getId());
+                    _entities[i].kill();
+                } else if (_entities[i].getOwner() == _opponent.getId() &&
+                    self.entitiesTouching(_entities[i], _player)) {
+
+                    // ok, kill the bullet, but do nothing else, since the 
+                    // player will trigger the server request
+                    _entities[i].kill();
+                }
+            }
+
             if (_entities[i].isDead()) {
-                console.log("found dead entity index "+i);
+                console.log("found dead entity at index "+i);
                 _entities.splice(i, 1);
             }
         }
@@ -120,6 +140,26 @@ var GameManager = (function() {
 
     self.getRight = function() {
         return self.getLeft() + _surface.getWidth();
+    }
+
+    self.entitiesTouching = function(e1, e2) {
+        return (e1.getLeft() <= e2.getRight() &&
+                e2.getLeft() <= e1.getRight()  &&
+                e1.getTop()  <= e2.getBottom() &&
+                e2.getTop()  <= e1.getBottom());
+    }
+
+    self.killPlayer = function(id) {
+        console.log("requesting kill player "+id);
+        socket.emit("game:player:kill", id);
+    }
+
+    self.actuallyKillPlayer = function(id) {
+        console.log("actually killing player "+id);
+        // work out who it is
+        // is it me? play bad sound :(
+        // is it them? play happy sound :)
+        // is it me? request respawn
     }
 
     return self;

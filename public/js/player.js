@@ -32,6 +32,10 @@ Player = function(options) {
         //
     }
 
+    this.getId = function() {
+        return this._id;
+    }
+
     this.render = function() {
         // draw me (aka: a rectangle)
         GameManager.getSurface().fillRect(this._x, this._y, 16, 32, this._c);
@@ -89,6 +93,22 @@ Player = function(options) {
         if (this._v < 200) {
             this._v ++;
         }
+    }
+
+    this.getLeft = function() {
+        return this._x;
+    }
+
+    this.getTop = function() {
+        return this._y;
+    }
+
+    this.getRight = function() {
+        return this.getLeft() + 16;
+    }
+
+    this.getBottom = function() {
+        return this.getTop () + 32;
     }
 };
 
