@@ -1,5 +1,18 @@
+/**
+ * let's add a bit of grace if the node server isn't up or responding
+ */
+$("#wrapper").html("Loading...");
+var warnHandler = setTimeout(function() {
+    $("#wrapper").html("<h2>It doesn't look like the socket2m server is running at the moment. Please come back later.</h2>");
+}, 1500);
+
 var socket = io.connect(null, {port: 7979});
 var currentState = null;
+
+socket.on('connect', function() {
+    console.log("connected");
+    clearTimeout(warnHandler);
+});
 
 socket.on('statechange', function(state) {
 
