@@ -13,11 +13,13 @@
             var targetId = elem.attr("data-id");
             if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
-                if (confirm("Do you want to challenge "+elem.html()+"?")) {
+                mbconfirm("Do you want to challenge "+elem.html()+"?", function(result) {
                     // boom!
-                    console.log("issuing challenge to "+targetId);
-                    socket.emit('challenge:issue', targetId);
-                }
+                    if (result) {
+                        console.log("issuing challenge to "+targetId);
+                        socket.emit('challenge:issue', targetId);
+                    }
+                }, "Yes", "No");
             }
         });
     }
@@ -50,7 +52,9 @@
     });
 
     socket.on('challenge:receive', function(from) {
-        socket.emit('challenge:respond', confirm("Incoming challenge from "+from.username+" - accept?"));
+        mbconfirm("Incoming challenge from "+from.username+" - accept?", function(result) {
+            socket.emit('challenge:respond', result);
+        }, "Yes", "No");
     });
 
     socket.on('challenge:response', function(accepted) {

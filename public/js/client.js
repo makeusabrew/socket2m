@@ -45,7 +45,7 @@ function loadScript(src) {
  * very crude message handling for now
  */
 socket.on('msg', function(msg) {
-    alert(msg);
+    mbalert(msg);
 });
 
 // requestAnim shim layer by Paul Irish
@@ -67,3 +67,6 @@ loadScript("/js/bullet.js");
 loadScript("/js/weapon.js");
 loadScript("/js/surface.js");
 loadScript("/js/sound_manager.js");
+
+// helpers
+loadScript("/js/message_box.js");
