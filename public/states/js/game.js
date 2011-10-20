@@ -48,7 +48,7 @@
                 "username" : players[1].username
             });
 
-            console.log(p1.getUsername(), p2.getUsername());
+            console.log(p1.getUsername()+ " Vs "+p2.getUsername());
 
             if (players[0]._id == user._id) {
                 // we're "player 1" - face right

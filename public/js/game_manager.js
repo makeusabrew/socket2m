@@ -23,6 +23,7 @@ var GameManager = (function() {
 
         _lastTick = tickTime;
 
+        // @todo move this into player, possibly a pre-tick section (handleInput?)
         if (Input.isKeyDown("SPACE_BAR")) {
             _player.fireWeapon();
         }
@@ -53,10 +54,20 @@ var GameManager = (function() {
     }
 
     self.render = function() {
+        // no longer blatting the entire surface - faster to redraw appropriate sections
         //_surface.clear();
         _player.render();
         _player.renderSight();
         _opponent.render();
+
+        // left platforms
+        _surface.fillRect(0, (this.getBottom()/3) * 1, 48, 10, "rgb(0, 0, 0)");
+        _surface.fillRect(0, (this.getBottom()/3) * 2, 48, 10, "rgb(0, 0, 0)");
+
+        // right platforms
+        _surface.fillRect(this.getRight()-48, (this.getBottom()/3) * 1, 48, 10, "rgb(0, 0, 0)");
+        _surface.fillRect(this.getRight()-48, (this.getBottom()/3) * 2, 48, 10, "rgb(0, 0, 0)");
+
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].render();
         }

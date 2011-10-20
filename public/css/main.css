@@ -11,7 +11,8 @@
 }
 
 #debug {
-    padding:0.1em;
+    padding:0.25em;
+    font-size:9px;
     background:#000;
     color:#fff;
     position:fixed;
