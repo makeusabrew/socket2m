@@ -81,9 +81,14 @@ io.sockets.on('connection', function(socket) {
      * lobby / user list
      */
     socket.on('lobby:ready', function() {
+        var _sockets = io.sockets.clients('lobby');
+        var users = [];
+        for (var i = 0, j = _sockets.length; i < j; i++) {
+            users.push(authedUsers[_sockets[i].id]);
+        }
         socket.emit('userlist', {
             "user": authedUsers[socket.id],
-            "users": authedUsers
+            "users": users
         });
     });
 
@@ -111,14 +116,10 @@ io.sockets.on('connection', function(socket) {
     socket.on('challenge:respond', function(accepted) {
         var challenge = null;
 
-        // we can't just do a normal for loop here, because challenges
-        // won't be zero-indexed after the first one has been deleted
-        //for (var i in challenges) {
         for (var i = 0, j = challenges.length; i < j; i++) {
             if (challenges[i].to == socket.id) {
                 // excellent, this is the challenge we're after
                 var challenge = challenges[i];
-                //delete challenges[i];
                 challenges.splice(i, 1);
                 break;
             }
