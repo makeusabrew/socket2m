@@ -152,6 +152,8 @@ io.sockets.on('connection', function(socket) {
 
                 for (var i = 0; i < 2; i++) {
                     _sockets[i].leave('lobby');
+                    // @todo can we actually hook into event listeners on join / leave instead? probably...
+                    io.sockets.in('lobby').emit('user:leave', _sockets[i].id);
                 }
             }
             for (var i = 0; i < 2; i++) {
