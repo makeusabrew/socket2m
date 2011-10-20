@@ -8,6 +8,7 @@ var warnHandler = setTimeout(function() {
 
 var socket = io.connect(null, {port: 7979});
 var currentState = null;
+var stateListeners = {};
 
 socket.on('connect', function() {
     console.log("connected");
@@ -34,6 +35,10 @@ socket.on('statechange', function(state) {
             $("#wrapper").html(data).fadeIn('fast');
             loadScript('/states/js/'+state+'.js');
             currentState = state;
+            for (var _event in stateListeners) {
+                console.log("binding "+_event+" listener");
+                socket.on(_event, stateListeners[_event]);
+            }
             console.log("changed state to "+state);
         }
     }
@@ -41,6 +46,12 @@ socket.on('statechange', function(state) {
     $("#wrapper").fadeOut('fast', function() {
         checkComplete(true, null);
     });
+
+    // unbind handlers
+    for (var _event in stateListeners) {
+        console.log("removing "+_event+" listener");
+        socket.removeListener(_event, stateListeners[_event]);
+    }
 
     $.get('/states/'+state+'.html', {}, function(response) {
         checkComplete(null, response);

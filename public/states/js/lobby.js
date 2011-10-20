@@ -24,45 +24,43 @@
         });
     }
 
-    socket.on('userlist', function(data) {
-        user = data.user;
-        console.log('adding users');
-        var ul = $("<ul></ul>");
-        for (var i in data.users) {
-            ul.append(addUser(data.users[i]));
+    stateListeners = {
+        'userlist': function(data) {
+            user = data.user;
+            console.log('adding users');
+            var ul = $("<ul></ul>");
+            for (var i in data.users) {
+                ul.append(addUser(data.users[i]));
+            }
+            $("#users").append(ul);
+
+            bindListeners();
+        },
+        'user:join': function(user) {
+            var li = addUser(user);
+            li.hide();
+            $("#users ul").append(li);
+            li.fadeIn('slow');
+
+            bindListeners();
+        } ,
+        'user:leave': function(id) {
+            $("#users ul li[data-id='"+id+"']").fadeOut('slow', function() {
+                $(this).remove();
+            });
+        },
+        'challenge:receive': function(from) {
+            mbconfirm("Incoming challenge from "+from.username+" - accept?", function(result) {
+                socket.emit('challenge:respond', result);
+            }, "Yes", "No");
+        },
+        'challenge:response': function(accepted) {
+            if (accepted) {
+                console.log("requesting game start...");
+                socket.emit('startgame');
+            }
         }
-        $("#users").append(ul);
-
-        bindListeners();
-    });
-
-    socket.on('user:join', function(user) {
-        var li = addUser(user);
-        li.hide();
-        $("#users ul").append(li);
-        li.fadeIn('slow');
-
-        bindListeners();
-    });
-
-    socket.on('user:leave', function(id) {
-        $("#users ul li[data-id='"+id+"']").fadeOut('slow', function() {
-            $(this).remove();
-        });
-    });
-
-    socket.on('challenge:receive', function(from) {
-        mbconfirm("Incoming challenge from "+from.username+" - accept?", function(result) {
-            socket.emit('challenge:respond', result);
-        }, "Yes", "No");
-    });
-
-    socket.on('challenge:response', function(accepted) {
-        if (accepted) {
-            console.log("requesting game start...");
-            socket.emit('startgame');
-        }
-    });
+    };
 
 })();
 

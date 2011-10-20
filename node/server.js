@@ -153,7 +153,7 @@ io.sockets.on('connection', function(socket) {
                 for (var i = 0; i < 2; i++) {
                     _sockets[i].leave('lobby');
                     // @todo can we actually hook into event listeners on join / leave instead? probably...
-                    io.sockets.in('lobby').emit('user:leave', _sockets[i].id);
+                    io.sockets.emit('user:leave', _sockets[i].id);
                 }
             }
             for (var i = 0; i < 2; i++) {
@@ -227,13 +227,33 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
+     * cancel a game - only supported reason being the opponent left
+     */
+    socket.on('game:cancel', function() {
+        // @todo verify - has the opponent gone?
+        // for now, we trust the client and just boot them back to lobby
+        socket.join('lobby');
+        socket.emit('statechange', 'lobby');
+        socket.broadcast.to('lobby').emit('user:join', authedUsers[socket.id]);
+        /*
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            var _sockets = io.sockets.clients('game_'+game._id);
+            // count count the sockets or whatever?
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:cancel");
+        }
+        */
+    });
+
+    /**
      * disconnect / cleanup
      */
     socket.on('disconnect', function() {
         if (authedUsers[socket.id] != null) {
-            io.sockets.in('lobby').emit('user:leave', socket.id);
             delete authedUsers[socket.id];
         }
+        io.sockets.emit('user:leave', socket.id);
     });
 });
 

@@ -1,5 +1,5 @@
 (function() {
-    this.mbalert = function(str) {
+    this.mbalert = function(str, cb) {
         var div = $([
             "<div class='modal hide fade'>",
                 "<div class='modal-body'>",
@@ -24,6 +24,9 @@
         $("a", div).click(function(e) {
             e.preventDefault();
             div.modal("hide");
+            if (typeof cb == 'function') {
+                cb();
+            }
         });
 
         div.modal({
