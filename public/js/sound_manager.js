@@ -5,6 +5,10 @@ var SoundManager = (function() {
         _aliases = {},
         _muted = false;
 
+    self.toggleSounds = function() {
+        _muted = !_muted;
+    }
+
     self.mute = function() {
         _muted = true;
     }

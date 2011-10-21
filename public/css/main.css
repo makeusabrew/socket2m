@@ -16,6 +16,15 @@
     right:0;
 }
 
+#debug #fps {
+    display:inline-block;
+    width:40px;
+}
+
+#volume {
+    cursor:pointer;
+}
+
 #outer {
     position:relative;
 }

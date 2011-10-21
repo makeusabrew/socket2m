@@ -80,6 +80,11 @@
             // bind any canvas rendering to #viewport
             GameManager.initSurface("viewport");
 
+            $("#game #volume").click(function(e) {
+                e.preventDefault();
+                SoundManager.toggleSounds();
+            });
+
 
             console.log("ready to tick");
             animate();
