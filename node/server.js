@@ -90,6 +90,7 @@ io.sockets.on('connection', function(socket) {
                     var hash = crypto.createHash('sha1');
                     hash.update(details.password);
                     details.password = hash.digest('hex');
+                    details.rank = 0;
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
@@ -436,35 +437,92 @@ function findGameForSocketId(sid) {
     return null;
 }
 
-/*
+// retrieve actual player objects from collection
 function getGamePlayers(game, cb) {
     var players = null;
     db.collection('users', function(err, collection) {
         collection.find({ $or : [{"_id": game.challenger.db_id}, {"_id": game.challengee.db_id}]}, function(err, cursor) {
             cursor.toArray(function(err, docs) {
-                for (var i = 0, j = docs.length; i < j; i++) {
-                    delete docs[i].password;
-                }
                 cb(docs);
             });
         });
     });
 }
-*/
 
 function endGame(game) {
+    if (game.finished) {
+        console.log("not ending game - already finished!");
+        return;
+    }
     var winSocket = loseSocket = null;
     if (game.challenger.score > game.challengee.score) {
         winSocket = io.sockets.sockets[game.challenger.socket_id];
         loseSocket = io.sockets.sockets[game.challengee.socket_id];
+        game.winner = game.challenger.db_id;
     } else {
         winSocket = io.sockets.sockets[game.challengee.socket_id];
         loseSocket = io.sockets.sockets[game.challenger.socket_id];
+        game.winner = game.challengee.db_id;
     }
 
     winSocket.emit('game:win');
     loseSocket.emit('game:lose');
     game.finished = true;
+
+    db.collection('games', function(err, collection) {
+        collection.update({_id: game._id}, game);
+    });
+
+    getGamePlayers(game, function(docs) {
+        if (docs.length == 2) {
+            var winner = loser = null;
+            // bleurgh, this is a bit cheesy - the "docs" are proper objects
+            // so their _id properties don't compare
+            // @todo FIXME!
+            if (docs[0]._id.toString() == game.winner) {
+                winner = docs[0];
+                loser  = docs[1];
+            } else {
+                winner = docs[1];
+                loser  = docs[0];
+            }
+            console.log("winner is "+winner.username);
+
+            // got the winners and losers sorted out. now, point them up
+            winner.rank = winner.rank != null ? winner.rank : 0;
+            loser.rank = loser.rank != null ? loser.rank : 0;
+
+            if (winner.rank < loser.rank) {
+                // they were better, so i get lots of points
+                winner.rank += 3;
+                loser.rank -= 2;
+            } else if (winner.rank == loser.rank) {
+                // even stevens
+                winner.rank += 2;
+                loser.rank -= 1;
+            } else {
+                // well, I should have won
+                winner.rank += 1;
+                // loser rank not affected
+            }
+            if (loser.rank < 0) {
+                // ensure we can't be THAT bad
+                loser.rank = 0;
+            }
+            db.collection('users', function(err, collection) {
+                collection.update({_id: winner._id}, winner);
+                collection.update({_id: loser._id}, loser);
+
+                delete winner.password;
+                delete loser.password;
+
+                // update our player cache
+                authedUsers[winSocket.id] = winner;
+                authedUsers[loseSocket.id] = loser;
+            });
+        }
+    });
+        
 }
 
 function rejoinLobby(socket) {

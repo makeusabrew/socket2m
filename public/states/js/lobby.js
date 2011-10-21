@@ -2,7 +2,7 @@
     var user = null;
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "";
-        return $("<li data-id='"+_user.sid+"' class='"+_class+"'>"+_user.username+"</li>");
+        return $("<li data-id='"+_user.sid+"' class='"+_class+"'>"+_user.username+" ("+_user.rank+")</li>");
     }
 
     function bindListeners() {
