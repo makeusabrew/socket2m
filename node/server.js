@@ -37,11 +37,22 @@ io.sockets.on('connection', function(socket) {
                 if (result == null) {
                     socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
                 } else {
-                    result.sid = socket.id;
-                    authedUsers[socket.id] = result;
-                    socket.join('lobby');
-                    socket.emit('statechange', 'lobby');
-                    socket.broadcast.to('lobby').emit('user:join', result);
+                    duplicateLogin = false;
+                    for (var i in authedUsers) {
+                        if (authedUsers[i].username == result.username) {
+                            duplicateLogin = true;
+                            break;
+                        }
+                    }
+                    if (duplicateLogin) {
+                        socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
+                    } else {
+                        result.sid = socket.id;
+                        authedUsers[socket.id] = result;
+                        socket.join('lobby');
+                        socket.emit('statechange', 'lobby');
+                        socket.broadcast.to('lobby').emit('user:join', result);
+                    }
                 }
             });
         });
