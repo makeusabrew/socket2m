@@ -280,9 +280,11 @@ var GameManager = (function() {
             }
         });
 
-        form.fadeIn('normal', function() {
-            $("input", this).focus();
-        });
+        //form.fadeIn('normal', function() {
+        //    $("input", this).focus();
+        //});
+        form.show();
+        $("input", form).focus();
     }
 
     self.endChatting = function() {
@@ -297,28 +299,31 @@ var GameManager = (function() {
         return _chatting;
     }
 
-    self.showChatMessage = function(msg) {
-        // the only message we ever show is from our opponent...
+    self.showChatMessage = function(data) {
         var offset = $("#viewport").offset();
         var bubble = $(
-            "<div class='chatbubble' style='display:none;'>"+msg+"</div>"
+            "<div class='chatbubble' style='display:none;'>"+data.msg+"</div>"
         );
         
         $("body").append(bubble);
 
         // now adjust for the size of the bubble
+        var user = _opponent.getId() == data.id ? _opponent : _player;
         bubble.css({
-            "left": _opponent.getLeft() + offset.left - bubble.width() / 2,
-            "top": _opponent.getTop() + offset.top - 30 - bubble.height() / 2
+            "left": user.getLeft() + offset.left - bubble.width() / 2,
+            "top": user.getTop() + offset.top - 40 - bubble.height() / 2
         });
         bubble.fadeIn('normal', function() {
             setTimeout(function() {
                 bubble.fadeOut('normal', function() {
                     bubble.remove();
                 });
-            }, 1500);
+            }, 2500);
         });
-        SoundManager.playSound("chat");
+        if (user.getId() == _opponent.getId()) {
+            // chat came from them, so sound it out
+            SoundManager.playSound("chat");
+        }
     }
 
     return self;

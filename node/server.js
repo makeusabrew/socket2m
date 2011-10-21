@@ -298,7 +298,10 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:player:chat', function(msg) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            socket.broadcast.to('game_'+game._id).emit('game:player:chat', msg);
+            io.sockets.in('game_'+game._id).emit('game:player:chat', {
+                "id" : socket.id,
+                "msg": msg
+            });
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:chat");
         }
