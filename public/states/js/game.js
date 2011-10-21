@@ -53,6 +53,7 @@
                 "a" : challenger.a,
                 "v" : challenger.v,
                 "c" : "rgb(0, 255, 0)",
+                "side": "left",
                 "username" : challenger.username
             });
             var p2 = Player.factory({
@@ -62,6 +63,7 @@
                 "a" : challengee.a,
                 "v" : challengee.v,
                 "c" : "rgb(0, 0, 255)",
+                "side": "right",
                 "username" : challengee.username
             });
 

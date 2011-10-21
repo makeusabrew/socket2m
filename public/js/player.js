@@ -11,6 +11,7 @@ Player = function(options) {
     this._v = options.v,
     this._c = options.c,
     this._username = options.username,
+    this._side = options.side,
 
     this._cWeapon = 0,
     this._weapons = {
@@ -120,6 +121,10 @@ Player = function(options) {
     this.spawn = function(options) {
         this._x = options.x;
         this._y = options.y;
+    }
+
+    this.getSide = function() {
+        return this._side;
     }
 };
 

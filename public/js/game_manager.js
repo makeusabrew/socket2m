@@ -301,18 +301,23 @@ var GameManager = (function() {
 
     self.showChatMessage = function(data) {
         var offset = $("#viewport").offset();
+        var user = _opponent.getId() == data.id ? _opponent : _player;
+
         var bubble = $(
             "<div class='chatbubble' style='display:none;'>"+data.msg+"</div>"
         );
+
+        bubble.addClass(user.getSide());
         
         $("body").append(bubble);
 
         // now adjust for the size of the bubble
-        var user = _opponent.getId() == data.id ? _opponent : _player;
-        bubble.css({
-            "left": user.getLeft() + offset.left - bubble.width() / 2,
-            "top": user.getTop() + offset.top - 40 - bubble.height() / 2
-        });
+        bubble.css("top", user.getTop() + offset.top - 40 - bubble.height() / 2);
+        if (user.getSide() == "left") {
+            bubble.css("left", offset.left + 8);    // 8 is an arbitrary offset
+        } else {
+            bubble.css("left", offset.left + $("#viewport").width() - bubble.width() - 21);
+        }
         bubble.fadeIn('normal', function() {
             setTimeout(function() {
                 bubble.fadeOut('normal', function() {

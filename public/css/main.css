@@ -61,3 +61,22 @@
     font-size:15px;
     -moz-border-radius:12px;
 }
+
+.chatbubble:after {
+    content:"";
+    display:block;
+    width:0;
+    height:0;
+    position:absolute;
+    top:100%;
+    border:6px solid;
+    border-color: #000 transparent transparent;
+}
+
+.chatbubble.left:after {
+    left:11px;
+}
+
+.chatbubble.right:after {
+    right:11px;
+}
