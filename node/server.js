@@ -158,7 +158,8 @@ io.sockets.on('connection', function(socket) {
                             "a"         : 225,
                             "v"         : Math.floor(Math.random()* 150) + 25,
                             "score"     : 0
-                        }
+                        },
+                        "entityId" : 0
                     };
                     collection.insert(game, function(err, result) {
                         game = result[0];
@@ -230,6 +231,8 @@ io.sockets.on('connection', function(socket) {
          */
         var game = findGameForSocketId(socket.id);
         if (game != null) {
+            // assign a unique ID to the bullet, so we can track it
+            options.id = ++game.entityId;
             io.sockets.in('game_'+game._id).emit('game:bullet:spawn', options);
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:bullet:spawn");
@@ -239,22 +242,23 @@ io.sockets.on('connection', function(socket) {
     /**
      * game - bullet has killed opponent
      */
-    socket.on('game:player:kill', function(id) {
+    socket.on('game:player:kill', function(data) {
         /**
          * @todo - verify authenticity of the kill request!
          */
         var game = findGameForSocketId(socket.id);
         if (game != null) {
 
-            var killer = game.challenger.socket_id == id ? game.challengee : game.challenger; 
+            var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
             killer.score ++;
 
             io.sockets.in('game_'+game._id).emit('game:player:kill', {
-                "id": id,
+                "id": data.id,
                 "scores": [
                     game.challenger.score,
                     game.challengee.score
-                ]
+                ],
+                "eId": data.eId
             });
 
         } else {

@@ -15,6 +15,7 @@ Bullet = function() {
         _a = options.a;
         _v = options.v;
         _owner = options.o;
+        _id = options.id;
         _alive = true;
         _w = 3;
 
@@ -24,6 +25,10 @@ Bullet = function() {
 
     this.getOwner = function() {
         return _owner;
+    }
+
+    this.getId = function() {
+        return _id;
     }
 
     this.tick = function(delta) {

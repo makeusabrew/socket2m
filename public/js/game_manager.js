@@ -10,6 +10,7 @@ var GameManager = (function() {
         _opponent = null,
 
         _respawns = [];
+        _deadEntities = [];
 
         _entities = [];
 
@@ -72,6 +73,16 @@ var GameManager = (function() {
         }
         _respawns = [];
 
+        // ... bleuch.
+        for (var i = 0, j = _deadEntities.length; i < j; i++) {
+            for (var k = 0, l = _entities.length; k < l; k++) {
+                if (_entities[k].getId() == _deadEntities[i]) {
+                    console.log("killing entity "+_entities[k].getId());
+                    _entities[k].kill();
+                }
+            }
+        }
+
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
         // this means it isn't fast - anything we can do? @todo
@@ -86,9 +97,12 @@ var GameManager = (function() {
                 if (_entities[i].getOwner() == _player.getId() &&
                     self.entitiesTouching(_entities[i], _opponent)) {
 
-                    // hooray! We are. let's do our thing 
+                    // we know the bullet should die, so remove it immediately
                     _entities[i].kill();
-                    //self.killPlayer(_opponent.getId());
+
+                    // signal to the server, and the opponent, that they and this bullet should die
+                    self.killPlayer(_opponent.getId(), _entities[i].getId());
+
                 } else if (_entities[i].getOwner() == _opponent.getId() &&
                     self.entitiesTouching(_entities[i], _player)) {
 
@@ -181,12 +195,15 @@ var GameManager = (function() {
                 e2.getTop()  <= e1.getBottom());
     }
 
-    self.killPlayer = function(id) {
-        console.log("requesting kill player "+id);
+    self.killPlayer = function(id, eId) {
+        console.log("requesting kill player "+id+" from bullet "+eId);
         // @todo we could omit the ID if we restrict "player"
         // to literally only be the player object (or opponent)
         // in which case the server can infer it...
-        socket.emit("game:player:kill", id);
+        socket.emit("game:player:kill", {
+            "id": id,
+            "eId": eId
+        });
     }
 
     self.actuallyKillPlayer = function(data) {
@@ -199,6 +216,10 @@ var GameManager = (function() {
         if (id == _player.getId()) {
             SoundManager.playSound("player:die");
             socket.emit("game:player:respawn");
+
+            console.log("queuing entity death "+data.eId);
+            _deadEntities.push(data.eId);
+
         } else if (id == _opponent.getId()) {
             SoundManager.playSound("player:kill");
         } else {
