@@ -157,8 +157,12 @@ var GameManager = (function() {
         socket.emit("game:player:kill", id);
     }
 
-    self.actuallyKillPlayer = function(id) {
+    self.actuallyKillPlayer = function(data) {
+        var id = data.id;
         console.log("actually killing player "+id);
+
+        $("#game #p1").html(data.scores[0]);
+        $("#game #p2").html(data.scores[1]);
 
         if (id == _player.getId()) {
             SoundManager.playSound("player:die");

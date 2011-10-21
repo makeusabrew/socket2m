@@ -1,7 +1,3 @@
-#viewport {
-    border:1px solid #000;
-}
-
 #lobby ul li {
     cursor:pointer;
 }
@@ -17,5 +13,31 @@
     color:#fff;
     position:fixed;
     bottom:0;
+    right:0;
+}
+
+#outer {
+    position:relative;
+}
+
+#outer #viewport {
+    border:1px solid #000;
+    position:absolute;
+}
+
+#outer .stats {
+    position:absolute;
+    z-index:1;
+    top:0;
+    font-size:48px;
+    padding:20px 10px;
+    font-weight:bold;
+}
+
+#outer #p1 {
+    left:0;
+}
+
+#outer #p2 {
     right:0;
 }

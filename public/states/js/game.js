@@ -19,7 +19,8 @@
             challenger = data.challenger;
             challengee = data.challengee;
             user = data.user;
-            $("#game h2").html("Game On!");
+            $("#game h2").html("Game On: "+challenger.username+" Vs "+challengee.username);
+            $("#game .stats").html("0");
 
             Input.captureKeys([
                 'SPACE_BAR',
@@ -48,8 +49,6 @@
                 "c" : "rgb(0, 0, 255)",
                 "username" : challengee.username
             });
-
-            console.log(p1.getUsername()+ " Vs "+p2.getUsername());
 
             if (challenger.socket_id == user.sid) {
                 // we're "player 1" - face right

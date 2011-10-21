@@ -146,7 +146,8 @@ io.sockets.on('connection', function(socket) {
                             "platform"  : GameManager.getRandomPlatform(),
                             "x"         : 16,
                             "a"         : 315,
-                            "v"         : Math.floor(Math.random()* 150) + 25
+                            "v"         : Math.floor(Math.random()* 150) + 25,
+                            "score"     : 0
                         },
                         "challengee" : {
                             "db_id"     : authedUsers[challenge.to]._id,
@@ -155,7 +156,8 @@ io.sockets.on('connection', function(socket) {
                             "platform"  : GameManager.getRandomPlatform(),
                             "x"         : 908,
                             "a"         : 225,
-                            "v"         : Math.floor(Math.random()* 150) + 25
+                            "v"         : Math.floor(Math.random()* 150) + 25,
+                            "score"     : 0
                         }
                     };
                     collection.insert(game, function(err, result) {
@@ -243,7 +245,18 @@ io.sockets.on('connection', function(socket) {
          */
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            io.sockets.in('game_'+game._id).emit('game:player:kill', id);
+
+            var killer = game.challenger.socket_id == id ? game.challengee : game.challenger; 
+            killer.score ++;
+
+            io.sockets.in('game_'+game._id).emit('game:player:kill', {
+                "id": id,
+                "scores": [
+                    game.challenger.score,
+                    game.challengee.score
+                ]
+            });
+
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:kill");
         }
