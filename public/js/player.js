@@ -39,24 +39,22 @@ Player = function(options) {
         return this._id;
     }
 
+    this.preRender = function() {
+        var surface = GameManager.getSurface();
+
+        surface.clearRect(this.aim.x | 0, this.aim.y | 0, 5, 5);
+        surface.clearRect(this._x | 0, this._y | 0, 16, 32);
+    }
+
     this.render = function() {
-        // draw me (aka: a rectangle)
-        GameManager.getSurface().clearRect(this.oldX, this.oldY, 16, 32);
-
-        this.oldX = this._x;
-        this.oldY = this._y;
-
-        GameManager.getSurface().fillRect(this._x, this._y, 16, 32, this._c);
+        GameManager.getSurface().fillRect(this._x | 0, this._y | 0, 16, 32, this._c);
     }
 
     this.renderSight = function() {
         var surface = GameManager.getSurface();
-        // clear old
-        surface.clearRect(this.oldAim.x, this.oldAim.y, 5, 5);
-
         // draw where I'm aiming
-        this.oldAim.x = this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
-        this.oldAim.y = this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
+        this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
+        this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
 
         GameManager.getSurface().square(this.aim.x, this.aim.y, 5, "rgb(0, 0, 0)");
     }
@@ -119,7 +117,7 @@ Player = function(options) {
         return this.getTop () + 32;
     }
 
-    this.respawn = function(options) {
+    this.spawn = function(options) {
         this._x = options.x;
         this._y = options.y;
     }

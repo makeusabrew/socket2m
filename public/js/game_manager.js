@@ -9,9 +9,13 @@ var GameManager = (function() {
         _player = null,
         _opponent = null,
 
+        _respawns = [];
+
         _entities = [];
 
-    self.tick = function() {
+        
+    
+    self.loop = function() {
         var tickTime = new Date().getTime();
         // we want a delta in *seconds*, to make it easier to scale our values
         _delta = (tickTime - _lastTick) / 1000;
@@ -23,6 +27,21 @@ var GameManager = (function() {
 
         _lastTick = tickTime;
 
+        self.preRender();       // any clean up from the last frame
+        self.handleInput();     // process any input which might affect tick
+        self.tick();            // think, move, die, etc
+        self.render();          // render frame outcome
+    }
+
+    self.preRender = function() {
+        _player.preRender();
+        _opponent.preRender();
+        for (var i = 0, j = _entities.length; i < j; i++) {
+            _entities[i].preRender();
+        }
+    }
+
+    self.handleInput = function() {
         // @todo move this into player, possibly a pre-tick section (handleInput?)
         if (Input.isKeyDown("SPACE_BAR")) {
             _player.fireWeapon();
@@ -39,6 +58,19 @@ var GameManager = (function() {
         } else if (Input.isKeyDown("UP_ARROW")) {
             _player.increaseVelocity();
         }
+    }
+
+    self.tick = function() {
+
+        for (var i = 0, j = _respawns.length; i < j; i++) {
+            var player = _respawns[i];
+            var user = player.socket_id == _player.getId() ? _player : _opponent;
+            user.spawn({
+                "x" : player.x,
+                "y" : self.getCoordinateForPlatform(player.platform)
+            });
+        }
+        _respawns = [];
 
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
@@ -55,8 +87,8 @@ var GameManager = (function() {
                     self.entitiesTouching(_entities[i], _opponent)) {
 
                     // hooray! We are. let's do our thing 
-                    self.killPlayer(_opponent.getId());
                     _entities[i].kill();
+                    //self.killPlayer(_opponent.getId());
                 } else if (_entities[i].getOwner() == _opponent.getId() &&
                     self.entitiesTouching(_entities[i], _player)) {
 
@@ -175,12 +207,10 @@ var GameManager = (function() {
     }
 
     self.actuallyRespawnPlayer = function(player) {
-        console.log("respawing player", player);
-        var user = player.socket_id == _player.getId() ? _player : _opponent;
-        user.respawn({
-            "x" : player.x,
-            "y" : self.getCoordinateForPlatform(player.platform)
-        });
+        console.log("queuing respawing player", player);
+        // we have to queue the respawn up to ensure it only happens during our tick method
+        // as we can't control when this method is fired
+        _respawns.push(player);
     }
 
     self.getCoordinateForPlatform = function(platform) {
@@ -192,6 +222,5 @@ var GameManager = (function() {
 
 function animate() {
     requestAnimFrame(animate);
-    GameManager.tick();
-    GameManager.render();
+    GameManager.loop();
 }

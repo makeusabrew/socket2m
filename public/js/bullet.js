@@ -1,8 +1,6 @@
 Bullet = function() {
     var _x,
         _y,
-        _ox,
-        _oy,
         _a,
         _v,
         _alive,
@@ -47,12 +45,14 @@ Bullet = function() {
         return !_alive;
     }
 
+    this.preRender = function() {
+        var buffer = GameManager.getSurface();
+        buffer.clearRect(_x | 0, _y | 0, _w, _w);
+    }
+
     this.render = function() {
         var buffer = GameManager.getSurface();
-        buffer.clearRect(_ox, _oy, _w, _w);
-        _ox = _x | 0;
-        _oy = _y | 0;
-        buffer.square(_ox, _oy, _w, "rgb(255, 0, 0)");
+        buffer.square(_x | 0, _y | 0, _w, "rgb(255, 0, 0)");
     }
 
     this.kill = function() {
