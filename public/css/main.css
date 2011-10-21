@@ -47,10 +47,14 @@
     position:absolute;
 }
 
+#chatform input,
 .chatbubble {
-    max-width:250px;
     background:#000;
     color:#fff;
+}
+
+.chatbubble {
+    max-width:250px;
     padding:0.5em;
     border-radius:12px;
     font-weight:bold;
