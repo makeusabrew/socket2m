@@ -318,7 +318,7 @@ var GameManager = (function() {
                 bubble.fadeOut('normal', function() {
                     bubble.remove();
                 });
-            }, 2500);
+            }, 3500);
         });
         if (user.getId() == _opponent.getId()) {
             // chat came from them, so sound it out
