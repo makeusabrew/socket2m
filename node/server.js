@@ -19,6 +19,10 @@ var authedUsers = {};
 var challenges = [];
 var games = {};
 
+var socketbot = {
+    "username": "socketbot"
+};
+
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
 
@@ -54,9 +58,7 @@ io.sockets.on('connection', function(socket) {
                         socket.emit('statechange', 'lobby');
                         socket.broadcast.to('lobby').emit('user:join', result);
                         socket.broadcast.to('lobby').emit('lobby:chat', {
-                            "author": {
-                                "username" : "socketbot"
-                            },
+                            "author": socketbot,
                             "msg" : authedUsers[socket.id].username+" joined the lobby"
                         });
                     }
@@ -248,6 +250,13 @@ io.sockets.on('connection', function(socket) {
                         "duration"  : game.duration
                     });
                 }
+
+                // could do the timeout this way?
+                /*
+                game.timeHandler = setTimeout(function() {
+                    //
+                }, game.duration*1000);
+                */
             }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:ready");
@@ -284,17 +293,24 @@ io.sockets.on('connection', function(socket) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
 
-            var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
-            killer.score ++;
+            if (game.finished == null) {
+                var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
+                killer.score ++;
 
-            io.sockets.in('game_'+game._id).emit('game:player:kill', {
-                "id": data.id,
-                "scores": [
-                    game.challenger.score,
-                    game.challengee.score
-                ],
-                "eId": data.eId
-            });
+                io.sockets.in('game_'+game._id).emit('game:player:kill', {
+                    "id": data.id,
+                    "scores": [
+                        game.challenger.score,
+                        game.challengee.score
+                    ],
+                    "eId": data.eId
+                });
+                if (game.suddendeath) {
+                    endGame(game);
+                }
+            } else {
+                console.log("ignoring kill for finished game");
+            }
 
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:kill");
@@ -332,20 +348,54 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
+     * game - player thinks time is up
+     */
+    socket.on('game:timeup', function(msg) {
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            if (game.timeup == null) {
+                var elapsed = new Date().getTime() - game.started;
+                if (elapsed >= game.duration) {
+                    console.log("game time is UP!");
+                    game.timeup = true;
+                    if (game.challenger.score != game.challengee.score) {
+                        // excellent, we have a winner
+                        endGame(game);
+                    } else {
+                        // draw - sudden death
+                        game.suddendeath = true;
+                        console.log("scores are tied - sudden death mode");
+                        io.sockets.in('game_'+game._id).emit('game:suddendeath');
+                    }
+                } else {
+                    console.log("client reported incorrect game timeup "+elapsed+" Vs "+game.duration);
+                    var remaining = game.duration - elapsed;
+                    socket.emit('game:timeup:rejected', remaining);
+                }
+            } else {
+                console.log("ignoring duplicate game:timeup message");
+            }
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:timeup");
+        }
+    });
+
+    /**
+     * game - player is all done, ready for next state
+     */
+    socket.on('game:finish', function() {
+        rejoinLobby(socket);
+    });
+        
+
+    /**
      * cancel a game - only supported reason being the opponent left
      */
     socket.on('game:cancel', function() {
         // @todo verify - has the opponent gone?
         // for now, we trust the client and just boot them back to lobby
-        socket.join('lobby');
-        socket.emit('statechange', 'lobby');
-        socket.broadcast.to('lobby').emit('user:join', authedUsers[socket.id]);
-        socket.broadcast.to('lobby').emit('lobby:chat', {
-            "author": {
-                "username" : "socketbot"
-            },
-            "msg" : authedUsers[socket.id].username+" rejoined the lobby"
-        });
+
+        rejoinLobby(socket);
         /*
         var game = findGameForSocketId(socket.id);
         if (game != null) {
@@ -401,3 +451,28 @@ function getGamePlayers(game, cb) {
     });
 }
 */
+
+function endGame(game) {
+    var winSocket = loseSocket = null;
+    if (game.challenger.score > game.challengee.score) {
+        winSocket = io.sockets.sockets[game.challenger.socket_id];
+        loseSocket = io.sockets.sockets[game.challengee.socket_id];
+    } else {
+        winSocket = io.sockets.sockets[game.challengee.socket_id];
+        loseSocket = io.sockets.sockets[game.challenger.socket_id];
+    }
+
+    winSocket.emit('game:win');
+    loseSocket.emit('game:lose');
+    game.finished = true;
+}
+
+function rejoinLobby(socket) {
+    socket.join('lobby');
+    socket.emit('statechange', 'lobby');
+    socket.broadcast.to('lobby').emit('user:join', authedUsers[socket.id]);
+    socket.broadcast.to('lobby').emit('lobby:chat', {
+        "author": socketbot,
+        "msg" : authedUsers[socket.id].username+" rejoined the lobby"
+    });
+}

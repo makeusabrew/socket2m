@@ -19,11 +19,21 @@ var GameManager = (function() {
         _start = 0,
         _endAt = 0,
 
+        _notifiedOfTimeout = false,
+
+        _gameOver = false,
+
+        _suddenDeath = false,
+
         _chatting = false;
 
         
     
     self.loop = function() {
+        if (_gameOver) {
+            return;
+        }
+
         var tickTime = new Date().getTime();
         // we want a delta in *seconds*, to make it easier to scale our values
         _delta = (tickTime - _lastTick) / 1000;
@@ -35,19 +45,27 @@ var GameManager = (function() {
 
         _lastTick = tickTime;
 
-        // duration tick tick tick
-        if (_duration >= 0) {
-            _duration -= _delta;
-            if (Math.ceil(_duration) != _screenDuration) {
-                _screenDuration = Math.ceil(_duration);
-                var formatted = "";
+        if (_suddenDeath) {
+            // timer is irrelevant
+            // is anything?
+        } else {
+            // duration tick tick tick
+            if (_duration >= 0) {
+                _duration -= _delta;
+                if (Math.ceil(_duration) != _screenDuration) {
+                    _screenDuration = Math.ceil(_duration);
+                    var formatted = "";
 
-                var mins = Math.floor(_screenDuration / 60);
-                var secs = _screenDuration % 60;
-                if (secs < 10) {
-                    secs = "0" + secs;
+                    var mins = Math.floor(_screenDuration / 60);
+                    var secs = _screenDuration % 60;
+                    if (secs < 10) {
+                        secs = "0" + secs;
+                    }
+                    $("#countdown").html(mins+":"+secs);
                 }
-                $("#countdown").html(mins+":"+secs);
+            } else if (!_notifiedOfTimeout) {
+                _notifiedOfTimeout = true;
+                socket.emit('game:timeup');
             }
         }
 
@@ -358,6 +376,30 @@ var GameManager = (function() {
         _lastTick = new Date().getTime();
         console.log("duration "+_duration);
         //_endAt = _start + _duration;
+    }
+
+    self.handleWin = function() {
+        self.endGame("You Win!");
+    }
+
+    self.handleLose = function() {
+        self.endGame("Oh no, you lose!");
+    }
+
+    self.endGame = function(str) {
+        _gameOver = true;
+        // in case we were still rounding up to 0:01
+        $("#countdown").html("Game Over");
+        mbalert(str, function() {
+            socket.emit('game:finish');
+        });
+    }
+
+    self.setSuddenDeath = function() {
+        _suddenDeath = true;
+        SoundManager.playSound("game:suddendeath");
+        // in case we were still rounding up to 0:01
+        $("#countdown").html("Sudden Death");
     }
 
     return self;

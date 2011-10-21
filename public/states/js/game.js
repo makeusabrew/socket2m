@@ -105,6 +105,18 @@
         'game:player:chat': function(msg) {
             GameManager.showChatMessage(msg);
         },
+
+        'game:win': function() {
+            GameManager.handleWin();
+        },
+
+        'game:lose': function() {
+            GameManager.handleLose();
+        },
+
+        'game:suddendeath': function() {
+            GameManager.setSuddenDeath();
+        },
         
         'user:leave': function(id) {
             mbalert("The opponent left the game!", function() {
@@ -120,5 +132,6 @@ SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
 SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
 SoundManager.preloadSound("/sounds/boo.wav", "player:die");
 SoundManager.preloadSound("/sounds/chat.wav", "chat");
+SoundManager.preloadSound("/sounds/sudden_death.wav", "game:suddendeath");
 
 socket.emit('game:ready');
