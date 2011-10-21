@@ -151,15 +151,36 @@ var GameManager = (function() {
 
     self.killPlayer = function(id) {
         console.log("requesting kill player "+id);
+        // @todo we could omit the ID if we restrict "player"
+        // to literally only be the player object (or opponent)
+        // in which case the server can infer it...
         socket.emit("game:player:kill", id);
     }
 
     self.actuallyKillPlayer = function(id) {
         console.log("actually killing player "+id);
-        // work out who it is
-        // is it me? play bad sound :(
-        // is it them? play happy sound :)
-        // is it me? request respawn
+
+        if (id == _player.getId()) {
+            SoundManager.playSound("player:die");
+            socket.emit("game:player:respawn");
+        } else if (id == _opponent.getId()) {
+            SoundManager.playSound("player:kill");
+        } else {
+            console.log("unknown ID "+id);
+        }
+    }
+
+    self.actuallyRespawnPlayer = function(player) {
+        console.log("respawing player", player);
+        var user = player.socket_id == _player.getId() ? _player : _opponent;
+        user.respawn({
+            "x" : player.x,
+            "y" : self.getCoordinateForPlatform(player.platform)
+        });
+    }
+
+    self.getCoordinateForPlatform = function(platform) {
+        return ((platform+1)*200)-32;
     }
 
     return self;

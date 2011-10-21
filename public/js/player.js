@@ -27,6 +27,9 @@ Player = function(options) {
         y: 0
     };
 
+    this.oldX = this._x;
+    this.oldY = this._y;
+
 
     this.tick = function() {
         //
@@ -38,6 +41,11 @@ Player = function(options) {
 
     this.render = function() {
         // draw me (aka: a rectangle)
+        GameManager.getSurface().clearRect(this.oldX, this.oldY, 16, 32);
+
+        this.oldX = this._x;
+        this.oldY = this._y;
+
         GameManager.getSurface().fillRect(this._x, this._y, 16, 32, this._c);
     }
 
@@ -109,6 +117,11 @@ Player = function(options) {
 
     this.getBottom = function() {
         return this.getTop () + 32;
+    }
+
+    this.respawn = function(options) {
+        this._x = options.x;
+        this._y = options.y;
     }
 };
 

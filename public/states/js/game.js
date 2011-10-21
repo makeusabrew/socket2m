@@ -33,7 +33,7 @@
             var p1 = Player.factory({
                 "id": challenger.socket_id,
                 "x" : challenger.x,
-                "y" : ((challenger.platform+1)*200)-32,
+                "y" : GameManager.getCoordinateForPlatform(challenger.platform),
                 "a" : challenger.a,
                 "v" : challenger.v,
                 "c" : "rgb(0, 255, 0)",
@@ -42,7 +42,7 @@
             var p2 = Player.factory({
                 "id": challengee.socket_id,
                 "x" : challengee.x,
-                "y" : ((challengee.platform+1)*200)-32,
+                "y" : GameManager.getCoordinateForPlatform(challengee.platform),
                 "a" : challengee.a,
                 "v" : challengee.v,
                 "c" : "rgb(0, 0, 255)",
@@ -64,8 +64,6 @@
             // bind any canvas rendering to #viewport
             GameManager.initSurface("viewport");
 
-            // preload some sfx
-            SoundManager.preloadSound("/sounds/bang_3.wav", "weapon:fire");
 
             console.log("ready to tick");
             animate();
@@ -83,6 +81,10 @@
         'game:player:kill': function(id) {
             GameManager.actuallyKillPlayer(id);
         },
+
+        'game:player:respawn': function(player) {
+            GameManager.actuallyRespawnPlayer(player);
+        },
         
         'user:leave': function(id) {
             mbalert("The opponent left the game!", function() {
@@ -92,5 +94,10 @@
     };
 
 })();
+
+// preload some sfx
+SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
+SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
+SoundManager.preloadSound("/sounds/boo.wav", "player:die");
 
 socket.emit('game:ready');

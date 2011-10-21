@@ -4,6 +4,9 @@ var http    = require('http'),
     sio     = require('socket.io'),
     crypto  = require('crypto');
 
+// local modules
+var GameManager = require('./app/game_manager.js');
+
 var app = http.createServer(function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end("OK\n");
@@ -140,7 +143,7 @@ io.sockets.on('connection', function(socket) {
                             "db_id"     : authedUsers[challenge.from]._id,
                             "username"  : authedUsers[challenge.from].username,
                             "socket_id" : challenge.from,
-                            "platform"  : Math.floor(Math.random()*3),
+                            "platform"  : GameManager.getRandomPlatform(),
                             "x"         : 16,
                             "a"         : 315,
                             "v"         : Math.floor(Math.random()* 150) + 25
@@ -149,7 +152,7 @@ io.sockets.on('connection', function(socket) {
                             "db_id"     : authedUsers[challenge.to]._id,
                             "username"  : authedUsers[challenge.to].username,
                             "socket_id" : challenge.to,
-                            "platform"  : Math.floor(Math.random()*3),
+                            "platform"  : GameManager.getRandomPlatform(),
                             "x"         : 908,
                             "a"         : 225,
                             "v"         : Math.floor(Math.random()* 150) + 25
@@ -245,6 +248,22 @@ io.sockets.on('connection', function(socket) {
             console.log("could not find game for socket ID "+socket.id+" in game:player:kill");
         }
     });
+
+    /**
+     * game - player is requesting respawn. no ID needed as we will infer it
+     */
+    socket.on('game:player:respawn', function() {
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
+
+            player.platform = GameManager.getRandomPlatform();
+            io.sockets.in('game_'+game._id).emit('game:player:respawn', player);
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:player:respawn");
+        }
+    });
+
 
     /**
      * cancel a game - only supported reason being the opponent left
