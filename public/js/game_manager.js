@@ -125,7 +125,7 @@ var GameManager = (function() {
             }
 
             if (_entities[i].isDead()) {
-                console.log("found dead entity at index "+i);
+                console.log("found dead entity ID "+_entities[i].getId());
                 _entities.splice(i, 1);
             }
         }
@@ -173,7 +173,7 @@ var GameManager = (function() {
     }
 
     self.actuallySpawnBullet = function(options) {
-        console.log("spawning bullet", options);
+        console.log("spawning bullet "+options.id, options);
         var bullet = Bullet.factory();
         bullet.spawn(options);
         SoundManager.playSound("weapon:fire");

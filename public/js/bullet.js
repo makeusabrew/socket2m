@@ -7,7 +7,8 @@ Bullet = function() {
         _owner,
         _vx,
         _vy,
-        _w;
+        _w,
+        _id;
 
     this.spawn = function(options) {
         _x = options.x;
