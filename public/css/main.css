@@ -41,3 +41,17 @@
 #outer #p2 {
     right:0;
 }
+
+.chatbubble,
+#chatform {
+    position:absolute;
+}
+
+.chatbubble {
+    max-width:250px;
+    background:#eee;
+    padding:0.5em 1em;
+    border-radius:12px;
+    font-weight:bold;
+    -moz-border-radius:12px;
+}

@@ -292,6 +292,17 @@ io.sockets.on('connection', function(socket) {
         }
     });
 
+    /**
+     * game - player banter
+     */
+    socket.on('game:player:chat', function(msg) {
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            socket.broadcast.to('game_'+game._id).emit('game:player:chat', msg);
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:player:chat");
+        }
+    });
 
     /**
      * cancel a game - only supported reason being the opponent left

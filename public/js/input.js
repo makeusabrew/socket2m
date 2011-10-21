@@ -2,15 +2,19 @@ var Input = {
     
     // @todo more key mappings
     keyMap: {
+        27: 'ESC',
         32: 'SPACE_BAR',
         37: 'LEFT_ARROW',
         38: 'UP_ARROW',
         39: 'RIGHT_ARROW',
-        40: 'DOWN_ARROW'
+        40: 'DOWN_ARROW',
+        84: 'T'
     },
 
     keysPressed: {},
     capturedKeys: {},
+    target: null,
+    triggers: {},
 
     keyDown: function(k) {
         Input.keysPressed[k] = true;
@@ -41,8 +45,13 @@ var Input = {
         return 'KEY_NOT_MAPPED';
     },
 
-    bindKeys: function(target) {
-        $(target).keydown(function(e) {
+    releaseKeys: function() {
+            $(this.target).unbind('keydown');
+            $(this.target).unbind('keypress');
+    },
+
+    bindKeys: function() {
+        $(this.target).keydown(function(e) {
             var key = Input.mapKey(e.which);
             if (Input.isCapturedKey(key)) {
                 e.preventDefault();
@@ -50,12 +59,24 @@ var Input = {
             Input.keyDown(key);
         });
 
-        $(target).keyup(function(e) {
+        $(this.target).keyup(function(e) {
             var key = Input.mapKey(e.which);
             if (Input.isCapturedKey(key)) {
                 e.preventDefault();
+            } else {
+                if (Input.triggers[key] != null) {
+                    Input.triggers[key](e);
+                }
             }
             Input.keyUp(key);
         });
+    },
+
+    bindTo: function(target) {
+        this.target = target;
+    },
+
+    onKeyPress: function(k, cb) {
+        Input.triggers[k] = cb;
     }
 };

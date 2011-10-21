@@ -29,7 +29,22 @@
                 'LEFT_ARROW',
                 'RIGHT_ARROW'
             ]);
-            Input.bindKeys(window);
+
+            Input.bindTo(window);
+
+            Input.bindKeys();
+
+            Input.onKeyPress('T', function(e) {
+                if (!GameManager.isChatting()) {
+                    GameManager.beginChatting();
+                }
+            });
+
+            Input.onKeyPress('ESC', function(e) {
+                if (GameManager.isChatting()) {
+                    GameManager.endChatting();
+                }
+            });
 
             var p1 = Player.factory({
                 "id": challenger.socket_id,
@@ -84,6 +99,10 @@
         'game:player:respawn': function(player) {
             GameManager.actuallyRespawnPlayer(player);
         },
+
+        'game:player:chat': function(msg) {
+            GameManager.showChatMessage(msg);
+        },
         
         'user:leave': function(id) {
             mbalert("The opponent left the game!", function() {
@@ -98,5 +117,6 @@
 SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
 SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
 SoundManager.preloadSound("/sounds/boo.wav", "player:die");
+SoundManager.preloadSound("/sounds/chat.wav", "chat");
 
 socket.emit('game:ready');

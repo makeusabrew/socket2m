@@ -9,10 +9,12 @@ var GameManager = (function() {
         _player = null,
         _opponent = null,
 
-        _respawns = [];
-        _deadEntities = [];
+        _respawns = [],
+        _deadEntities = [],
 
-        _entities = [];
+        _entities = [],
+
+        _chatting = false;
 
         
     
@@ -44,6 +46,12 @@ var GameManager = (function() {
 
     self.handleInput = function() {
         // @todo move this into player, possibly a pre-tick section (handleInput?)
+        if (_chatting) {
+            // all input should be directed at the chat form
+            // foo
+            return;
+        }
+
         if (Input.isKeyDown("SPACE_BAR")) {
             _player.fireWeapon();
         }
@@ -240,6 +248,77 @@ var GameManager = (function() {
 
     self.getCoordinateForPlatform = function(platform) {
         return ((platform+1)*200)-32;
+    }
+
+    self.beginChatting = function() {
+        Input.releaseKeys();
+        console.log('beginning chat');
+        _chatting = true;
+
+        var offset = $("#viewport").offset();
+
+        var form = $(
+            "<form id='chatform' style='display:none;'><input type='text' placeholder='type your message' /></form>"
+        ).css({
+            "left": _player.getLeft() + offset.left - 100,
+            "top": _player.getTop() + offset.top - 50
+        });
+
+        $("body").append(form);
+
+        $("input", form).blur(function() {
+            self.endChatting();
+        });
+
+        form.submit(function(e) {
+            e.preventDefault();
+            var val = $.trim($("input", form).val());
+            if (val.length) {
+                console.log("chatting: "+val);
+                socket.emit('game:player:chat', val);
+                self.endChatting();
+            }
+        });
+
+        form.fadeIn('normal', function() {
+            $("input", this).focus();
+        });
+    }
+
+    self.endChatting = function() {
+        Input.bindKeys();
+        _chatting = false;
+        $("#chatform").fadeOut('fast', function() {
+            $(this).remove()
+        });
+    }
+
+    self.isChatting = function() {
+        return _chatting;
+    }
+
+    self.showChatMessage = function(msg) {
+        // the only message we ever show is from our opponent...
+        var offset = $("#viewport").offset();
+        var bubble = $(
+            "<div class='chatbubble' style='display:none;'>"+msg+"</div>"
+        );
+        
+        $("body").append(bubble);
+
+        // now adjust for the size of the bubble
+        bubble.css({
+            "left": _opponent.getLeft() + offset.left - bubble.width() / 2,
+            "top": _opponent.getTop() + offset.top - 30 - bubble.height() / 2
+        });
+        bubble.fadeIn('normal', function() {
+            setTimeout(function() {
+                bubble.fadeOut('normal', function() {
+                    bubble.remove();
+                });
+            }, 1500);
+        });
+        SoundManager.playSound("chat");
     }
 
     return self;
