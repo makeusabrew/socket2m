@@ -3,15 +3,9 @@
     var players = [];
     var bullets = [];
     var surface = null;
-    var started = false;
 
     stateListeners = {
         'game:start': function(data) {
-            // the below is temporary - we get a race condition if both sockets start at almost the same time
-            // so we have to defend against a double init
-            if (started) {
-                return;
-            }
             console.log("starting game");
             console.log(data);
             started = true;
@@ -85,8 +79,9 @@
                 SoundManager.toggleSounds();
             });
 
+            GameManager.start(data.duration);
 
-            console.log("ready to tick");
+            // GO!
             animate();
 
         },

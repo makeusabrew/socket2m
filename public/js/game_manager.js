@@ -14,6 +14,11 @@ var GameManager = (function() {
 
         _entities = [],
 
+        _duration = 0,
+        _screenDuration = -1,
+        _start = 0,
+        _endAt = 0,
+
         _chatting = false;
 
         
@@ -29,6 +34,22 @@ var GameManager = (function() {
         }
 
         _lastTick = tickTime;
+
+        // duration tick tick tick
+        if (_duration >= 0) {
+            _duration -= _delta;
+            if (Math.ceil(_duration) != _screenDuration) {
+                _screenDuration = Math.ceil(_duration);
+                var formatted = "";
+
+                var mins = Math.floor(_screenDuration / 60);
+                var secs = _screenDuration % 60;
+                if (secs < 10) {
+                    secs = "0" + secs;
+                }
+                $("#countdown").html(mins+":"+secs);
+            }
+        }
 
         self.preRender();       // any clean up from the last frame
         self.handleInput();     // process any input which might affect tick
@@ -329,6 +350,14 @@ var GameManager = (function() {
             // chat came from them, so sound it out
             SoundManager.playSound("chat");
         }
+    }
+
+    self.start = function(duration) {
+        //_start = new Date();
+        _duration = duration;
+        _lastTick = new Date().getTime();
+        console.log("duration "+_duration);
+        //_endAt = _start + _duration;
     }
 
     return self;

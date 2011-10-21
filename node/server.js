@@ -167,7 +167,7 @@ io.sockets.on('connection', function(socket) {
                 db.collection('games', function(err, collection) {
                     
                     var game = {
-                        "started"       : new Date(),
+                        "created"       : new Date(),
                         "challenger" : {
                             "db_id"     : authedUsers[challenge.from]._id,
                             "username"  : authedUsers[challenge.from].username,
@@ -188,7 +188,8 @@ io.sockets.on('connection', function(socket) {
                             "v"         : Math.floor(Math.random()* 150) + 25,
                             "score"     : 0
                         },
-                        "entityId" : 0
+                        "entityId" : 0,
+                        "duration": 90
                     };
                     collection.insert(game, function(err, result) {
                         game = result[0];
@@ -235,16 +236,21 @@ io.sockets.on('connection', function(socket) {
             var _sockets = io.sockets.clients('game_'+game._id);
             console.log("players present: "+_sockets.length);
             if (_sockets.length == 2) {
+                // @todo write start time to DB?
+                game.started = new Date();
+
                 for (var i = 0; i < 2; i++) {
                     _sockets[i].emit('game:start', {
                         "user": authedUsers[_sockets[i].id],
                         "challenger": game.challenger,
-                        "challengee": game.challengee
+                        "challengee": game.challengee,
+                        "started"   : game.started,
+                        "duration"  : game.duration
                     });
                 }
             }
         } else {
-            console.log("could not find game for socket ID "+socket.id);
+            console.log("could not find game for socket ID "+socket.id+" in game:ready");
         }
     });
 

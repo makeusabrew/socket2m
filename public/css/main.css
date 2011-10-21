@@ -51,6 +51,16 @@
     right:0;
 }
 
+#outer #countdown {
+    position:absolute;
+    z-index:1;
+    text-align:center;
+    width:100%;
+    font-size:56px;
+    font-weight:bold;
+    padding:20px 0;
+}
+
 .chatbubble,
 #chatform {
     position:absolute;
