@@ -285,7 +285,7 @@ io.sockets.on('connection', function(socket) {
         if (game != null) {
             var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
 
-            player.platform = GameManager.getRandomPlatform();
+            player.platform = GameManager.getRandomPlatform(player.platform);
             io.sockets.in('game_'+game._id).emit('game:player:respawn', player);
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:respawn");
