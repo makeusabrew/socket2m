@@ -75,13 +75,17 @@ var GameManager = (function() {
 
         // ... bleuch.
         for (var i = 0, j = _deadEntities.length; i < j; i++) {
-            for (var k = 0, l = _entities.length; k < l; k++) {
+            for (var k = _entities.length-1; k >= 0; k--) {
                 if (_entities[k].getId() == _deadEntities[i]) {
                     console.log("killing entity "+_entities[k].getId());
                     _entities[k].kill();
+                    _entities.splice(k, 1);
+                    break;
                 }
             }
         }
+
+        _deadEntities = [];
 
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
