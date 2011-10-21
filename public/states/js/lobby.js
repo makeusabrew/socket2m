@@ -24,6 +24,21 @@
         });
     }
 
+    $("#lobby form").submit(function(e) {
+        e.preventDefault();
+        var input = $(this).find("input");
+        var val = $.trim(input.val());
+        if (val.length) {
+            input.prop("disabled", true);
+            input.val('');
+            setTimeout(function() {
+                input.prop("disabled", false);
+            }, 1500);
+                
+            socket.emit('lobby:chat', val);
+        }
+    });
+
     stateListeners = {
         'userlist': function(data) {
             user = data.user;
@@ -59,6 +74,10 @@
                 console.log("requesting game start...");
                 socket.emit('startgame');
             }
+        },
+        'lobby:chat': function(msg) {
+            var div = $("<div><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span>");
+            $("#lobby #chat").append(div);
         }
     };
 

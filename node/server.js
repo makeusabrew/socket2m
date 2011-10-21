@@ -48,10 +48,17 @@ io.sockets.on('connection', function(socket) {
                         socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
                     } else {
                         result.sid = socket.id;
+                        delete result.password;
                         authedUsers[socket.id] = result;
                         socket.join('lobby');
                         socket.emit('statechange', 'lobby');
                         socket.broadcast.to('lobby').emit('user:join', result);
+                        socket.broadcast.to('lobby').emit('lobby:chat', {
+                            "author": {
+                                "username" : "socketbot"
+                            },
+                            "msg" : authedUsers[socket.id].username+" joined the lobby"
+                        });
                     }
                 }
             });
@@ -105,6 +112,17 @@ io.sockets.on('connection', function(socket) {
             "users": users
         });
     });
+
+    /**
+     * lobby banter
+     */
+    socket.on('lobby:chat', function(msg) {
+        io.sockets.in('lobby').emit('lobby:chat', {
+            'msg': msg,
+            'author': authedUsers[socket.id]
+        });
+    });
+        
 
     /**
      * receive challenge request
@@ -316,6 +334,12 @@ io.sockets.on('connection', function(socket) {
         socket.join('lobby');
         socket.emit('statechange', 'lobby');
         socket.broadcast.to('lobby').emit('user:join', authedUsers[socket.id]);
+        socket.broadcast.to('lobby').emit('lobby:chat', {
+            "author": {
+                "username" : "socketbot"
+            },
+            "msg" : authedUsers[socket.id].username+" rejoined the lobby"
+        });
         /*
         var game = findGameForSocketId(socket.id);
         if (game != null) {

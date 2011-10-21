@@ -89,3 +89,9 @@
 .chatbubble.right:after {
     right:11px;
 }
+
+#lobby #chat {
+    border:1px solid gray;
+    height:400px;
+    overflow:hidden;
+}
