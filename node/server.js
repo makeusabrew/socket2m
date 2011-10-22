@@ -562,6 +562,10 @@ function endGame(game) {
             loser.kills += loseObject.score;
             loser.deaths += winObject.score;
 
+            // and finally their, er, wins and losses
+            winner.wins = winner.wins != null ? winner.wins+1 : 1;
+            loser.losses = loser.losses != null ? loser.losses+1 : 1;
+
             db.collection('users', function(err, collection) {
                 collection.update({_id: winner._id}, winner);
                 collection.update({_id: loser._id}, loser);

@@ -137,3 +137,8 @@
     width:55px;
     display:inline-block;
 }
+
+h4.challenge {
+    text-align:right;
+    line-height:auto;
+}

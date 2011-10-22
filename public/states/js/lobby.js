@@ -10,7 +10,13 @@
         if (_user.rank == null) {
             _user.rank = 0;
         }
-        return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td></tr>");
+        if (_user.wins == null) {
+            _user.wins = "-";
+        }
+        if (_user.losses == null) {
+            _user.losses = "-";
+        }
+        return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' data-rank='"+_user.rank+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td><td>"+_user.wins+"</td><td>"+_user.losses+"</td></tr>");
     }
 
     function addGame(game) {
@@ -49,7 +55,11 @@
 
             if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
-                mbconfirm("Do you want to challenge "+elem.data('username')+"?", function(result) {
+                var stakeBlurb = getStakes(user, {"rank":elem.data('rank')});
+                var html = "<p>Do you want to challenge <strong>"+elem.data('username')+"</strong>? "+
+                stakeBlurb+
+                "<h4 class='challenge'>Issue the challenge?</h4>";
+                mbconfirm(html, function(result) {
                     // boom!
                     if (result) {
                         console.log("issuing challenge to "+targetId);
@@ -64,6 +74,32 @@
         var time = new Date(msg.timestamp);
         var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
+    }
+
+    function getStakes(user, opponent) {
+        var winPoints = "";
+        var losePoints = "";
+        var rankingDiff = "";
+
+        if (user.rank > opponent.rank) {
+            rankingDiff = "lower than";
+            winPoints = "increase by <strong>one</strong> point";
+            losePoints = "decrease by <strong>two</strong> points";
+        } else if (user.rank < opponent.rank) {
+            rankingDiff = "higher than";
+            winPoints = "increase by <strong>three</strong> points";
+            losePoints = "not change";
+        } else {
+            rankingDiff = "the same as";
+            winPoints = "increase by <strong>two</strong> points";
+            losePoints = "decrease by <strong>one</strong> point";
+        }
+
+        return "Their rank is currently <strong>"+opponent.rank+"</strong>, which is "+rankingDiff+" yours.</p>"+
+        "<h3>If you win...</h3>"+
+        "<p>Your ranking will "+winPoints+".</p>"+
+        "<h3>But if you lose...</h3>"+
+        "<p>Your ranking will "+losePoints+".</p>";
     }
 
     $("#lobby form").submit(function(e) {
@@ -138,7 +174,14 @@
             });
         },
         'lobby:challenge:receive': function(from) {
-            mbconfirm("Incoming challenge from "+from.username+" - accept?", function(result) {
+            var stakeBlurb = getStakes(user, from);
+            var html = 
+            "<h2>Incoming challenge!</h2>"+
+            "<p>You've received a challenge from <strong>"+from.username+"</strong>. "+
+            stakeBlurb+
+            "<h4 class='challenge'>Accept the challenge?</h4>";
+
+            mbconfirm(html, function(result) {
                 socket.emit('lobby:challenge:respond', result);
             }, "Yes", "No");
         },
