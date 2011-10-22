@@ -3,13 +3,13 @@
     var user = null;
 
     function addUser(_user) {
-        var _class = (_user.sid == user.sid) ? "me" : "";
-        return $("<li data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+" ("+_user.rank+")</li>");
+        var _class = (_user.sid == user.sid) ? "me" : "opponent";
+        return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td></tr>");
     }
 
     function bindListeners() {
-        $("#users ul").unbind('dblclick');
-        $("#users ul").bind('dblclick', function(e) {
+        $("#users table").unbind('click');
+        $("#users table").bind('click', function(e) {
             var elem = $(e.target);
             // jQuery.data() barfs at large ID values, so we have to use attr. Oh well.
             var targetId = elem.attr("data-id");
@@ -20,7 +20,7 @@
                     // boom!
                     if (result) {
                         console.log("issuing challenge to "+targetId);
-                        socket.emit('challenge:issue', targetId);
+                        socket.emit('lobby:challenge:issue', targetId);
                     }
                 }, "Yes", "No");
             }
@@ -43,39 +43,41 @@
     });
 
     stateListeners = {
-        'userlist': function(data) {
+        'lobby:users': function(data) {
             user = data.user;
-            console.log('adding users');
-            var ul = $("<ul></ul>");
+            console.log('rendering list of users');
+            var tbody = $("#users table tbody");
+            tbody.hide();
             for (var i in data.users) {
-                ul.append(addUser(data.users[i]));
+                tbody.append(addUser(data.users[i]));
             }
-            $("#users").append(ul);
+            tbody.show();
 
             bindListeners();
         },
-        'user:join': function(user) {
-            var li = addUser(user);
-            li.hide();
-            $("#users ul").append(li);
-            li.fadeIn('slow');
+        'lobby:user:join': function(user) {
+            var u = addUser(user);
+            u.hide();
+            $("#users table").append(u);
+            u.fadeIn('slow');
 
             bindListeners();
-        } ,
+        },
+        // user leave is a global message so it's not namespaced
         'user:leave': function(id) {
-            $("#users ul li[data-id='"+id+"']").fadeOut('slow', function() {
+            $("#users table tr td[data-id='"+id+"']").parent().fadeOut('slow', function() {
                 $(this).remove();
             });
         },
-        'challenge:receive': function(from) {
+        'lobby:challenge:receive': function(from) {
             mbconfirm("Incoming challenge from "+from.username+" - accept?", function(result) {
-                socket.emit('challenge:respond', result);
+                socket.emit('lobby:challenge:respond', result);
             }, "Yes", "No");
         },
-        'challenge:response': function(accepted) {
+        'lobby:challenge:response': function(accepted) {
             if (accepted) {
                 console.log("requesting game start...");
-                socket.emit('startgame');
+                socket.emit('lobby:startgame');
             }
         },
         'lobby:chat': function(msg) {

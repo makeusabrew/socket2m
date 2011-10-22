@@ -20,7 +20,8 @@ var challenges = [];
 var games = {};
 
 var socketbot = {
-    "username": "socketbot"
+    "username": "socketbot",
+    "email"   : "socketbot@paynedigital.com"
 };
 
 io.sockets.on('connection', function(socket) {
@@ -56,7 +57,7 @@ io.sockets.on('connection', function(socket) {
                         authedUsers[socket.id] = result;
                         socket.join('lobby');
                         socket.emit('statechange', 'lobby');
-                        socket.broadcast.to('lobby').emit('user:join', result);
+                        socket.broadcast.to('lobby').emit('lobby:user:join', result);
                         socket.broadcast.to('lobby').emit('lobby:chat', {
                             "author": socketbot,
                             "msg" : authedUsers[socket.id].username+" joined the lobby"
@@ -110,7 +111,7 @@ io.sockets.on('connection', function(socket) {
         for (var i = 0, j = _sockets.length; i < j; i++) {
             users.push(authedUsers[_sockets[i].id]);
         }
-        socket.emit('userlist', {
+        socket.emit('lobby:users', {
             "user": authedUsers[socket.id],
             "users": users
         });
@@ -130,7 +131,7 @@ io.sockets.on('connection', function(socket) {
     /**
      * receive challenge request
      */
-    socket.on('challenge:issue', function(to) {
+    socket.on('lobby:challenge:issue', function(to) {
         // make sure the ID we're challenging is in the lobby
         var _sockets = io.sockets.in('lobby').sockets;
         if (_sockets[to] != null) {
@@ -139,7 +140,7 @@ io.sockets.on('connection', function(socket) {
                 "from" : socket.id,
                 "to"   : to 
             });
-            _sockets[to].emit('challenge:receive', authedUsers[socket.id]);
+            _sockets[to].emit('lobby:challenge:receive', authedUsers[socket.id]);
         } else {
             console.log("Could not find ID to challenge in lobby "+to);
         }
@@ -148,7 +149,7 @@ io.sockets.on('connection', function(socket) {
     /**
      * process challenge response
      */
-    socket.on('challenge:respond', function(accepted) {
+    socket.on('lobby:challenge:respond', function(accepted) {
         var challenge = null;
 
         for (var i = 0, j = challenges.length; i < j; i++) {
@@ -207,7 +208,7 @@ io.sockets.on('connection', function(socket) {
                 }
             }
             for (var i = 0; i < 2; i++) {
-                _sockets[i].emit('challenge:response', accepted);
+                _sockets[i].emit('lobby:challenge:response', accepted);
             }
         } else {
             console.log("Could not find challenge");
@@ -217,7 +218,7 @@ io.sockets.on('connection', function(socket) {
     /**
      * game start request
      */
-    socket.on('startgame', function() {
+    socket.on('lobby:startgame', function() {
         // is this user allowed - e.g. do they have an active game?
         var game = findGameForSocketId(socket.id);
         if (game != null) {
@@ -528,7 +529,7 @@ function endGame(game) {
 function rejoinLobby(socket) {
     socket.join('lobby');
     socket.emit('statechange', 'lobby');
-    socket.broadcast.to('lobby').emit('user:join', authedUsers[socket.id]);
+    socket.broadcast.to('lobby').emit('lobby:user:join', authedUsers[socket.id]);
     socket.broadcast.to('lobby').emit('lobby:chat', {
         "author": socketbot,
         "msg" : authedUsers[socket.id].username+" rejoined the lobby"

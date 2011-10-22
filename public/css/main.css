@@ -1,8 +1,8 @@
-#lobby ul li {
+#lobby tr td.opponent {
     cursor:pointer;
 }
 
-#lobby ul li.me {
+#lobby tr td.me {
     cursor:default;
 }
 
@@ -102,6 +102,6 @@
 
 #lobby #chat {
     border:1px solid gray;
-    height:400px;
+    height:300px;
     overflow:hidden;
 }
