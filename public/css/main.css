@@ -104,10 +104,17 @@
     right:11px;
 }
 
-#lobby #chat {
+#lobby #chat-container {
     border:1px solid gray;
     height:300px;
     overflow:hidden;
+    position:relative;
+}
+
+#lobby #chat {
+    position:absolute;
+    width:100%;
+    bottom:0;
 }
 
 #chat .chatline {
@@ -124,4 +131,9 @@
 
 #chat .chatline.game-finished {
     background:#dfd;
+}
+
+.chatline time {
+    width:55px;
+    display:inline-block;
 }

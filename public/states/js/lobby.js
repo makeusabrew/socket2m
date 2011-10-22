@@ -61,7 +61,8 @@
     }
 
     function addChatLine(msg) {
-        var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></time></div>");
+        var time = new Date(msg.timestamp);
+        var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
     }
 
