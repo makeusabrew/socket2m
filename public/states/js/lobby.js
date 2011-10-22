@@ -1,6 +1,8 @@
 (function() {
     // we'll keep a copy of the player's user object
     var user = null;
+    var serverTime = null;
+    var gameHandlers = {};
 
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
@@ -9,6 +11,33 @@
             _user.rank = 0;
         }
         return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td></tr>");
+    }
+
+    function addGame(game) {
+        var started  = new Date(game.started);
+        console.log("game started at: "+started.getTime()+ " with duration: "+game.duration+" current TS: "+serverTime.getTime());
+
+        // ok, great. now work out how long that is according to the server's time.
+        var remaining = Math.ceil(((started.getTime() + (game.duration*1000)) - serverTime.getTime()) / 1000);
+        var strRemaining = "";
+
+        if (remaining <= 0) {
+            strRemaining = "due to finish...";
+        } else {
+            strRemaining = Utils.formatTime(remaining);
+
+            gameHandlers[game._id] = setInterval(function() {
+                remaining --;
+                if (remaining <= 0) {
+                    clearInterval(gameHandlers[game._id]);
+                    $("td[data-game-time='"+game._id+"']").html("due to finish...");
+                } else {
+                    $("td[data-game-time='"+game._id+"']").html(Utils.formatTime(remaining));
+                }
+            }, 1000);
+        }
+
+        return $("<tr><td>"+game.challenger.username+" Vs "+game.challengee.username+"</td><td data-game-time='"+game._id+"'>"+strRemaining+"</td>");
     }
 
     function bindListeners() {
@@ -53,8 +82,9 @@
 
     stateListeners = {
         'lobby:users': function(data) {
+            serverTime = new Date(data.timestamp);
             user = data.user;
-            console.log('rendering list of users');
+            console.log("lobby state", data);
             var tbody = $("#users table tbody");
             tbody.hide();
             for (var i in data.users) {
@@ -62,7 +92,13 @@
             }
             tbody.show();
 
-            console.log('adding chat backlog');
+            var games = $("#games table tbody");
+            games.hide();
+            for (var i in data.games) {
+                games.append(addGame(data.games[i]));
+            }
+            games.show();
+
             for (var i = 0, j = data.chatlines.length; i < j; i++) {
                addChatLine(data.chatlines[i]); 
             }

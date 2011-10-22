@@ -109,3 +109,7 @@
     height:300px;
     overflow:hidden;
 }
+
+#chat .chatline.game {
+    background:#ddf;
+}

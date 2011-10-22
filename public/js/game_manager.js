@@ -52,14 +52,7 @@ var GameManager = (function() {
                 _duration -= _delta;
                 if (Math.ceil(_duration) != _screenDuration) {
                     _screenDuration = Math.ceil(_duration);
-                    var formatted = "";
-
-                    var mins = Math.floor(_screenDuration / 60);
-                    var secs = _screenDuration % 60;
-                    if (secs < 10) {
-                        secs = "0" + secs;
-                    }
-                    $("#countdown").html(mins+":"+secs);
+                    $("#countdown").html(Utils.formatTime(_screenDuration));
                 }
             } else if (!_notifiedOfTimeout) {
                 _notifiedOfTimeout = true;
@@ -264,7 +257,10 @@ var GameManager = (function() {
 
         if (id == _player.getId()) {
             SoundManager.playSound("player:die");
-            socket.emit("game:player:respawn");
+            if (!_suddenDeath) {
+                // don't bother requesting a respawn if we were in sudden death mode
+                socket.emit("game:player:respawn");
+            }
 
             console.log("queuing entity death "+data.eId);
             _deadEntities.push(data.eId);

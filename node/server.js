@@ -113,9 +113,21 @@ io.sockets.on('connection', function(socket) {
         for (var i = 0, j = _sockets.length; i < j; i++) {
             users.push(authedUsers[_sockets[i].id]);
         }
+
+        // simply convert the games object to an array
+        var activeGames = [];
+        for (var i in games) {
+            if (games[i].started != null) {
+                // we only care about games which have been *started*, not necessarily "created"
+                activeGames.push(games[i]);
+            }
+        }
+
         socket.emit('lobby:users', {
+            "timestamp": new Date(),
             "user": authedUsers[socket.id],
             "users": users,
+            "games": activeGames,
             "chatlines": chatlines
         });
     });
@@ -172,6 +184,7 @@ io.sockets.on('connection', function(socket) {
                     
                     var game = {
                         "created"       : new Date(),
+                        "started"       : null,
                         "challenger" : {
                             "db_id"     : authedUsers[challenge.from]._id,
                             "username"  : authedUsers[challenge.from].username,
@@ -296,7 +309,6 @@ io.sockets.on('connection', function(socket) {
          */
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-
             if (game.isFinished == null) {
                 var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
                 killer.score ++;
