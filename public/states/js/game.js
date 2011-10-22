@@ -16,29 +16,8 @@
             $("#game h2").html("Game On: "+challenger.username+" Vs "+challengee.username);
             $("#game .stats").html("0");
 
-            Input.captureKeys([
-                'SPACE_BAR',
-                'UP_ARROW',
-                'DOWN_ARROW',
-                'LEFT_ARROW',
-                'RIGHT_ARROW'
-            ]);
+            GameManager.bindKeys();
 
-            Input.bindTo(window);
-
-            Input.bindKeys();
-
-            Input.onKeyPress('T', function(e) {
-                if (!GameManager.isChatting()) {
-                    GameManager.beginChatting();
-                }
-            });
-
-            Input.onKeyPress('ESC', function(e) {
-                if (GameManager.isChatting()) {
-                    GameManager.endChatting();
-                }
-            });
 
             var p1 = Player.factory({
                 "id": challenger.socket_id,
@@ -119,9 +98,7 @@
         },
         
         'user:leave': function(id) {
-            mbalert("The opponent left the game!", function() {
-                socket.emit('game:cancel');
-            });
+            GameManager.cancelGame("The opponent left the game!");
         }
     };
 

@@ -379,19 +379,27 @@ var GameManager = (function() {
     }
 
     self.handleWin = function() {
-        self.endGame("You Win!");
+        self.finishGame("You Win!");
     }
 
     self.handleLose = function() {
-        self.endGame("Oh no, you lose!");
+        self.finishGame("Oh no, you lose!");
     }
 
-    self.endGame = function(str) {
+    self.finishGame = function(str) {
+        self.endGame(str, 'game:finish');
+    }
+
+    self.cancelGame = function(str) {
+        self.endGame(str, 'game:cancel');
+    }
+
+    self.endGame = function(str, emit) {
         _gameOver = true;
-        // in case we were still rounding up to 0:01
+        Input.releaseKeys();
         $("#countdown").html("Game Over");
         mbalert(str, function() {
-            socket.emit('game:finish');
+            socket.emit(emit);
         });
     }
 
@@ -400,6 +408,32 @@ var GameManager = (function() {
         SoundManager.playSound("game:suddendeath");
         // in case we were still rounding up to 0:01
         $("#countdown").html("Sudden Death");
+    }
+
+    self.bindKeys = function() {
+        Input.captureKeys([
+            'SPACE_BAR',
+            'UP_ARROW',
+            'DOWN_ARROW',
+            'LEFT_ARROW',
+            'RIGHT_ARROW'
+        ]);
+
+        Input.bindTo(window);
+
+        Input.bindKeys();
+
+        Input.onKeyPress('T', function(e) {
+            if (!self.isChatting()) {
+                self.beginChatting();
+            }
+        });
+
+        Input.onKeyPress('ESC', function(e) {
+            if (self.isChatting()) {
+                self.endChatting();
+            }
+        });
     }
 
     return self;

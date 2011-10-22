@@ -46,8 +46,8 @@ var Input = {
     },
 
     releaseKeys: function() {
-            $(Input.target).unbind('keydown');
-            $(Input.target).unbind('keypress');
+        $(Input.target).unbind('keydown');
+        $(Input.target).unbind('keyup');
     },
 
     bindKeys: function() {
