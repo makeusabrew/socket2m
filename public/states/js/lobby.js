@@ -4,6 +4,10 @@
 
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
+
+        if (_user.rank == null) {
+            _user.rank = 0;
+        }
         return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td></tr>");
     }
 
@@ -25,6 +29,11 @@
                 }, "Yes", "No");
             }
         });
+    }
+
+    function addChatLine(msg) {
+        var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></time></div>");
+        $("#lobby #chat").append(div);
     }
 
     $("#lobby form").submit(function(e) {
@@ -53,6 +62,11 @@
             }
             tbody.show();
 
+            console.log('adding chat backlog');
+            for (var i = 0, j = data.chatlines.length; i < j; i++) {
+               addChatLine(data.chatlines[i]); 
+            }
+
             bindListeners();
         },
         'lobby:user:join': function(user) {
@@ -65,6 +79,7 @@
         },
         // user leave is a global message so it's not namespaced
         'user:leave': function(id) {
+            console.log('received user leave for ID '+id);
             $("#users table tr td[data-id='"+id+"']").parent().fadeOut('slow', function() {
                 $(this).remove();
             });
@@ -81,8 +96,7 @@
             }
         },
         'lobby:chat': function(msg) {
-            var div = $("<div><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span>");
-            $("#lobby #chat").append(div);
+            addChatLine(msg);
         }
     };
 

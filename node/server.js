@@ -15,14 +15,17 @@ var app = http.createServer(function(req, res) {
 var io = sio.listen(app);
 app.listen(7979);
 
+// keep a cached copy of all authed (lobby, in game) users
 var authedUsers = {};
+
+// keep a copy of any outstanding challenges between players
 var challenges = [];
+
+// keep a copy of all active games in progress
 var games = {};
 
-var socketbot = {
-    "username": "socketbot",
-    "email"   : "socketbot@paynedigital.com"
-};
+// cache the last 10 or so chat lines
+var chatlines = [];
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
@@ -58,10 +61,7 @@ io.sockets.on('connection', function(socket) {
                         socket.join('lobby');
                         socket.emit('statechange', 'lobby');
                         socket.broadcast.to('lobby').emit('lobby:user:join', result);
-                        socket.broadcast.to('lobby').emit('lobby:chat', {
-                            "author": socketbot,
-                            "msg" : authedUsers[socket.id].username+" joined the lobby"
-                        });
+                        botChat(authedUsers[socket.id].username+" joined the lobby");
                     }
                 }
             });
@@ -92,6 +92,8 @@ io.sockets.on('connection', function(socket) {
                     hash.update(details.password);
                     details.password = hash.digest('hex');
                     details.rank = 0;
+                    details.kills = 0;
+                    details.deaths = 0;
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
@@ -113,7 +115,8 @@ io.sockets.on('connection', function(socket) {
         }
         socket.emit('lobby:users', {
             "user": authedUsers[socket.id],
-            "users": users
+            "users": users,
+            "chatlines": chatlines
         });
     });
 
@@ -121,10 +124,7 @@ io.sockets.on('connection', function(socket) {
      * lobby banter
      */
     socket.on('lobby:chat', function(msg) {
-        io.sockets.in('lobby').emit('lobby:chat', {
-            'msg': msg,
-            'author': authedUsers[socket.id]
-        });
+        lobbyChat(authedUsers[socket.id], msg);
     });
         
 
@@ -295,7 +295,7 @@ io.sockets.on('connection', function(socket) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
 
-            if (game.finished == null) {
+            if (game.isFinished == null) {
                 var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
                 killer.score ++;
 
@@ -451,24 +451,30 @@ function getGamePlayers(game, cb) {
 }
 
 function endGame(game) {
-    if (game.finished) {
+    if (game.isFinished) {
         console.log("not ending game - already finished!");
         return;
     }
-    var winSocket = loseSocket = null;
+
+    var winObject = loseObject = null;
+
     if (game.challenger.score > game.challengee.score) {
-        winSocket = io.sockets.sockets[game.challenger.socket_id];
-        loseSocket = io.sockets.sockets[game.challengee.socket_id];
-        game.winner = game.challenger.db_id;
+        winObject = game.challenger;
+        loseObject = game.challengee;
     } else {
-        winSocket = io.sockets.sockets[game.challengee.socket_id];
-        loseSocket = io.sockets.sockets[game.challenger.socket_id];
-        game.winner = game.challengee.db_id;
+        winObject = game.challengee;
+        loseObject = game.challenger;
     }
 
-    winSocket.emit('game:win');
-    loseSocket.emit('game:lose');
-    game.finished = true;
+    botChat(winObject.username+" beat "+loseObject.username+" ("+winObject.score+" - "+loseObject.score+")", "game");
+
+
+    io.sockets.sockets[winObject.socket_id].emit('game:win');
+    io.sockets.sockets[loseObject.socket_id].emit('game:lose');
+
+    game.winner = winObject.db_id;
+    game.isFinished = true;
+    game.finished = new Date();
 
     db.collection('games', function(err, collection) {
         collection.update({_id: game._id}, game);
@@ -476,18 +482,16 @@ function endGame(game) {
 
     getGamePlayers(game, function(docs) {
         if (docs.length == 2) {
+            // replace the winner / loser objects with their actual user objects
             var winner = loser = null;
-            // bleurgh, this is a bit cheesy - the "docs" are proper objects
-            // so their _id properties don't compare
-            // @todo FIXME!
-            if (docs[0]._id.toString() == game.winner) {
+
+            if (docs[0].username == winObject.username) {
                 winner = docs[0];
                 loser  = docs[1];
             } else {
                 winner = docs[1];
                 loser  = docs[0];
             }
-            console.log("winner is "+winner.username);
 
             // got the winners and losers sorted out. now, point them up
             winner.rank = winner.rank != null ? winner.rank : 0;
@@ -510,6 +514,20 @@ function endGame(game) {
                 // ensure we can't be THAT bad
                 loser.rank = 0;
             }
+
+            // add their kills and deaths
+            winner.kills = winner.kills != null ? winner.kills : 0;
+            winner.deaths = winner.deaths != null ? winner.deaths : 0;
+
+            loser.kills = loser.kills != null ? loser.kills : 0;
+            loser.deaths = loser.deaths != null ? loser.deaths : 0;
+
+            winner.kills += winObject.score;
+            winner.deaths += loseObject.score;
+
+            loser.kills += loseObject.score;
+            loser.deaths += winObject.score;
+
             db.collection('users', function(err, collection) {
                 collection.update({_id: winner._id}, winner);
                 collection.update({_id: loser._id}, loser);
@@ -518,8 +536,8 @@ function endGame(game) {
                 delete loser.password;
 
                 // update our player cache
-                authedUsers[winSocket.id] = winner;
-                authedUsers[loseSocket.id] = loser;
+                authedUsers[winObject.socket_id] = winner;
+                authedUsers[loseObject.socket_id] = loser;
             });
         }
     });
@@ -530,8 +548,44 @@ function rejoinLobby(socket) {
     socket.join('lobby');
     socket.emit('statechange', 'lobby');
     socket.broadcast.to('lobby').emit('lobby:user:join', authedUsers[socket.id]);
-    socket.broadcast.to('lobby').emit('lobby:chat', {
-        "author": socketbot,
-        "msg" : authedUsers[socket.id].username+" rejoined the lobby"
+
+    botChat(authedUsers[socket.id].username+" rejoined the lobby");
+}
+
+// socketbot is our friendly chat bot. He mimicks the basic attributes
+// of real life players - just enough for the chat room, anyway
+var socketbot = {
+    "username": "socketbot",
+    "email"   : "socketbot@paynedigital.com"
+};
+
+function lobbyChat(author, msg, type) {
+    if (type == null) {
+        type = 'normal';
+    }
+
+    var line = {
+        'timestamp': new Date(),
+        'author' : author,
+        'msg'    : msg,
+        'type'   : type
+    };
+
+    db.collection('chatlines', function(err, collection) {
+        collection.insert(line);
     });
+
+    chatlines.push(line);
+    if (chatlines.length > 10) {
+        chatlines.splice(0, 1);
+    }
+
+    io.sockets.in('lobby').emit('lobby:chat', line);
+}
+
+function botChat(msg, type) {
+    if (type == null) {
+        type = 'normal';
+    }
+    lobbyChat(socketbot, msg, type);
 }
