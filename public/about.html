@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>About Sock it to 'em!</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap-1.3.0.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+</head>
+<body>
+    <div class='container'>
+        <div class='page-header'>
+            <h1>About &quot;Sock it to 'em!&quot;</h1>
+        </div>
+        <div class='row'>
+            <div class='span11'>
+                <p><b>Sock it to 'em</b> is a real time multiplayer game where the aim is
+                to duel it out with an opponent - whoever has the most kills within the
+                time limit wins!</p>
+
+                <div class='page-header'>
+                    <h2>Getting started</h2>
+                </div>
+                <p>Simply head over to the <a href="/">home page</a> and login. If you
+                don't already have an account, you can register (for free) and begin playing
+                immediately. Once you're authenticated, you'll find yourself in the lobby.</p>
+
+                <div class='page-header'>
+                    <h2>The lobby</h2>
+                </div>
+
+                <ol>
+                    <li><a href="#challenging-an-opponent">Challenging an opponent</a></li>
+                    <li><a href="#receiving-a-challenge">Receiving a challenge</a></li>
+                    <li><a href="#chatting">Lobby chat</a></li>
+                </ol>
+
+                <h3 id='challenging-an-opponent'>Challenging an opponent</h3>
+
+                <p>When you're in the lobby you'll see a list of all the other players
+                currently waiting to play, as well as a list of games currently in progress.
+                At this point, simply click on a user's name to challenge them to a duel -
+                before issuing the challenge you'll be given the opportunity to review
+                their <a href="#rankings">ranking</a> to see what's at stake.</p>
+
+                <h3 id='receiving-a-challenge'>Receiving a challenge</h3>
+
+                <p>Hang around long enough and you'll probably receive a challenge - when you
+                do you won't be able to do anything until you've either accepted it or
+                declined it (boo, hiss). You'll be given information about your challenger's
+                <a href="#rankings">ranking</a> before you make your decision.</p>
+
+                <h3 id='chatting'>Lobby chat</h3>
+
+                <p>If you don't fancy getting involved, you can while away the time chatting
+                to your fellow lobby dwellers. Even if nobody else is present, you'll always
+                have <b>socketbot</b> for company who'll report on any game related news.</p>
+
+                <div class='page-header'>
+                    <h2>The game</h2>
+                </div>
+
+                <ol>
+                    <li><a href="#basics">Basics</a></li>
+                    <li><a href="#controls">Controls</a></li>
+                    <li><a href="#rules">Rules</a></li>
+                    <li><a href="#sudden-death">Sudden death</a></li>
+                    <li><a href="#rankings">Rankings</a></li>
+                </ol>
+
+                <h3 id='basics'>Basics</h3>
+
+                <p>Each game consists of a 2D, side-on view of both players and a barren wasteland between them. If you initiated
+                the game (e.g. you're the challenger), you'll be on the left hand side. If you accepted a challenge, you'll be
+                on the right. Using the following <a href="#controls">controls</a> you must aim and fire your weapon in an attempt to kill your
+                opponent as many times as possible.</p>
+
+                <h3 id='controls'>Controls</h3>
+
+                <p>In game control is handled exclusively by keyboard input. Put that
+                mouse away!</p>
+                <table class='zebra-striped'>
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Action</th>
+                        </th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Up arrow</td>
+                            <td>Increase shot power</td>
+                        </tr>
+                        <tr>
+                            <td>Down arrow</td>
+                            <td>Decrease shot power</td>
+                        </tr>
+                        <tr>
+                            <td>Left arrow</td>
+                            <td>Rotate aim left</td>
+                        </tr>
+                        <tr>
+                            <td>Right arrow</td>
+                            <td>Rotate aim right</td>
+                        </tr>
+                        <tr>
+                            <td>Space bar</td>
+                            <td><strong>Fire!</strong></td>
+                        </tr>
+                        <tr>
+                            <td>T</td>
+                            <td>Start chat mode (<b>return key</b> to send)</td>
+                        </tr>
+                        <tr>
+                            <td>ESC</td>
+                            <td>Cancel chat mode</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 id='rules'>Rules</h3>
+
+                <p>Once a game has started, the rules are pretty simple &mdash; kill your opponent as many times as possible
+                before the time runs out! Each time you die, you will respawn on a different platform to the last, though
+                you will never change sides. Whoever has the most kills when the timer reaches zero is declared the winner.</p>
+
+                <h3 id='sudden-death'>Sudden death</h3>
+
+                <p>Should the scores be level when time runs out, sudden death mode will be declared. At this stage, the next person
+                to kill their opponent wins the game.</p>
+
+                <h3 id='rankings'>Rankings</h3>
+
+                <p>Game rankings are gained by defeating your opponents. What you stand to gain &mdash; or lose &mdash;
+                depends on how your rank compares with your opponent. The following table illustrates how your ranking
+                will change if you win or lose a game:</p>
+                <table class='zebra-striped'>
+                    <thead>
+                        <tr>
+                            <th>&nbsp;</th>
+                            <th>You win</th>
+                            <th>You lose</th>
+                        </th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Opponent ranked higher</strong></td>
+                            <td>+3</td>
+                            <td>No change</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Same rank as you</strong></td>
+                            <td>+2</td>
+                            <td>-1</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Opponent ranked lower</strong></td>
+                            <td>+1</td>
+                            <td>-2</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <p>As you can see, the points at stake encourage you to always take on a worthy challenger!</p>
+            </div>
+            <div class='span5'>
+                <div class='page-header'>
+                    <h2>Technical Information</h2>
+                </div>
+                <p>This game is developed and maintained by
+                <a href="http://paynedigital.com">Payne Digital Ltd</a>.</p>
+
+                <p>It is written in JavaScript - <a href="http://nodejs.org">node.js</a> powers the server
+                side of things whilst your browser's JavaScript interpreter takes care
+                of the client side code.</p>
+
+                <p>The network communication is powered by the fantastic <a href="http://socket.io">socket.io</a>
+                library which leverages modern browsers' WebSockets capabilities.</p>
+
+                <p>The game uses no flash - solely HTML5, CSS and JavaScript.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
