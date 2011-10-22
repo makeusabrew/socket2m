@@ -70,6 +70,7 @@
             bindListeners();
         },
         'lobby:user:join': function(user) {
+            console.log("user joining lobby", user);
             var u = addUser(user);
             u.hide();
             $("#users table").append(u);

@@ -193,7 +193,8 @@ io.sockets.on('connection', function(socket) {
                             "score"     : 0
                         },
                         "entityId" : 0,
-                        "duration": 90
+                        "duration": 90,
+                        "cancelled": false
                     };
                     collection.insert(game, function(err, result) {
                         game = result[0];
@@ -234,14 +235,15 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:ready', function() {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            console.log("Socket ID "+socket.id+" ready to play");
+            console.log("Socket ID "+socket.id+" ready to play game ID "+game._id);
             socket.join("game_"+game._id);
 
             var _sockets = io.sockets.clients('game_'+game._id);
             console.log("players present: "+_sockets.length);
             if (_sockets.length == 2) {
-                // @todo write start time to DB?
                 game.started = new Date();
+
+                botChat("Game on! "+game.challenger.username+" Vs "+game.challengee.username, 'game');
 
                 for (var i = 0; i < 2; i++) {
                     _sockets[i].emit('game:start', {
@@ -397,16 +399,18 @@ io.sockets.on('connection', function(socket) {
         // @todo verify - has the opponent gone?
         // for now, we trust the client and just boot them back to lobby
 
-        rejoinLobby(socket);
-        /*
         var game = findGameForSocketId(socket.id);
         if (game != null) {
             var _sockets = io.sockets.clients('game_'+game._id);
-            // count count the sockets or whatever?
+            // count the sockets or whatever?
+            if (_sockets.length < 2) {
+                console.log("cancel request looks genuine: < 2 players in game ID "+game._id);
+                cancelGame(game);
+                rejoinLobby(socket);
+            }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:cancel");
         }
-        */
     });
 
     /**
@@ -414,6 +418,7 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('disconnect', function() {
         if (authedUsers[socket.id] != null) {
+            botChat(authedUsers[socket.id].username+" left");
             delete authedUsers[socket.id];
         }
         io.sockets.emit('user:leave', socket.id);
@@ -450,6 +455,24 @@ function getGamePlayers(game, cb) {
     });
 }
 
+function cancelGame(game) {
+    if (game.isFinished) {
+        console.log("not ending game - already finished!");
+        return;
+    }
+
+    game.cancelled = true;
+    game.isFinished = true;
+    game.finished = new Date();
+
+    db.collection('games', function(err, collection) {
+        collection.update({_id: game._id}, game);
+    });
+
+    console.log("cancel game - deleting game ID "+game._id);
+    delete games[game._id];
+}
+        
 function endGame(game) {
     if (game.isFinished) {
         console.log("not ending game - already finished!");
@@ -479,6 +502,9 @@ function endGame(game) {
     db.collection('games', function(err, collection) {
         collection.update({_id: game._id}, game);
     });
+
+    console.log("end game - deleting game ID "+game._id);
+    delete games[game._id];
 
     getGamePlayers(game, function(docs) {
         if (docs.length == 2) {
@@ -535,6 +561,9 @@ function endGame(game) {
                 delete winner.password;
                 delete loser.password;
 
+                winner.sid = winObject.socket_id;
+                loser.sid = loseObject.socket_id;
+
                 // update our player cache
                 authedUsers[winObject.socket_id] = winner;
                 authedUsers[loseObject.socket_id] = loser;
@@ -585,7 +614,7 @@ function lobbyChat(author, msg, type) {
 
 function botChat(msg, type) {
     if (type == null) {
-        type = 'normal';
+        type = 'bot';
     }
     lobbyChat(socketbot, msg, type);
 }

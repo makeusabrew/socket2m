@@ -2,6 +2,10 @@
     cursor:pointer;
 }
 
+#lobby .userlist {
+    min-height:350px;
+}
+
 #lobby tr td.me {
     cursor:default;
 }

@@ -16,8 +16,6 @@ var GameManager = (function() {
 
         _duration = 0,
         _screenDuration = -1,
-        _start = 0,
-        _endAt = 0,
 
         _notifiedOfTimeout = false,
 
@@ -371,11 +369,16 @@ var GameManager = (function() {
     }
 
     self.start = function(duration) {
-        //_start = new Date();
+        _gameOver = false;
+        _suddenDeath = false;
+        _chatting = false;
+        _notifiedOfTimeout = false;
+        _screenDuration = -1;
         _duration = duration;
         _lastTick = new Date().getTime();
-        console.log("duration "+_duration);
-        //_endAt = _start + _duration;
+        _entities = [];
+        _respawns = [];
+        _deadEntities = [];
     }
 
     self.handleWin = function() {
@@ -395,6 +398,7 @@ var GameManager = (function() {
     }
 
     self.endGame = function(str, emit) {
+        cancelRequestAnimFrame(animFrame);
         _gameOver = true;
         Input.releaseKeys();
         $("#countdown").html("Game Over");
@@ -439,7 +443,9 @@ var GameManager = (function() {
     return self;
 })();
 
-function animate() {
-    requestAnimFrame(animate);
+var animFrame = null;
+
+function tick() {
+    animFrame = requestAnimFrame(tick);
     GameManager.loop();
 }

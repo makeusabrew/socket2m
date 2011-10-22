@@ -1,8 +1,5 @@
 (function() {
     var user = null;
-    var players = [];
-    var bullets = [];
-    var surface = null;
 
     stateListeners = {
         'game:start': function(data) {
@@ -61,7 +58,8 @@
             GameManager.start(data.duration);
 
             // GO!
-            animate();
+            console.log("starting tick()");
+            tick();
 
         },
 
