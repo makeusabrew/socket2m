@@ -257,8 +257,7 @@ var GameManager = (function() {
 
         if (id == _player.getId()) {
             SoundManager.playSound("player:die");
-            if (!_suddenDeath) {
-                // don't bother requesting a respawn if we were in sudden death mode
+            if (data.respawn) {
                 socket.emit("game:player:respawn");
             }
 
@@ -378,19 +377,15 @@ var GameManager = (function() {
     }
 
     self.handleWin = function() {
-        self.finishGame("You Win!");
+        self.endGame("You Win!");
     }
 
     self.handleLose = function() {
-        self.finishGame("Oh no, you lose!");
-    }
-
-    self.finishGame = function(str) {
-        self.endGame(str, 'game:finish');
+        self.endGame("Oh no, you lose!");
     }
 
     self.cancelGame = function(str) {
-        self.endGame(str, 'game:cancel');
+        self.endGame(str);
     }
 
     self.endGame = function(str, emit) {
@@ -399,7 +394,7 @@ var GameManager = (function() {
         Input.releaseKeys();
         $("#countdown").html("Game Over");
         mbalert(str, function() {
-            socket.emit(emit);
+            socket.emit('game:finish');
         });
     }
 

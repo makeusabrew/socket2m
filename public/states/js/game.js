@@ -90,13 +90,13 @@
         'game:lose': function() {
             GameManager.handleLose();
         },
+        
+        'game:cancel': function(id) {
+            GameManager.cancelGame("The opponent left the game!");
+        },
 
         'game:suddendeath': function() {
             GameManager.setSuddenDeath();
-        },
-        
-        'user:leave': function(id) {
-            GameManager.cancelGame("The opponent left the game!");
         }
     };
 

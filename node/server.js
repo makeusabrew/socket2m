@@ -313,13 +313,16 @@ io.sockets.on('connection', function(socket) {
                 var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
                 killer.score ++;
 
+                var respawn = game.suddendeath ? false : true;
+
                 io.sockets.in('game_'+game._id).emit('game:player:kill', {
                     "id": data.id,
                     "scores": [
                         game.challenger.score,
                         game.challengee.score
                     ],
-                    "eId": data.eId
+                    "eId": data.eId,
+                    "respawn": respawn
                 });
                 if (game.suddendeath) {
                     endGame(game);
@@ -372,7 +375,7 @@ io.sockets.on('connection', function(socket) {
             if (game.timeup == null) {
                 var elapsed = new Date().getTime() - game.started;
                 if (elapsed >= game.duration) {
-                    console.log("game time is UP!");
+                    console.log("game time is UP! Elapsed: "+elapsed+" Vs Duration: "+game.duration);
                     game.timeup = true;
                     if (game.challenger.score != game.challengee.score) {
                         // excellent, we have a winner
@@ -402,36 +405,21 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:finish', function() {
         rejoinLobby(socket);
     });
-        
-
-    /**
-     * cancel a game - only supported reason being the opponent left
-     */
-    socket.on('game:cancel', function() {
-        // @todo verify - has the opponent gone?
-        // for now, we trust the client and just boot them back to lobby
-
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            var _sockets = io.sockets.clients('game_'+game._id);
-            // count the sockets or whatever?
-            if (_sockets.length < 2) {
-                console.log("cancel request looks genuine: < 2 players in game ID "+game._id);
-                cancelGame(game);
-                rejoinLobby(socket);
-            }
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:cancel");
-        }
-    });
 
     /**
      * disconnect / cleanup
      */
     socket.on('disconnect', function() {
+        // get rid of this user from the active user array
         if (authedUsers[socket.id] != null) {
             botChat(authedUsers[socket.id].username+" left");
             delete authedUsers[socket.id];
+        }
+
+        // was this user in a game? cancel it if so.
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            cancelGame(game);
         }
         io.sockets.emit('user:leave', socket.id);
     });
@@ -473,6 +461,7 @@ function cancelGame(game) {
         return;
     }
 
+    io.sockets.in('game_'+game._id).emit('game:cancel');
     game.cancelled = true;
     game.isFinished = true;
     game.finished = new Date();
