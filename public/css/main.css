@@ -110,6 +110,18 @@
     overflow:hidden;
 }
 
+#chat .chatline {
+    padding:0.25em 0.1em;
+}
+
 #chat .chatline.game {
     background:#ddf;
+}
+
+#chat .chatline.game-cancelled {
+    background:#fdd;
+}
+
+#chat .chatline.game-finished {
+    background:#dfd;
 }

@@ -268,6 +268,9 @@ io.sockets.on('connection', function(socket) {
                     });
                 }
 
+                // notify the lobby dwellers
+                io.sockets.in('lobby').emit('lobby:game:start', game);
+
                 // could do the timeout this way?
                 /*
                 game.timeHandler = setTimeout(function() {
@@ -461,6 +464,8 @@ function cancelGame(game) {
         return;
     }
 
+    botChat("Game cancelled between "+game.challenger.username+" and "+game.challengee.username, 'game-cancelled');
+
     io.sockets.in('game_'+game._id).emit('game:cancel');
     game.cancelled = true;
     game.isFinished = true;
@@ -471,6 +476,7 @@ function cancelGame(game) {
     });
 
     console.log("cancel game - deleting game ID "+game._id);
+    io.sockets.in('lobby').emit('lobby:game:end', game._id);
     delete games[game._id];
 }
         
@@ -490,7 +496,7 @@ function endGame(game) {
         loseObject = game.challenger;
     }
 
-    botChat(winObject.username+" beat "+loseObject.username+" ("+winObject.score+" - "+loseObject.score+")", "game");
+    botChat(winObject.username+" beat "+loseObject.username+" ("+winObject.score+" - "+loseObject.score+")", "game-finished");
 
 
     io.sockets.sockets[winObject.socket_id].emit('game:win');
@@ -505,6 +511,7 @@ function endGame(game) {
     });
 
     console.log("end game - deleting game ID "+game._id);
+    io.sockets.in('lobby').emit('lobby:game:end', game._id);
     delete games[game._id];
 
     getGamePlayers(game, function(docs) {

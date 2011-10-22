@@ -18,7 +18,7 @@
         console.log("game started at: "+started.getTime()+ " with duration: "+game.duration+" current TS: "+serverTime.getTime());
 
         // ok, great. now work out how long that is according to the server's time.
-        var remaining = Math.ceil(((started.getTime() + (game.duration*1000)) - serverTime.getTime()) / 1000);
+        var remaining = Math.round(((started.getTime() + (game.duration*1000)) - serverTime.getTime()) / 1000);
         var strRemaining = "";
 
         if (remaining <= 0) {
@@ -37,7 +37,7 @@
             }, 1000);
         }
 
-        return $("<tr><td>"+game.challenger.username+" Vs "+game.challengee.username+"</td><td data-game-time='"+game._id+"'>"+strRemaining+"</td>");
+        return $("<tr data-id='"+game._id+"'><td>"+game.challenger.username+" Vs "+game.challengee.username+"</td><td data-game-time='"+game._id+"'>"+strRemaining+"</td>");
     }
 
     function bindListeners() {
@@ -109,7 +109,7 @@
             console.log("user joining lobby", user);
             var u = addUser(user);
             u.hide();
-            $("#users table").append(u);
+            $("#users table tbody").append(u);
             u.fadeIn('slow');
 
             bindListeners();
@@ -118,6 +118,21 @@
         'user:leave': function(id) {
             console.log('received user leave for ID '+id);
             $("#users table tr td[data-id='"+id+"']").parent().fadeOut('slow', function() {
+                $(this).remove();
+            });
+        },
+        'lobby:game:start': function(game) {
+            console.log("game starting", game);
+            serverTime = new Date(game.started);
+            var g = addGame(game);
+            g.hide();
+            $("#games table tbody").append(g);
+            g.fadeIn('slow');
+        },
+        'lobby:game:end': function(id) {
+            console.log('received game end for ID '+id);
+            clearInterval(gameHandlers[id]);
+            $("#games table tr[data-id='"+id+"']").fadeOut('slow', function() {
                 $(this).remove();
             });
         },
