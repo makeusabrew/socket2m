@@ -46,12 +46,12 @@ var Input = {
     },
 
     releaseKeys: function() {
-            $(this.target).unbind('keydown');
-            $(this.target).unbind('keypress');
+            $(Input.target).unbind('keydown');
+            $(Input.target).unbind('keypress');
     },
 
     bindKeys: function() {
-        $(this.target).keydown(function(e) {
+        $(Input.target).keydown(function(e) {
             var key = Input.mapKey(e.which);
             if (Input.isCapturedKey(key)) {
                 e.preventDefault();
@@ -59,7 +59,7 @@ var Input = {
             Input.keyDown(key);
         });
 
-        $(this.target).keyup(function(e) {
+        $(Input.target).keyup(function(e) {
             var key = Input.mapKey(e.which);
             if (Input.isCapturedKey(key)) {
                 e.preventDefault();
@@ -73,7 +73,7 @@ var Input = {
     },
 
     bindTo: function(target) {
-        this.target = target;
+        Input.target = target;
     },
 
     onKeyPress: function(k, cb) {

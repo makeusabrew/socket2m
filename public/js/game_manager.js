@@ -1,5 +1,5 @@
 var GameManager = (function() { 
-    var self = this,
+    var self = {},
         _frame = 0,
         _lastTick = 0,
         _delta = 0,

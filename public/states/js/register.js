@@ -27,4 +27,3 @@
         socket.emit("register:register", $(this).serialize());
     });
 })();
-

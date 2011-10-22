@@ -1,5 +1,5 @@
 var SoundManager = (function() {
-    var self = this;
+    var self = {};
 
     var _loadedSounds = {},
         _aliases = {},
