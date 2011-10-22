@@ -1,8 +1,10 @@
 (function() {
+    // we'll keep a copy of the player's user object
     var user = null;
+
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "";
-        return $("<li data-id='"+_user.sid+"' class='"+_class+"'>"+_user.username+" ("+_user.rank+")</li>");
+        return $("<li data-id='"+_user.sid+"' data-username='"+_user.username+"' class='"+_class+"'>"+_user.username+" ("+_user.rank+")</li>");
     }
 
     function bindListeners() {
@@ -11,9 +13,10 @@
             var elem = $(e.target);
             // jQuery.data() barfs at large ID values, so we have to use attr. Oh well.
             var targetId = elem.attr("data-id");
+
             if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
-                mbconfirm("Do you want to challenge "+elem.html()+"?", function(result) {
+                mbconfirm("Do you want to challenge "+elem.data('username')+"?", function(result) {
                     // boom!
                     if (result) {
                         console.log("issuing challenge to "+targetId);
