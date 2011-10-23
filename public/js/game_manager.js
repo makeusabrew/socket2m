@@ -256,8 +256,9 @@ var GameManager = (function() {
         $("#game #p2").html(data.scores[1]);
 
         if (id == _player.getId()) {
-            SoundManager.playSound("player:die");
-            if (data.respawn) {
+
+            if (data.doRespawn) {
+                SoundManager.playSound("player:die");
                 socket.emit("game:player:respawn");
             }
 
@@ -265,14 +266,16 @@ var GameManager = (function() {
             _deadEntities.push(data.eId);
 
         } else if (id == _opponent.getId()) {
-            SoundManager.playSound("player:kill");
+            if (data.doRespawn) {
+                SoundManager.playSound("player:kill");
+            }
         } else {
             console.log("unknown ID "+id);
         }
     }
 
     self.actuallyRespawnPlayer = function(player) {
-        console.log("queuing respawing player", player);
+        console.log("queuing respawning player", player);
         // we have to queue the respawn up to ensure it only happens during our tick method
         // as we can't control when this method is fired
         _respawns.push(player);
@@ -376,12 +379,30 @@ var GameManager = (function() {
         _deadEntities = [];
     }
 
-    self.handleWin = function() {
-        self.endGame("You Win!");
+    self.handleWin = function(stats) {
+        SoundManager.playSound("game:win");
+        var points = stats.scores.win == 1 ? "point" : "points";
+        var html =
+        "<h2>Congratulations - you win!</h2>"+
+        "<p>Well done - you beat "+_opponent.getUsername()+" by <strong>"+stats.scores.win+"</strong> "+points+" to <strong>"+stats.scores.lose+"</strong>.</p>"+
+        "<h3>Ranking change</h3>"+
+        "<p>Your rank has increased to <strong>"+stats.rank+"</strong> (+"+stats.increase+")</p>";
+        self.endGame(html);
     }
 
-    self.handleLose = function() {
-        self.endGame("Oh no, you lose!");
+    self.handleLose = function(stats) {
+        SoundManager.playSound("game:lose");
+        var points = stats.scores.win == 1 ? "point" : "points";
+        var html =
+        "<h2>Oh no - you lose!</h2>"+
+        "<p>Bad luck - you lost to "+_opponent.getUsername()+" by <strong>"+stats.scores.win+"</strong> "+points+" to <strong>"+stats.scores.lose+"</strong>.</p>"+
+        "<h3>Ranking change</h3>";
+        if (stats.decrease) {
+            html += "<p>Your rank has decreased to <strong>"+stats.rank+"</strong> (-"+stats.decrease+")</p>";
+        } else {
+            html += "<p>Your rank has remained unchanged at <strong>"+stats.rank+"</strong></p>";
+        }
+        self.endGame(html);
     }
 
     self.cancelGame = function(str) {

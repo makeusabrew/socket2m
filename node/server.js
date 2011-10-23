@@ -217,7 +217,7 @@ io.sockets.on('connection', function(socket) {
                             "score"     : 0
                         },
                         "entityId" : 0,
-                        "duration": 90,
+                        "duration": 10,
                         "cancelled": false
                     };
                     collection.insert(game, function(err, result) {
@@ -339,7 +339,7 @@ io.sockets.on('connection', function(socket) {
                         game.challengee.score
                     ],
                     "eId": data.eId,
-                    "respawn": respawn
+                    "doRespawn": respawn
                 });
                 if (game.suddendeath) {
                     endGame(game);
@@ -500,23 +500,24 @@ function endGame(game) {
         return;
     }
 
+    var winner = loser = null;
     var winObject = loseObject = null;
 
     if (game.challenger.score > game.challengee.score) {
-        winObject = game.challenger;
+        winner = authedUsers[game.challenger.socket_id];
+        loser  = authedUsers[game.challengee.socket_id];
+        winObject  = game.challenger;
         loseObject = game.challengee;
     } else {
-        winObject = game.challengee;
+        winner = authedUsers[game.challengee.socket_id];
+        loser  = authedUsers[game.challenger.socket_id];
+        winObject  = game.challengee;
         loseObject = game.challenger;
     }
 
-    botChat(winObject.username+" beat "+loseObject.username+" ("+winObject.score+" - "+loseObject.score+")", "game-finished");
+    botChat(winner.username+" beat "+loser.username+" ("+winObject.score+" - "+loseObject.score+")", "game-finished");
 
-
-    io.sockets.sockets[winObject.socket_id].emit('game:win');
-    io.sockets.sockets[loseObject.socket_id].emit('game:lose');
-
-    game.winner = winObject.db_id;
+    game.winner = winner._id;
     game.isFinished = true;
     game.finished = new Date();
 
@@ -524,79 +525,96 @@ function endGame(game) {
         collection.update({_id: game._id}, game);
     });
 
+    winner.rank = winner.rank != null ? winner.rank : 0;
+    loser.rank = loser.rank != null ? loser.rank : 0;
+
+    var increase = 0,
+        decrease = 0;
+
+    if (winner.rank < loser.rank) {
+        // they were better, so i get lots of points
+        increase = 3;
+        decrease = 2;
+    } else if (winner.rank == loser.rank) {
+        // even stevens
+        increase = 2;
+        decrease = 1;
+    } else {
+        // well, I should have won
+        increase = 1;
+        decrease = 0;
+        // loser rank not affected
+    }
+
+    if (loser.rank - decrease < 0) {
+        // ensure we can't be THAT bad - take some edge off the decrease
+        decrease -= (loser.rank - decrease);
+    }
+    winner.rank += increase;
+    loser.rank  -= decrease;
+
+
+    // add their kills and deaths
+    winner.kills = winner.kills != null ? winner.kills : 0;
+    winner.deaths = winner.deaths != null ? winner.deaths : 0;
+
+    loser.kills = loser.kills != null ? loser.kills : 0;
+    loser.deaths = loser.deaths != null ? loser.deaths : 0;
+
+    winner.kills += winObject.score;
+    winner.deaths += loseObject.score;
+
+    loser.kills += loseObject.score;
+    loser.deaths += winObject.score;
+
+    // and finally their, er, wins and losses
+    winner.wins = winner.wins != null ? winner.wins+1 : 1;
+    loser.losses = loser.losses != null ? loser.losses+1 : 1;
+
+    io.sockets.sockets[winObject.socket_id].emit('game:win', {
+        "rank": winner.rank,
+        "increase": increase,
+        "scores": {
+            "win": winObject.score,
+            "lose": loseObject.score
+        }
+    });
+    io.sockets.sockets[loseObject.socket_id].emit('game:lose', {
+        "rank": loser.rank,
+        "decrease": decrease,
+        "scores": {
+            "win": winObject.score,
+            "lose": loseObject.score
+        }
+    });
+
     console.log("end game - deleting game ID "+game._id);
     io.sockets.in('lobby').emit('lobby:game:end', game._id);
     delete games[game._id];
 
     getGamePlayers(game, function(docs) {
-        if (docs.length == 2) {
-            // replace the winner / loser objects with their actual user objects
-            var winner = loser = null;
+        var wIndex = docs[0].username == winner.username ? 0 : 1;
+        var lIndex = wIndex == 1 ? 0 : 1;
 
-            if (docs[0].username == winObject.username) {
-                winner = docs[0];
-                loser  = docs[1];
-            } else {
-                winner = docs[1];
-                loser  = docs[0];
-            }
+        docs[wIndex].kills = winner.kills;
+        docs[wIndex].deaths = winner.deaths;
+        docs[wIndex].wins = winner.wins;
+        docs[wIndex].rank = winner.rank;
 
-            // got the winners and losers sorted out. now, point them up
-            winner.rank = winner.rank != null ? winner.rank : 0;
-            loser.rank = loser.rank != null ? loser.rank : 0;
+        docs[lIndex].kills = loser.kills;
+        docs[lIndex].deaths = loser.deaths;
+        docs[lIndex].losses = loser.losses;
+        docs[lIndex].rank = loser.rank;
 
-            if (winner.rank < loser.rank) {
-                // they were better, so i get lots of points
-                winner.rank += 3;
-                loser.rank -= 2;
-            } else if (winner.rank == loser.rank) {
-                // even stevens
-                winner.rank += 2;
-                loser.rank -= 1;
-            } else {
-                // well, I should have won
-                winner.rank += 1;
-                // loser rank not affected
-            }
-            if (loser.rank < 0) {
-                // ensure we can't be THAT bad
-                loser.rank = 0;
-            }
+        db.collection('users', function(err, collection) {
+            collection.update({_id: winner._id}, docs[wIndex]);
+            collection.update({_id: loser._id}, docs[lIndex]);
 
-            // add their kills and deaths
-            winner.kills = winner.kills != null ? winner.kills : 0;
-            winner.deaths = winner.deaths != null ? winner.deaths : 0;
-
-            loser.kills = loser.kills != null ? loser.kills : 0;
-            loser.deaths = loser.deaths != null ? loser.deaths : 0;
-
-            winner.kills += winObject.score;
-            winner.deaths += loseObject.score;
-
-            loser.kills += loseObject.score;
-            loser.deaths += winObject.score;
-
-            // and finally their, er, wins and losses
-            winner.wins = winner.wins != null ? winner.wins+1 : 1;
-            loser.losses = loser.losses != null ? loser.losses+1 : 1;
-
-            db.collection('users', function(err, collection) {
-                collection.update({_id: winner._id}, winner);
-                collection.update({_id: loser._id}, loser);
-
-                delete winner.password;
-                delete loser.password;
-
-                winner.sid = winObject.socket_id;
-                loser.sid = loseObject.socket_id;
-
-                // update our player cache
-                authedUsers[winObject.socket_id] = winner;
-                authedUsers[loseObject.socket_id] = loser;
-            });
-        }
+            // update our player cache
+            authedUsers[winObject.socket_id] = winner;
+            authedUsers[loseObject.socket_id] = loser;
+        });
     });
-        
 }
 
 function rejoinLobby(socket) {

@@ -21,12 +21,15 @@
             $("a.primary", div).focus();
         });
 
-        $("a", div).click(function(e) {
-            e.preventDefault();
-            div.modal("hide");
+        div.bind('hide', function() {
             if (typeof cb == 'function') {
                 cb();
             }
+        });
+
+        $("a", div).click(function(e) {
+            e.preventDefault();
+            div.modal("hide");
         });
 
         div.modal({
@@ -44,6 +47,7 @@
         if (cancelStr == null) {
             cancelStr = "Cancel";
         }
+        var _confirmed = false;
         var div = $([
             "<div class='modal hide fade'>",
                 "<div class='modal-body'>",
@@ -62,11 +66,19 @@
             div.remove();
         });
 
+        div.bind('hide', function() {
+            if (!_confirmed && typeof cb == 'function') {
+                //  assume then that we don't want to confirm
+                cb(false);
+            }
+        });
+
         div.bind('shown', function() {
             $("a.primary", div).focus();
         });
 
         $("a", div).click(function(e) {
+            _confirmed = true;
             var _confirm = $(this).hasClass("primary");
             e.preventDefault();
             div.modal("hide");

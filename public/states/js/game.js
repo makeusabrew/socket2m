@@ -83,12 +83,12 @@
             GameManager.showChatMessage(msg);
         },
 
-        'game:win': function() {
-            GameManager.handleWin();
+        'game:win': function(stats) {
+            GameManager.handleWin(stats);
         },
 
-        'game:lose': function() {
-            GameManager.handleLose();
+        'game:lose': function(stats) {
+            GameManager.handleLose(stats);
         },
         
         'game:cancel': function(id) {
@@ -108,5 +108,7 @@ SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
 SoundManager.preloadSound("/sounds/boo.wav", "player:die");
 SoundManager.preloadSound("/sounds/chat.wav", "chat");
 SoundManager.preloadSound("/sounds/sudden_death.wav", "game:suddendeath");
+SoundManager.preloadSound("/sounds/win.wav", "game:win");
+SoundManager.preloadSound("/sounds/lose.wav", "game:lose");
 
 socket.emit('game:ready');
