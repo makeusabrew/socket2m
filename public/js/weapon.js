@@ -1,7 +1,7 @@
 Weapon = function() {
-    var _rof = 2000,
-        _loaded = true,
-        _firedAt = new Date().getTime();
+    var _loaded = true,
+        _reloadAt = new Date().getTime(),
+        _type = 0;
 
     this.isLoaded = function() {
         // save ourself some maths if we don't have to
@@ -9,20 +9,36 @@ Weapon = function() {
             return true;
         }
 
+        if (_reloadAt == false) {
+            return false;
+        }
+
         // otherwise, work it out
         var now = new Date().getTime();
-        _loaded = (now >= _firedAt + _rof);
+        _loaded = (now >= _reloadAt);
 
         return _loaded;
     }
 
     this.fire = function(options) {
-        GameManager.spawnBullet(options);
+        //GameManager.spawnBullet(options);
+        options.type = _type;
+        GameManager.fireWeapon(options);
         _loaded = false;
-        _firedAt = new Date().getTime();
+        _reloadAt = false;
     };
+
+    this.reloadIn = function(reloadIn) {
+        _reloadAt = new Date().getTime() + reloadIn;
+    }
+
+    this.setType = function(type) {
+        _type = type;
+    }
 };
 
-Weapon.factory = function() {
-    return new Weapon();
+Weapon.factory = function(type) {
+    var w = new Weapon();
+    w.setType(type);
+    return w;
 };

@@ -65,8 +65,8 @@
 
         },
 
-        'game:bullet:spawn': function(options) {
-            GameManager.actuallySpawnBullet(options);
+        'game:weapon:fire': function(options) {
+            GameManager.actuallyFireWeapon(options);
         },
 
         'game:bullet:die': function(options) {

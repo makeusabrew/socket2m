@@ -15,7 +15,8 @@ Player = function(options) {
 
     this._cWeapon = 0,
     this._weapons = {
-        "0" : Weapon.factory()
+        "0" : Weapon.factory(0),
+        "1" : Weapon.factory(1)
     },
 
     this.aim = {
@@ -74,6 +75,10 @@ Player = function(options) {
             //o: this._id
         };
         this.getWeapon().fire(options);
+    }
+
+    this.setReloadTime = function(reload) {
+        this.getWeapon().reloadIn(reload);
     }
 
     this.getWeapon = function() {

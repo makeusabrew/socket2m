@@ -298,35 +298,55 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
-     * game - bullet spawn request (exciting)
+     * game - request a shot (exciting)
      */
-    socket.on('game:bullet:spawn', function(options) {
-        /**
-         * @todo - verify authenticity of the spawn request
-         * - can the player fire? (too soon?)
-         * - can the player fire from here?
-         * - etc
-         */
+     var weapons = {
+        "0" : {
+            "reload"  : 2000,
+            "bullets" : 1,
+            "fuzz"    : 0
+        },
+        "1" : {
+            "reload"  : 3000,
+            "bullets" : 4,
+            "fuzz"    : 5 
+        }
+    };
+    socket.on('game:weapon:fire', function(options) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            // assign a unique ID to the bullet, so we can track it
-            options.id = ++game.entityId;
 
             var player = socket.id == game.challenger.socket_id ? game.challenger : game.challengee;
             var now = new Date().getTime();
             // when did they last fire?
             player.firedAt = player.firedAt ? player.firedAt : 0;
+            player.weapon = player.weapon ? player.weapon : 0;
 
-            // @todo FIXME - 2000 is hard coded for now!!!
-            if (now >= player.firedAt + 2000) {
+            if (now >= player.firedAt + weapons[player.weapon].reload) {
                 // ok, go for it - but add a few options
-                options.o = socket.id;
-                options.x = player.x;
-                options.platform = player.platform;
-
                 player.firedAt = now;
 
-                io.sockets.in('game_'+game._id).emit('game:bullet:spawn', options);
+                options.x = player.x;
+                options.o = socket.id;
+                options.platform = player.platform;
+                options.reloadIn = weapons[player.weapon].reload;
+
+                var bullets = [];
+                for (var i = 0; i < weapons[player.weapon].bullets; i++) {
+                    var fuzz = 0;
+                    if (weapons[player.weapon].fuzz) {
+                        fuzz = (-weapons[player.weapon].fuzz + Math.random()*weapons[player.weapon].fuzz);
+                    }
+                    bullets.push({
+                        "a" : options.a + fuzz,
+                        "v" : options.v + fuzz,
+                        "id": ++game.entityId
+                    });
+                }
+
+                options.bullets = bullets;
+
+                io.sockets.in('game_'+game._id).emit('game:weapon:fire', options);
             } else {
                 console.log("socket "+socket.id+" trying to fire too early!");
             }

@@ -25,6 +25,8 @@ var GameManager = (function() {
 
         _suddenDeath = false,
 
+        _killPending = false,
+
         _chatting = false;
 
         
@@ -110,6 +112,10 @@ var GameManager = (function() {
                 "x" : player.x,
                 "y" : self.getCoordinateForPlatform(player.platform)
             });
+            if (user.getId() == _opponent.getId()) {
+                // it's our opponent, so clear our pending kill flag
+                _killPending = false;
+            }
         }
         _respawns = [];
 
@@ -139,7 +145,9 @@ var GameManager = (function() {
                 // we know all entities are bullets, and we also know
                 // that all bullets want to do is hit their opponents and platforms...
                 if (_entities[i].getOwner() == _player.getId() &&
-                    self.entitiesTouching(_entities[i], _opponent)) {
+                    self.entitiesTouching(_entities[i], _opponent) &&
+                    _killPending == false) {
+                    _killPending = true;
 
                     // we know the bullet should die, so remove it immediately
                     _entities[i].kill();
@@ -208,11 +216,14 @@ var GameManager = (function() {
         _opponent = opponent;
     }
 
+    /*
     self.spawnBullet = function(options) {
         //console.log("requesting bullet", options);
         socket.emit("game:bullet:spawn", options);
     }
+    */
 
+    /*
     self.actuallySpawnBullet = function(options) {
         // @todo improve this - it's a bit daft asking the server
         // for a platform and then converting... I think
@@ -222,6 +233,33 @@ var GameManager = (function() {
         bullet.spawn(options);
         SoundManager.playSound("weapon:fire");
         _entities.push(bullet);
+    }
+    */
+
+    self.fireWeapon = function(options) {
+        socket.emit("game:weapon:fire", options);
+    }
+
+    self.actuallyFireWeapon = function(options) {
+        // @todo improve this - it's a bit daft asking the server
+        // for a platform and then converting... I think
+        var x = options.x;
+        var o = options.o;
+        var y = self.getCoordinateForPlatform(options.platform);
+        _player.setReloadTime(options.reloadIn);
+
+        for (var i = 0, j = options.bullets.length; i < j; i++) {
+            var bullet = Bullet.factory();
+            var opts = options.bullets[i];
+            opts.o = o;
+            opts.x = x;
+            opts.y = y;
+
+            bullet.spawn(opts);
+            _entities.push(bullet);
+        }
+        SoundManager.playSound("weapon:fire");
+
     }
 
     self.getSurface = function() {
