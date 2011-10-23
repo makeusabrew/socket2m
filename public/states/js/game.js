@@ -50,6 +50,8 @@
             // bind any canvas rendering to #viewport
             GameManager.initSurface("viewport");
 
+            GameManager.addPlatforms();
+
             $("#game #volume").click(function(e) {
                 e.preventDefault();
                 SoundManager.toggleSounds();

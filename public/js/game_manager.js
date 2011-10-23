@@ -14,6 +14,8 @@ var GameManager = (function() {
 
         _entities = [],
 
+        _platforms = [],
+
         _duration = 0,
         _screenDuration = -1,
 
@@ -135,7 +137,7 @@ var GameManager = (function() {
             if (!_entities[i].isDead()) {
                 // what about players? let's cheat temporarily because
                 // we know all entities are bullets, and we also know
-                // that all bullets want to do is hit their opponents...
+                // that all bullets want to do is hit their opponents and platforms...
                 if (_entities[i].getOwner() == _player.getId() &&
                     self.entitiesTouching(_entities[i], _opponent)) {
 
@@ -151,6 +153,19 @@ var GameManager = (function() {
                     // ok, kill the bullet, but do nothing else, since the 
                     // player will trigger the server request
                     _entities[i].kill();
+                }
+
+                // right, now check if we've hit a platform. we don't need to bother
+                // the server with this (for now...)
+                if (!_entities[i].isDead()) {
+                    var j = 4; // hard code the platforms for speed reasons
+                    while (j--) {
+                        if (self.entitiesTouching(_entities[i], _platforms[j])) {
+                            // ok, bye!
+                            _entities[i].kill();
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -168,13 +183,9 @@ var GameManager = (function() {
         _player.renderSight();
         _opponent.render();
 
-        // left platforms
-        _surface.fillRect(0, (this.getBottom()/3) * 1, 48, 10, "rgb(0, 0, 0)");
-        _surface.fillRect(0, (this.getBottom()/3) * 2, 48, 10, "rgb(0, 0, 0)");
-
-        // right platforms
-        _surface.fillRect(this.getRight()-48, (this.getBottom()/3) * 1, 48, 10, "rgb(0, 0, 0)");
-        _surface.fillRect(this.getRight()-48, (this.getBottom()/3) * 2, 48, 10, "rgb(0, 0, 0)");
+        for (var i = 0, j = _platforms.length; i < j; i++) {
+            _platforms[i].render();
+        }
 
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].render();
@@ -378,6 +389,7 @@ var GameManager = (function() {
         _duration = duration;
         _lastTick = new Date().getTime();
         _entities = [];
+        //_platforms = [];
         _respawns = [];
         _deadEntities = [];
     }
@@ -465,6 +477,22 @@ var GameManager = (function() {
                 self.endChatting();
             }
         });
+    }
+
+    self.addPlatforms = function() {
+        // left platforms
+        _platforms[0] = new Platform();
+        _platforms[0].setCoordinates(0, (this.getBottom()/3) * 1, 48, 10);
+
+        _platforms[1] = new Platform();
+        _platforms[1].setCoordinates(0, (this.getBottom()/3) * 2, 48, 10);
+
+        // right platforms
+        _platforms[2] = new Platform();
+        _platforms[2].setCoordinates(this.getRight()-48, (this.getBottom()/3) * 1, 48, 10);
+
+        _platforms[3] = new Platform();
+        _platforms[3].setCoordinates(this.getRight()-48, (this.getBottom()/3) * 2, 48, 10);
     }
 
     return self;

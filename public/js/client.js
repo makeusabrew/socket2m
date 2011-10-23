@@ -107,6 +107,7 @@ loadScript("/js/utils.js");
 loadScript("/js/input.js");
 loadScript("/js/game_manager.js");
 loadScript("/js/player.js");
+loadScript("/js/platform.js");
 loadScript("/js/bullet.js");
 loadScript("/js/weapon.js");
 loadScript("/js/surface.js");
