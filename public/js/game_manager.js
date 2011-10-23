@@ -386,7 +386,13 @@ var GameManager = (function() {
         "<h2>Congratulations - you win!</h2>"+
         "<p>Well done - you beat "+_opponent.getUsername()+" by <strong>"+stats.scores.win+"</strong> "+points+" to <strong>"+stats.scores.lose+"</strong>.</p>"+
         "<h3>Ranking change</h3>"+
-        "<p>Your rank has increased to <strong>"+stats.rank+"</strong> (+"+stats.increase+")</p>";
+        "<p>Your rank has increased to <strong>"+stats.rank+"</strong> (+"+stats.increase+")</p>"+
+        "<h3>Tweet all about it</h3>"+
+        "<p>Why not let the world know about your victory? Spread the word to find some new people to beat!</p>"+
+        tweetButton({
+            "text": "I just won a game of Sock it to 'em - why not come and challenge me to a duel?",
+            "count": "horizontal"
+        });
         self.endGame(html);
     }
 
@@ -402,6 +408,12 @@ var GameManager = (function() {
         } else {
             html += "<p>Your rank has remained unchanged at <strong>"+stats.rank+"</strong></p>";
         }
+        html += "<h3>Spread the word</h3>"+
+        "<p>Why not challenge someone else? Spread the word to find some new people to beat!</p>"+
+        tweetButton({
+            "text": "Fancy a duel? Come and have a game of Sock it to em'!",
+            "count": "horizontal"
+        });
         self.endGame(html);
     }
 

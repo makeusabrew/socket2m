@@ -390,7 +390,7 @@ io.sockets.on('connection', function(socket) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
             if (game.timeup == null) {
-                var elapsed = new Date().getTime() - game.started;
+                var elapsed = (new Date().getTime() - game.started) / 1000;
                 if (elapsed >= game.duration) {
                     console.log("game time is UP! Elapsed: "+elapsed+" Vs Duration: "+game.duration);
                     game.timeup = true;

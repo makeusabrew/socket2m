@@ -65,6 +65,16 @@ function loadScript(src) {
     $("body").append(script);
 }
 
+function tweetButton(opts) {
+    var text = opts.text ? opts.text : "";
+    var count = opts.count ? opts.count : "";
+    return '<iframe allowtransparency="true" frameborder="0" scrolling="no" '+
+    'src="//platform.twitter.com/widgets/tweet_button.html?'+
+    'text='+encodeURIComponent(text)+'&'+
+    'count='+encodeURIComponent(count)+'" '+
+    'style="width:130px; height:20px;"></iframe>';
+}
+
 /**
  * very crude message handling for now
  */
