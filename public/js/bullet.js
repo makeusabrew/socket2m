@@ -1,84 +1,86 @@
 Bullet = function() {
-    var _x,
-        _y,
-        _a,
-        _v,
-        _alive,
-        _owner,
-        _vx,
-        _vy,
-        _w,
-        _id;
+    this._x = 0;
+    this._y = 0;
+    this._a = 0;
+    this._v = 0;
+    this._alive = false;
+    this._owner = 0;
+    this._vx = 0;
+    this._vy = 0;
+    this._w = 0;
+    this._id = 0;
+}
 
-    this.spawn = function(options) {
-        _x = options.x;
-        _y = options.y;
-        _a = options.a;
-        _v = options.v;
-        _owner = options.o;
-        _id = options.id;
-        _alive = true;
-        _w = 3;
+Bullet.prototype = {
+    spawn: function(options) {
+        this._x = options.x;
+        this._y = options.y;
+        this._a = options.a;
+        this._v = options.v;
+        this._owner = options.o;
+        this._id = options.id;
+        this._alive = true;
+        this._w = 3;
 
-        _vx = Math.cos((_a/180)*Math.PI) * _v;
-        _vy = Math.sin((_a/180)*Math.PI) * _v;
-    }
+        this._vx = Math.cos((this._a/180)*Math.PI) * this._v;
+        this._vy = Math.sin((this._a/180)*Math.PI) * this._v;
+    },
 
-    this.getOwner = function() {
-        return _owner;
-    }
+    getOwner: function() {
+        return this._owner;
+    },
 
-    this.getId = function() {
-        return _id;
-    }
+    getId: function() {
+        return this._id;
+    },
 
-    this.tick = function(delta) {
-        _x += _vx * delta;
-        _y += _vy * delta;
+    tick: function(delta) {
+        this._x += this._vx * delta;
+        this._y += this._vy * delta;
 
-        _vy += 20 * delta;
+        this._vy += 20 * delta;
 
-        if (_x < GameManager.getLeft()   ||
-            _x > GameManager.getRight()  ||
-            _y < GameManager.getTop()    ||
-            _y > GameManager.getBottom()) {
+        if (this._x < GameManager.getLeft()   ||
+            this._x > GameManager.getRight()  ||
+            this._y < GameManager.getTop()    ||
+            this._y > GameManager.getBottom()) {
             
-            _alive = false;
+            this._alive = false;
         }
-    }
+    },
 
-    this.isDead = function() {
-        return !_alive;
-    }
+    isDead: function() {
+        return !this._alive;
+    },
 
-    this.preRender = function() {
+    preRender: function() {
         var buffer = GameManager.getSurface();
-        buffer.clearRect(_x | 0, _y | 0, _w, _w);
-    }
+        buffer.clearRect(this._x | 0, this._y | 0, this._w, this._w);
+    },
 
-    this.render = function() {
+    render: function() {
         var buffer = GameManager.getSurface();
-        buffer.square(_x | 0, _y | 0, _w, "rgb(255, 0, 0)");
-    }
+        buffer.square(this._x | 0, this._y | 0, this._w, "rgb(255, 0, 0)");
+    },
 
-    this.kill = function() {
-        _alive = false;
-    }
+    kill: function() {
+        this._alive = false;
+    },
 
-    this.getLeft = function() {
-        return _x;
-    }
+    getLeft: function() {
+        return this._x;
+    },
 
-    this.getTop = function() {
-        return _y;
-    }
+    getTop: function() {
+        return this._y;
+    },
 
-    this.getRight = function() {
-        return this.getLeft() + _w;
-    }
+    getRight: function() {
+        return this.getLeft() + this._w;
+    },
 
-    this.getBottom = function() {
-        return this.getTop () + _w;
+    getBottom: function() {
+        return this.getTop () + this._w;
     }
 };
 
