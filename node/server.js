@@ -217,7 +217,7 @@ io.sockets.on('connection', function(socket) {
                             "score"     : 0
                         },
                         "entityId" : 0,
-                        "duration": 10,
+                        "duration": 90,
                         "cancelled": false
                     };
                     collection.insert(game, function(err, result) {
@@ -311,7 +311,25 @@ io.sockets.on('connection', function(socket) {
         if (game != null) {
             // assign a unique ID to the bullet, so we can track it
             options.id = ++game.entityId;
-            io.sockets.in('game_'+game._id).emit('game:bullet:spawn', options);
+
+            var player = socket.id == game.challenger.socket_id ? game.challenger : game.challengee;
+            var now = new Date().getTime();
+            // when did they last fire?
+            player.firedAt = player.firedAt ? player.firedAt : 0;
+
+            // @todo FIXME - 2000 is hard coded for now!!!
+            if (now >= player.firedAt + 2000) {
+                // ok, go for it - but add a few options
+                options.o = socket.id;
+                options.x = player.x;
+                options.platform = player.platform;
+
+                player.firedAt = now;
+
+                io.sockets.in('game_'+game._id).emit('game:bullet:spawn', options);
+            } else {
+                console.log("socket "+socket.id+" trying to fire too early!");
+            }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:bullet:spawn");
         }

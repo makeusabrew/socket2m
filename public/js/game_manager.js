@@ -198,12 +198,15 @@ var GameManager = (function() {
     }
 
     self.spawnBullet = function(options) {
-        console.log("requesting bullet");
+        //console.log("requesting bullet", options);
         socket.emit("game:bullet:spawn", options);
     }
 
     self.actuallySpawnBullet = function(options) {
-        console.log("spawning bullet "+options.id, options);
+        // @todo improve this - it's a bit daft asking the server
+        // for a platform and then converting... I think
+        options.y = self.getCoordinateForPlatform(options.platform);
+        //console.log("spawning bullet "+options.id, options);
         var bullet = Bullet.factory();
         bullet.spawn(options);
         SoundManager.playSound("weapon:fire");

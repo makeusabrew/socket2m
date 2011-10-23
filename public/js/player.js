@@ -64,12 +64,14 @@ Player = function(options) {
         if (!this.getWeapon().isLoaded()) {
             return;
         }
+
+        // the commented options are now determined server side
         var options = {
-            x: this._x,
-            y: this._y,
+            //x: this._x,
+            //y: this._y,
             a: this._a,
-            v: this._v,
-            o: this._id
+            v: this._v
+            //o: this._id
         };
         this.getWeapon().fire(options);
     }
