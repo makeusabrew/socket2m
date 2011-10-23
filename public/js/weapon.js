@@ -1,5 +1,5 @@
 Weapon = function() {
-    var _rof = 1000,
+    var _rof = 2000,
         _loaded = true,
         _firedAt = new Date().getTime();
 
