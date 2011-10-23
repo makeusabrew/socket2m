@@ -27,6 +27,16 @@ var games = {};
 // cache the last 10 or so chat lines
 var chatlines = [];
 
+io.configure(function() {
+    io.set('transports', ['websocket']);
+    io.set('log level', 1); // warn
+});
+
+io.configure('development', function() {
+    console.log("configuring development options");
+    io.set('log level', 2); // info
+});
+
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
 
@@ -145,14 +155,22 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('lobby:challenge:issue', function(to) {
         // make sure the ID we're challenging is in the lobby
+        // FIXME this line won't work - this gets us all sockets
         var _sockets = io.sockets.in('lobby').sockets;
         if (_sockets[to] != null) {
-            // excellent! Issue the challenge from the challenger's user object
-            challenges.push({
-                "from" : socket.id,
-                "to"   : to 
-            });
-            _sockets[to].emit('lobby:challenge:receive', authedUsers[socket.id]);
+            var challenge = findChallenge('to', to);
+            if (challenge == null) {
+                // excellent! Issue the challenge from the challenger's user object
+                challenges.push({
+                    "from" : socket.id,
+                    "to"   : to 
+                });
+                _sockets[to].emit('lobby:challenge:receive', authedUsers[socket.id]);
+            } else {
+                // can't challenge, already got one
+                console.log('Cannot issue challenge - ID already has one outstanding');
+                socket.emit('lobby:challenge:blocked');
+            }
         } else {
             console.log("Could not find ID to challenge in lobby "+to);
         }
@@ -162,16 +180,9 @@ io.sockets.on('connection', function(socket) {
      * process challenge response
      */
     socket.on('lobby:challenge:respond', function(accepted) {
-        var challenge = null;
 
-        for (var i = 0, j = challenges.length; i < j; i++) {
-            if (challenges[i].to == socket.id) {
-                // excellent, this is the challenge we're after
-                var challenge = challenges[i];
-                challenges.splice(i, 1);
-                break;
-            }
-        }
+        // the third arg here deletes the challenge from the challenges array
+        var challenge = findChallenge('to', socket.id, true);
 
         if (challenge != null) {
             console.log("challenge from "+challenge.from+" to "+challenge.to+": "+accepted);
@@ -629,4 +640,22 @@ function botChat(msg, type) {
         type = 'bot';
     }
     lobbyChat(socketbot, msg, type);
+}
+
+function findChallenge(who, id, remove) {
+    if (remove == null) {
+        remove = false;
+    }
+
+    for (var i = 0, j = challenges.length; i < j; i++) {
+        if (challenges[i][who] == id) {
+            // excellent, this is the challenge we're after
+            var challenge = challenges[i];
+            if (remove) {
+                challenges.splice(i, 1);
+            }
+            return challenge;
+        }
+    }
+    return null;
 }
