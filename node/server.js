@@ -233,7 +233,10 @@ io.sockets.on('connection', function(socket) {
                 }
             }
             for (var i = 0; i < 2; i++) {
-                _sockets[i].emit('lobby:challenge:response', accepted);
+                _sockets[i].emit('lobby:challenge:response', {
+                    "accepted": accepted,
+                    "to": socket.id
+                });
             }
         } else {
             console.log("Could not find challenge");

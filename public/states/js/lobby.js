@@ -3,6 +3,7 @@
     var user = null;
     var serverTime = null;
     var gameHandlers = {};
+    var hasOutstandingChallenge = false;
 
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
@@ -55,17 +56,22 @@
 
             if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
-                var stakeBlurb = getStakes(user, {"rank":elem.data('rank')});
-                var html = "<p>Do you want to challenge <strong>"+elem.data('username')+"</strong>? "+
-                stakeBlurb+
-                "<h4 class='challenge'>Issue the challenge?</h4>";
-                mbconfirm(html, function(result) {
-                    // boom!
-                    if (result) {
-                        console.log("issuing challenge to "+targetId);
-                        socket.emit('lobby:challenge:issue', targetId);
-                    }
-                }, "Yes", "No");
+                if (hasOutstandingChallenge) {
+                    mbalert("You've got a challenge outstanding - please wait.");
+                } else {
+                    hasOutstandingChallenge = true;
+                    var stakeBlurb = getStakes(user, {"rank":elem.data('rank')});
+                    var html = "<p>Do you want to challenge <strong>"+elem.data('username')+"</strong>? "+
+                    stakeBlurb+
+                    "<h4 class='challenge'>Issue the challenge?</h4>";
+                    mbconfirm(html, function(result) {
+                        // boom!
+                        if (result) {
+                            console.log("issuing challenge to "+targetId);
+                            socket.emit('lobby:challenge:issue', targetId);
+                        }
+                    }, "Yes", "No");
+                }
             }
         });
     }
@@ -185,10 +191,13 @@
                 socket.emit('lobby:challenge:respond', result);
             }, "Yes", "No");
         },
-        'lobby:challenge:response': function(accepted) {
-            if (accepted) {
+        'lobby:challenge:response': function(data) {
+            hasOutstandingChallenge = false;
+            if (data.accepted) {
                 console.log("requesting game start...");
                 socket.emit('lobby:startgame');
+            } else if (data.to != user.sid) {
+                mbalert("The opponent declined your challenge.");
             }
         },
         'lobby:challenge:blocked': function() {

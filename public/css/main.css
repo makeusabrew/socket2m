@@ -3,7 +3,7 @@
 }
 
 #lobby .userlist {
-    min-height:350px;
+    min-height:320px;
 }
 
 #lobby tr td.me {
@@ -106,7 +106,7 @@
 
 #lobby #chat-container {
     border:1px solid gray;
-    height:300px;
+    height:250px;
     overflow:hidden;
     position:relative;
 }
