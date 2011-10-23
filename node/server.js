@@ -27,6 +27,36 @@ var games = {};
 // cache the last 10 or so chat lines
 var chatlines = [];
 
+// weapon types
+var weapons = {
+    "0" : {
+        "reload"  : 2000,
+        "bullets" : 1,
+        "fuzz"    : 0
+    },
+    "1" : {
+        "reload"  : 3000,
+        "bullets" : 4,
+        "fuzz"    : 5 
+    }
+};
+
+// powerup types
+var powerups = {
+    "0" : {
+        "letter": "T"
+    },
+    "1" : {
+        "letter": "S"
+    },
+    "2" : {
+        "letter": "P"
+    }
+};
+
+// keep track of the active powerups in each game
+var activePowerups = {};
+
 io.configure(function() {
     io.set('transports', ['websocket']);
     io.set('log level', 1); // warn
@@ -300,18 +330,6 @@ io.sockets.on('connection', function(socket) {
     /**
      * game - request a shot (exciting)
      */
-     var weapons = {
-        "0" : {
-            "reload"  : 2000,
-            "bullets" : 1,
-            "fuzz"    : 0
-        },
-        "1" : {
-            "reload"  : 3000,
-            "bullets" : 4,
-            "fuzz"    : 5 
-        }
-    };
     socket.on('game:weapon:fire', function(options) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
@@ -397,10 +415,7 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:player:respawn', function() {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
-
-            player.platform = GameManager.getRandomPlatform(player.platform);
-            io.sockets.in('game_'+game._id).emit('game:player:respawn', player);
+            respawnGamePlayer(game, socket);
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:respawn");
         }
@@ -418,6 +433,80 @@ io.sockets.on('connection', function(socket) {
             });
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:chat");
+        }
+    });
+
+    socket.on('game:powerup:spawn', function() {
+        // let's spawn a random powerup
+        // @todo FIXME replace hard coded stuff
+        var x = Math.floor(Math.random()*801) + 75;
+        var y = Math.floor(Math.random()*521) + 20;
+        var t = Math.floor(Math.random()*3);
+        var r = 10;
+
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            var powerup = {
+                "x": x,
+                "y": y,
+                "type": t,
+                "letter": powerups[t].letter,
+                "r": r,
+                "id": ++game.entityId
+            };
+            if (activePowerups[game._id] == null) {
+                activePowerups[game._id] = [];
+            }
+
+            activePowerups[game._id].push(powerup);
+
+            console.log("adding powerup to game stack", powerup);
+
+            io.sockets.in('game_'+game._id).emit('game:powerup:spawn', powerup);
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:powerup:spawn");
+        }
+    });
+
+    socket.on('game:powerup:claim', function(options) {
+        var game = findGameForSocketId(socket.id);
+        if (game != null) {
+            var powerups = activePowerups[game._id];
+            if (powerups == null) {
+                console.log("no powerups found for game "+game._id);
+                return;
+            } else {
+                // great, got powerups. is the one we're claiming valid?
+                for (var i = 0; i < powerups.length; i++) {
+                    if (powerups[i].id == options.id) {
+                        var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
+                        io.sockets.in('game_'+game._id).emit('game:powerup:claim', {
+                            "playerId": socket.id,
+                            "eId": powerups[i].id
+                        });
+                        // got it!
+                        // what does it do?
+                        console.log("player claiming powerup type "+powerups[i].type);
+                        if (powerups[i].type == 0) {
+                            // teleport
+                            respawnGamePlayer(game, socket, true);
+                        } else if (powerups[i].type == 1) {
+                            // shotgun
+                            player.weapon = 1;
+                            socket.emit("game:weapon:change", 1);
+                        } else if (powerups[i].type == 2) {
+                            // pistol
+                            player.weapon = 0;
+                            socket.emit("game:weapon:change", 0);
+                        }
+
+                        powerups.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        } else {
+            console.log("could not find game for socket ID "+socket.id+" in game:powerup:claim");
         }
     });
 
@@ -717,4 +806,17 @@ function findChallenge(who, id, remove) {
         }
     }
     return null;
+}
+
+function respawnGamePlayer(game, socket, teleport) {
+    if (teleport == null) {
+        teleport = false;
+    }
+    var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
+
+    player.platform = GameManager.getRandomPlatform(player.platform);
+    io.sockets.in('game_'+game._id).emit('game:player:respawn', {
+        "player": player,
+        "teleport": teleport
+    });
 }

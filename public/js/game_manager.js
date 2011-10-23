@@ -11,8 +11,10 @@ var GameManager = (function() {
 
         _respawns = [],
         _deadEntities = [],
+        _deadPowerups = [],
 
         _entities = [],
+        _powerups = [],
 
         _platforms = [],
 
@@ -76,6 +78,9 @@ var GameManager = (function() {
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].preRender();
         }
+        for (var i = 0, j = _powerups.length; i < j; i++) {
+            _powerups[i].preRender();
+        }
     }
 
     self.handleInput = function() {
@@ -105,6 +110,11 @@ var GameManager = (function() {
 
     self.tick = function() {
 
+        // hello, time for a powerup?
+        if (Math.floor(Math.random() *1001) == 0 && _powerups.length <= 3) {
+            self.spawnPowerup();
+        }
+
         for (var i = 0, j = _respawns.length; i < j; i++) {
             var player = _respawns[i];
             var user = player.socket_id == _player.getId() ? _player : _opponent;
@@ -133,13 +143,27 @@ var GameManager = (function() {
 
         _deadEntities = [];
 
+        // ... more bleuch.
+        for (var i = 0, j = _deadPowerups.length; i < j; i++) {
+            for (var k = _powerups.length-1; k >= 0; k--) {
+                if (_powerups[k].getId() == _deadPowerups[i]) {
+                    console.log("killing powerup "+_powerups[k].getId());
+                    _powerups[k].kill();
+                    _powerups.splice(k, 1);
+                    break;
+                }
+            }
+        }
+
+        _deadPowerups = [];
+
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
         // this means it isn't fast - anything we can do? @todo
         for (var i = _entities.length-1; i >= 0; i--) {
             _entities[i].tick(_delta);
 
-
+            // check the entity didn't die during its tick method
             if (!_entities[i].isDead()) {
                 // what about players? let's cheat temporarily because
                 // we know all entities are bullets, and we also know
@@ -163,10 +187,39 @@ var GameManager = (function() {
                     _entities[i].kill();
                 }
 
+                if (!_entities[i].isDead()) {
+                    // powerups?
+                    for (var j = _powerups.length-1; j >= 0; j--) {
+                        // theoretically this could be awkward if both player's bullets hit the powerup at the same time...
+                        // but we'll worry about that later
+                        if (_entities[i].getOwner() == _player.getId() &&
+                            self.entitiesTouching(_entities[i], _powerups[j])) {
+
+                            // we know the bullet should die, so remove it immediately
+                            _entities[i].kill();
+                            //_powerups[j].kill();
+
+                            // grab it and remove powerup
+                            self.claimPowerup(_powerups[j].getId(), _entities[i].getId());
+
+                        } else if (_entities[i].getOwner() == _opponent.getId() &&
+                            self.entitiesTouching(_entities[i], _powerups[j])) {
+
+                            _entities[i].kill();
+                            //_powerups[j].kill();
+                        }
+
+                        if (_powerups[j].isDead()) {
+                            //console.log("found dead powerup ID "+_powerups[j].getId());
+                            //_powerups.splice(j, 1);
+                        }
+                    }
+                }
+                        
                 // right, now check if we've hit a platform. we don't need to bother
                 // the server with this (for now...)
                 if (!_entities[i].isDead()) {
-                    var j = 4; // hard code the platforms for speed reasons
+                    var j = 4; // hard code the platforms for performance reasons
                     while (j--) {
                         if (self.entitiesTouching(_entities[i], _platforms[j])) {
                             // ok, bye!
@@ -197,6 +250,10 @@ var GameManager = (function() {
 
         for (var i = 0, j = _entities.length; i < j; i++) {
             _entities[i].render();
+        }
+
+        for (var i = 0, j = _powerups.length; i < j; i++) {
+            _powerups[i].render();
         }
     }
 
@@ -235,6 +292,18 @@ var GameManager = (function() {
         _entities.push(bullet);
     }
     */
+
+    self.spawnPowerup = function() {
+        socket.emit("game:powerup:spawn");
+    }
+
+    self.actuallySpawnPowerup = function(options) {
+        console.log("spawning powerup", options);
+        var powerup = Powerup.factory();
+        powerup.spawn(options);
+        _powerups.push(powerup);
+        //SoundManager.playSound("game:powerup:spawn");
+    }
 
     self.fireWeapon = function(options) {
         socket.emit("game:weapon:fire", options);
@@ -289,6 +358,20 @@ var GameManager = (function() {
                 e2.getTop()  <= e1.getBottom());
     }
 
+    self.claimPowerup = function(id, eId) {
+        console.log("requesting claim powerup "+id+" from bullet "+eId);
+        socket.emit("game:powerup:claim", {
+            "id" : id,
+            "eId": eId
+        });
+    }
+
+    self.actuallyClaimPowerup = function(data) {
+        //
+        console.log("queueing powerup removal "+data.eId);
+        _deadPowerups.push(data.eId);
+    }
+
     self.killPlayer = function(id, eId) {
         console.log("requesting kill player "+id+" from bullet "+eId);
         // @todo we could omit the ID if we restrict "player"
@@ -326,11 +409,14 @@ var GameManager = (function() {
         }
     }
 
-    self.actuallyRespawnPlayer = function(player) {
-        console.log("queuing respawning player", player);
+    self.actuallyRespawnPlayer = function(options) {
+        console.log("queuing respawning player", options.player);
         // we have to queue the respawn up to ensure it only happens during our tick method
         // as we can't control when this method is fired
-        _respawns.push(player);
+        _respawns.push(options.player);
+        if (options.teleport) {
+            SoundManager.playSound("player:teleport");
+        }
     }
 
     self.getCoordinateForPlatform = function(platform) {
@@ -428,6 +514,7 @@ var GameManager = (function() {
         _lastTick = new Date().getTime();
         _entities = [];
         //_platforms = [];
+        _powerups = [];
         _respawns = [];
         _deadEntities = [];
     }
@@ -531,6 +618,11 @@ var GameManager = (function() {
 
         _platforms[3] = new Platform();
         _platforms[3].setCoordinates(this.getRight()-48, (this.getBottom()/3) * 2, 48, 10);
+    }
+
+    self.changePlayerWeapon = function(type) {
+        SoundManager.playSound("weapon:change");
+        _player.changeWeapon(type);
     }
 
     return self;

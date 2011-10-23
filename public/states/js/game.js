@@ -69,16 +69,29 @@
             GameManager.actuallyFireWeapon(options);
         },
 
+        'game:powerup:spawn': function(options) {
+            GameManager.actuallySpawnPowerup(options);
+        },
+
+        'game:powerup:claim': function(options) {
+            GameManager.actuallyClaimPowerup(options);
+        },
+
+        'game:weapon:change': function(type) {
+            console.log("got weapon change", type);
+            GameManager.changePlayerWeapon(type);
+        },
+
         'game:bullet:die': function(options) {
             //
         },
 
-        'game:player:kill': function(id) {
-            GameManager.actuallyKillPlayer(id);
+        'game:player:kill': function(options) {
+            GameManager.actuallyKillPlayer(options);
         },
 
-        'game:player:respawn': function(player) {
-            GameManager.actuallyRespawnPlayer(player);
+        'game:player:respawn': function(options) {
+            GameManager.actuallyRespawnPlayer(options);
         },
 
         'game:player:chat': function(msg) {
@@ -112,5 +125,7 @@ SoundManager.preloadSound("/sounds/chat.wav", "chat");
 SoundManager.preloadSound("/sounds/sudden_death.wav", "game:suddendeath");
 SoundManager.preloadSound("/sounds/win.wav", "game:win");
 SoundManager.preloadSound("/sounds/lose.wav", "game:lose");
+SoundManager.preloadSound("/sounds/teleport.wav", "player:teleport");
+SoundManager.preloadSound("/sounds/weapon.wav", "weapon:change");
 
 socket.emit('game:ready');

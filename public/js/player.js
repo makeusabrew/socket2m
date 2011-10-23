@@ -81,6 +81,11 @@ Player = function(options) {
         this.getWeapon().reloadIn(reload);
     }
 
+    this.changeWeapon = function(type) {
+        console.log("changing to weapon "+type);
+        this._cWeapon = type;
+    }
+
     this.getWeapon = function() {
         return this._weapons[this._cWeapon];
     }

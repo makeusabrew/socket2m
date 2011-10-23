@@ -55,4 +55,12 @@ Surface = function(elemId) {
     this.clearRect = function(x, y, w, h) {
         _buffer.clearRect(x, y, w, h);
     }
+
+    this.circle = function(x, y, r, colour) {
+        _buffer.fillStyle = colour;
+        _buffer.beginPath();
+        _buffer.arc(x+(r/2), y+(r/2), r, 0, Math.PI*2, true);
+        _buffer.closePath();
+        _buffer.fill();
+    }
 };
