@@ -32,7 +32,16 @@ socket.on('statechange', function(state) {
 
         if (faded && data) {
             console.log("fade & data complete");
-            $("#wrapper").html(data).fadeIn('fast');
+            $("#wrapper").html(data);
+            var heading = $("#wrapper h2:first");
+            $("#state-wrapper").hide().children("#state-title").html(heading.html());
+
+            heading.parent("div.page-header").remove();
+            heading.remove();
+
+            $("#state-wrapper").fadeIn('fast');
+            $("#wrapper").fadeIn('fast');
+
             loadScript('/states/js/'+state+'.js');
             currentState = state;
             for (var _event in stateListeners) {
@@ -42,7 +51,7 @@ socket.on('statechange', function(state) {
             console.log("changed state to "+state);
         }
     }
-        
+    $("#state-wrapper").fadeOut('fast');
     $("#wrapper").fadeOut('fast', function() {
         checkComplete(true, null);
     });

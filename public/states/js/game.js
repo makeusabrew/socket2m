@@ -10,7 +10,7 @@
             challenger = data.challenger;
             challengee = data.challengee;
             user = data.user;
-            $("#game h2").html("Game On: "+challenger.username+" Vs "+challengee.username);
+            $("#state-title").html("Game On: "+challenger.username+" Vs "+challengee.username);
             $("#game .stats").html("0");
 
             GameManager.bindKeys();
