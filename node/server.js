@@ -439,6 +439,8 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:powerup:spawn', function() {
         // let's spawn a random powerup
         // @todo FIXME replace hard coded stuff
+        // how are we going to get round the fact that the server doesn't know the dimensions of the canvas?
+        // easiest I suppose is to deal with a more abstract unit, e.g. metres or percentages...
         var x = Math.floor(Math.random()*801) + 75;
         var y = Math.floor(Math.random()*521) + 20;
         var t = Math.floor(Math.random()*3);
@@ -481,8 +483,8 @@ io.sockets.on('connection', function(socket) {
                     if (powerups[i].id == options.id) {
                         var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
                         io.sockets.in('game_'+game._id).emit('game:powerup:claim', {
-                            "playerId": socket.id,
-                            "eId": powerups[i].id
+                            "id": powerups[i].id,
+                            "eId": options.eId,
                         });
                         // got it!
                         // what does it do?

@@ -367,9 +367,9 @@ var GameManager = (function() {
     }
 
     self.actuallyClaimPowerup = function(data) {
-        //
-        console.log("queueing powerup removal "+data.eId);
-        _deadPowerups.push(data.eId);
+        console.log("killing bullet " +data.eId+" and queueing powerup removal "+data.id);
+        _deadPowerups.push(data.id);
+        _deadEntities.push(data.eId);
     }
 
     self.killPlayer = function(id, eId) {
@@ -528,7 +528,7 @@ var GameManager = (function() {
         "<h3>Ranking change</h3>"+
         "<p>Your rank has increased to <strong>"+stats.rank+"</strong> (+"+stats.increase+")</p>"+
         "<h3>Tweet all about it</h3>"+
-        "<p>Why not let the world know about your victory? Spread the word to find some new people to beat!</p>"+
+        "<p>Why not let the world know about your victory? Tweet and find some new people to beat!</p>"+
         tweetButton({
             "text": "I just won a game of Sock it to 'em - why not come and challenge me to a duel?",
             "count": "horizontal"
