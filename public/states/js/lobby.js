@@ -151,8 +151,9 @@
         'lobby:user:join': function(user) {
             console.log("user joining lobby", user);
             var u = addUser(user);
-            u.hide();
             $("#users table tbody").append(u);
+            // put the hide *after* DOM insertion to fix FF issues
+            u.hide();
             u.fadeIn('slow');
 
             bindListeners();
@@ -168,8 +169,8 @@
             console.log("game starting", game);
             serverTime = new Date(game.started);
             var g = addGame(game);
-            g.hide();
             $("#games table tbody").append(g);
+            g.hide();
             g.fadeIn('slow');
         },
         'lobby:game:end': function(id) {
