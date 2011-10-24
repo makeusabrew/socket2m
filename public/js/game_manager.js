@@ -536,7 +536,7 @@ var GameManager = (function() {
         "<p>Why not let the world know about your victory? Tweet and find some new people to beat!</p>"+
         tweetButton({
             "text": "I just won a game of Sock it to 'em - why not come and challenge me to a duel?",
-            "count": "horizontal"
+            "count": "none"
         });
         self.endGame(html);
     }
@@ -557,7 +557,7 @@ var GameManager = (function() {
         "<p>Why not challenge someone else? Spread the word to find some new people to beat!</p>"+
         tweetButton({
             "text": "Fancy a duel? Come and have a game of Sock it to em'!",
-            "count": "horizontal"
+            "count": "none"
         });
         self.endGame(html);
     }

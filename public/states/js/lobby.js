@@ -134,13 +134,21 @@
             console.log("lobby state", data);
             var tbody = $("#users table tbody");
             tbody.hide();
-            for (var i in data.users) {
+            for (var i = 0, j = data.users.length; i < j; i++) {
                 tbody.append(addUser(data.users[i]));
             }
             tbody.show();
+            if (data.users.length < 2) {
+                $("#tweet-challengers #tweet-frame").html(tweetButton({
+                    "text": "I'm in the #socket2m lobby - come and challenge me to a duel!",
+                    "count": "none"
+                }));
+                $("#tweet-challengers").show();
+            }
 
             var games = $("#games table tbody");
             games.hide();
+            // @todo change this! it's just an array, not an object
             for (var i in data.games) {
                 games.append(addGame(data.games[i]));
             }
@@ -159,14 +167,24 @@
             // put the hide *after* DOM insertion to fix FF issues
             u.hide();
             u.fadeIn('slow');
+            
+            // well, if anyone else joined, obviously we're not alone
+            $("#tweet-challengers").hide();
 
             bindListeners();
         },
         // user leave is a global message so it's not namespaced
         'user:leave': function(id) {
             console.log('received user leave for ID '+id);
-            $("#users table tr td[data-id='"+id+"']").parent().fadeOut('slow', function() {
+            $("#users table tbody tr td[data-id='"+id+"']").parent().fadeOut('slow', function() {
                 $(this).remove();
+                if ($("#users table tbody tr").length < 2) {
+                    $("#tweet-challengers #tweet-frame").html(tweetButton({
+                        "text": "I'm in the #socket2m lobby - come and challenge me to a duel!",
+                        "count": "none"
+                    }));
+                    $("#tweet-challengers").fadeIn('slow');
+                }
             });
         },
         'lobby:game:start': function(game) {
