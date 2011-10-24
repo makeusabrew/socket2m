@@ -17,7 +17,9 @@ socket.on('connect', function() {
 
 socket.on('statechange', function(state) {
 
-    var faded    = false,
+    var ts = new Date().getTime(),
+
+        faded    = false,
         data     = null,
         checkComplete = function(_faded, _data) {
 
@@ -42,7 +44,7 @@ socket.on('statechange', function(state) {
             $("#state-wrapper").fadeIn('fast');
             $("#wrapper").fadeIn('fast');
 
-            loadScript('/states/js/'+state+'.js');
+            loadScript('/states/js/'+state+'.js?t='+ts);
             currentState = state;
             for (var _event in stateListeners) {
                 console.log("binding "+_event+" listener");
@@ -62,7 +64,7 @@ socket.on('statechange', function(state) {
         socket.removeListener(_event, stateListeners[_event]);
     }
 
-    $.get('/states/'+state+'.html', {}, function(response) {
+    $.get('/states/'+state+'.html?t='+ts, {}, function(response) {
         checkComplete(null, response);
     });
 });
