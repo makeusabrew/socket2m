@@ -25,7 +25,7 @@ var SocketBot = {
      */
     respondTo: function(msg) {
         var type = null;
-        if (msg.match(/(hi|hello|hey|hi there|morning).+socketbot/i)) {
+        if (msg.match(/(hi|hello|hey|hi there|morning).+(socketbot|everyone)/i)) {
             type = "greetings";
         } else if (msg.match(/socketbot\?$/i)) {
             type = "answer-unsure";
