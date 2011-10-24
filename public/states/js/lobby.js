@@ -129,12 +129,13 @@
 
     stateListeners = {
         'lobby:users': function(data) {
+            var i, j;
             serverTime = new Date(data.timestamp);
             user = data.user;
             console.log("lobby state", data);
             var tbody = $("#users table tbody");
             tbody.hide();
-            for (var i = 0, j = data.users.length; i < j; i++) {
+            for (i = 0, j = data.users.length; i < j; i++) {
                 tbody.append(addUser(data.users[i]));
             }
             tbody.show();
@@ -149,12 +150,15 @@
             var games = $("#games table tbody");
             games.hide();
             // @todo change this! it's just an array, not an object
-            for (var i in data.games) {
+            for (i = 0, j = data.games.length; i < j; i++) {
                 games.append(addGame(data.games[i]));
             }
             games.show();
+            if (data.games.length == 0) {
+                games.append("<tr class='placeholder'><td>-</td><td>-</td></tr>");
+            }
 
-            for (var i = 0, j = data.chatlines.length; i < j; i++) {
+            for (i = 0, j = data.chatlines.length; i < j; i++) {
                addChatLine(data.chatlines[i]); 
             }
 
@@ -191,6 +195,7 @@
             console.log("game starting", game);
             serverTime = new Date(game.started);
             var g = addGame(game);
+            $("#games table tr.placeholder").remove();
             $("#games table tbody").append(g);
             g.hide();
             g.fadeIn('slow');
@@ -200,6 +205,9 @@
             clearInterval(gameHandlers[id]);
             $("#games table tr[data-id='"+id+"']").fadeOut('slow', function() {
                 $(this).remove();
+                if ($("#games table tbody tr").length == 0) {
+                    $("#games table tbody").append("<tr class='placeholder'><td>-</td><td>-</td></tr>");
+                }
             });
         },
         'lobby:challenge:receive': function(from) {
