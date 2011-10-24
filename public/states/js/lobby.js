@@ -206,6 +206,7 @@
             }
         },
         'lobby:challenge:blocked': function() {
+            hasOutstandingChallenge = false;
             mbalert("Sorry, this user has just been challenged by someone else. Try again in a moment.");
         },
         'lobby:chat': function(msg) {
