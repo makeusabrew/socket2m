@@ -248,7 +248,7 @@ io.sockets.on('connection', function(socket) {
                             "score"     : 0
                         },
                         "entityId" : 0,
-                        "duration": 10,
+                        "duration": 90,
                         "cancelled": false
                     };
                     collection.insert(game, function(err, result) {
