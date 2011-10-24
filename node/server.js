@@ -5,7 +5,8 @@ var http    = require('http'),
     crypto  = require('crypto');
 
 // local modules
-var GameManager = require('./app/game_manager.js');
+var GameManager = require('./app/game_manager');
+var SocketBot   = require('./app/socket_bot');
 
 var app = http.createServer(function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -443,7 +444,9 @@ io.sockets.on('connection', function(socket) {
         // easiest I suppose is to deal with a more abstract unit, e.g. metres or percentages...
         var x = Math.floor(Math.random()*801) + 75;
         var y = Math.floor(Math.random()*521) + 20;
-        var t = Math.floor(Math.random()*3);
+        // @see #575
+        //var t = Math.floor(Math.random()*3);
+        var t = 0;
         var r = 10;
 
         var game = findGameForSocketId(socket.id);
@@ -823,14 +826,10 @@ function rejoinLobby(socket) {
     botChat(authedUsers[socket.id].username+" rejoined the lobby");
 }
 
-// socketbot is our friendly chat bot. He mimicks the basic attributes
-// of real life players - just enough for the chat room, anyway
-var socketbot = {
-    "username": "socketbot",
-    "email"   : "socketbot@paynedigital.com"
-};
-
 function lobbyChat(author, msg, type) {
+    /**
+     * @todo - any sweary mary filtering?
+     */
     if (type == null) {
         type = 'normal';
     }
@@ -852,13 +851,22 @@ function lobbyChat(author, msg, type) {
     }
 
     io.sockets.in('lobby').emit('lobby:chat', line);
+
+    // see if socketbot fancies a chat
+    var response = SocketBot.respondTo(msg);
+    if (response) {
+        setTimeout(function() {
+            botChat(response.text);
+        }, response.delay);
+    }
+        
 }
 
 function botChat(msg, type) {
     if (type == null) {
         type = 'bot';
     }
-    lobbyChat(socketbot, msg, type);
+    lobbyChat(SocketBot.object, msg, type);
 }
 
 function findChallenge(who, id, remove) {

@@ -115,6 +115,11 @@
     position:absolute;
     width:100%;
     bottom:0;
+    background:#fff;
+}
+
+#chat .author {
+    font-weight:bold;
 }
 
 #chat .chatline {
@@ -140,6 +145,14 @@
 .chatline time {
     width:55px;
     display:inline-block;
+}
+
+.chatline:nth-child(odd) {
+    background:#f7f7f7;
+}
+
+.chatline:nth-child(even) {
+    background:inherit;
 }
 
 h4.challenge {
