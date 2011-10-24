@@ -3,7 +3,6 @@ var express = require('express'),
     io      = require('socket.io').listen(app),
 
     qs      = require('querystring'),
-    mongo   = require('mongodb'),
     sio     = require('socket.io'),
     crypto  = require('crypto');
 
@@ -17,6 +16,17 @@ require('./app/routes')(app);
 
 app.configure(function() {
     app.use(express.static(__dirname + '/../public'));
+    app.set('view engine', 'jade');
+});
+
+io.configure(function() {
+    io.set('transports', ['websocket']);
+    io.set('log level', 1); // warn
+});
+
+io.configure('development', function() {
+    console.log("configuring development options");
+    io.set('log level', 2); // info
 });
 
 // keep a cached copy of all authed (lobby, in game) users
@@ -60,16 +70,6 @@ var powerups = {
 
 // keep track of the active powerups in each game
 var activePowerups = {};
-
-io.configure(function() {
-    io.set('transports', ['websocket']);
-    io.set('log level', 1); // warn
-});
-
-io.configure('development', function() {
-    console.log("configuring development options");
-    io.set('log level', 2); // info
-});
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'login');
@@ -582,7 +582,7 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-var db = new mongo.Db('socket2m', new mongo.Server('localhost', mongo.Connection.DEFAULT_PORT, {}), {});
+var db = require('./app/db');
 db.open(function(err, client) {
     if (err) {
         console.log("error opening mongoDb connection "+err);
