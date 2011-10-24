@@ -1,3 +1,7 @@
+#wrapper {
+    min-height:500px;
+}
+
 #lobby tr td.opponent {
     cursor:pointer;
 }
@@ -158,4 +162,9 @@
 h4.challenge {
     text-align:right;
     line-height:auto;
+}
+
+.topbar {
+    position:relative;
+    padding-bottom:1em;
 }
