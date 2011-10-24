@@ -6,7 +6,7 @@ var warnHandler = setTimeout(function() {
     $("#wrapper").html("<h2>It doesn't look like the socket2m server is running at the moment. Please come back later.</h2>");
 }, 1500);
 
-var socket = io.connect(null, {port: 7979});
+var socket = (typeof io != 'undefined') ? io.connect(null, {port: 7979}) : {'on':function(){}};
 var currentState = null;
 var stateListeners = {};
 
@@ -69,10 +69,16 @@ socket.on('statechange', function(state) {
     });
 });
 
-function loadScript(src) {
+function loadScript(src, async) {
+    if (async == null) {
+        async = false;
+    }
     var script = document.createElement("script");
     script.type = 'text/javascript';
     script.src = src;
+    if (async) {
+        script.async = async;
+    }
     $("body").append(script);
 }
 
@@ -127,3 +133,9 @@ loadScript("/js/sound_manager.js");
 
 // helpers
 loadScript("/js/message_box.js");
+
+// social gubbins
+loadScript("https://apis.google.com/js/plusone.js", true);
+loadScript("//platform.twitter.com/widgets.js");
+$("body").prepend('<div id="fb-root"></div>');
+loadScript("//connect.facebook.net/en_US/all.js#xfbml=1");
