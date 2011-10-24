@@ -1,5 +1,5 @@
 #wrapper {
-    min-height:650px;
+    min-height:350px;
 }
 
 #lobby tr td.opponent {
@@ -35,6 +35,8 @@
 
 #outer {
     position:relative;
+    height:600px; /* same as the canvas within it */
+    padding-bottom:1em;
 }
 
 #outer #viewport {

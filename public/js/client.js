@@ -9,6 +9,7 @@ var warnHandler = setTimeout(function() {
 var socket = (typeof io != 'undefined') ? io.connect(null, {port: 7979}) : {'on':function(){}};
 var currentState = null;
 var stateListeners = {};
+var pageTitle = $("title").html();
 
 socket.on('connect', function() {
     console.log("connected");
@@ -35,8 +36,9 @@ socket.on('statechange', function(state) {
         if (faded && data) {
             console.log("fade & data complete");
             $("#wrapper").html(data);
-            var heading = $("#wrapper h2:first");
+            var heading = $("#wrapper h1:first");
             $("#state-wrapper").hide().children("#state-title").html(heading.html());
+            $("title").html(pageTitle+" - "+heading.html());
 
             heading.parent("div.page-header").remove();
             heading.remove();
