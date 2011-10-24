@@ -121,7 +121,7 @@
             input.val('');
             setTimeout(function() {
                 input.prop("disabled", false);
-            }, 1500);
+            }, 250);
                 
             socket.emit('lobby:chat', val);
         }
