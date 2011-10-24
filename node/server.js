@@ -1,4 +1,7 @@
-var http    = require('http'),
+var express = require('express'),
+    app     = express.createServer(),
+    io      = require('socket.io').listen(app),
+
     qs      = require('querystring'),
     mongo   = require('mongodb'),
     sio     = require('socket.io'),
@@ -8,13 +11,13 @@ var http    = require('http'),
 var GameManager = require('./app/game_manager');
 var SocketBot   = require('./app/socket_bot');
 
-var app = http.createServer(function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end("OK\n");
-});
-
-var io = sio.listen(app);
 app.listen(7979);
+
+require('./app/routes')(app);
+
+app.configure(function() {
+    app.use(express.static(__dirname + '/../public'));
+});
 
 // keep a cached copy of all authed (lobby, in game) users
 var authedUsers = {};
