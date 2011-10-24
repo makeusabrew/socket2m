@@ -434,7 +434,7 @@ var GameManager = (function() {
         var offset = $("#viewport").offset();
 
         var form = $(
-            "<form id='chatform' style='display:none;'><input type='text' placeholder='type your message' /></form>"
+            "<form id='chatform' style='display:none;'><input type='text' placeholder='type your message' autocomplete='off' /></form>"
         ).css({
             "left": _player.getLeft() + offset.left - 100,
             "top": _player.getTop() + offset.top - 50
