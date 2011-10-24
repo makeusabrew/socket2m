@@ -118,7 +118,7 @@
 }
 
 #chat .chatline {
-    padding:0.25em 0.1em;
+    padding:0.35em 0.1em;
 }
 
 #chat .chatline.game {
@@ -127,6 +127,10 @@
 
 #chat .chatline.game-cancelled {
     background:#fdd;
+}
+
+#chat .chatline.game-defaulted {
+    background:#faa;
 }
 
 #chat .chatline.game-finished {

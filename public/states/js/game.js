@@ -106,8 +106,8 @@
             GameManager.handleLose(stats);
         },
         
-        'game:cancel': function(id) {
-            GameManager.cancelGame("The opponent left the game!");
+        'game:cancel': function(options) {
+            GameManager.cancelGame(options);
         },
 
         'game:suddendeath': function() {

@@ -563,14 +563,15 @@ io.sockets.on('connection', function(socket) {
         // get rid of this user from the active user array
         if (authedUsers[socket.id] != null) {
             botChat(authedUsers[socket.id].username+" left");
+
+            // was this user in a game? cancel it if so.
+            var game = findGameForSocketId(socket.id);
+            if (game != null) {
+                cancelGame(game, authedUsers[socket.id]);
+            }
             delete authedUsers[socket.id];
         }
 
-        // was this user in a game? cancel it if so.
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            cancelGame(game);
-        }
         io.sockets.emit('user:leave', socket.id);
     });
 });
@@ -605,18 +606,82 @@ function getGamePlayers(game, cb) {
     });
 }
 
-function cancelGame(game) {
+// an individual socket will cancel a game
+function cancelGame(game, authedUser) {
     if (game.isFinished) {
-        console.log("not ending game - already finished!");
+        console.log("not cancelling game - already finished!");
         return;
     }
 
-    botChat("Game cancelled between "+game.challenger.username+" and "+game.challengee.username, 'game-cancelled');
+    var player, opponent;
+    var pScore, oScore;
 
-    io.sockets.in('game_'+game._id).emit('game:cancel');
+    player = authedUser;
+
+    if (authedUser.sid == game.challenger.socket_id) {
+        pScore = game.challenger.score;
+        oScore = game.challengee.score;
+        opponent  = authedUsers[game.challengee.socket_id];
+    } else {
+        pScore = game.challengee.score;
+        oScore = game.challenger.score;
+        opponent  = authedUsers[game.challenger.socket_id];
+    }
+
     game.cancelled = true;
     game.isFinished = true;
     game.finished = new Date();
+
+
+    // game > 50% complete?
+    // OR - was this player losing?
+    var scoreReason = pScore < oScore;
+    var timeReason = game.finished - game.started > ((game.duration*1000) * 0.50);
+
+    if (scoreReason || timeReason) {
+        console.log(player.username+" has defaulted!");
+
+        // naughty naughty. you won't get away with that!
+        botChat(player.username+" defaulted against "+opponent.username+"!", 'game-defaulted');
+
+        io.sockets.in('game_'+game._id).emit('game:cancel', {
+            "defaulted": true,
+            "scoreReason": scoreReason,
+            "timeReason": timeReason
+        });
+        game.defaulted = true;
+        game.defaulter = player._id;
+
+        if (player.rank > 0) {
+            player.rank--;
+        }
+        player.defaults = player.defaults != null ? player.defaults : 0;
+        player.defaults ++;
+
+        // we can avoid updating the whole opponent by simply doing a mongo $inc,
+        // but we still want to increment the rank to keep our authedUsers array up to date
+        opponent.rank ++;
+        console.log("incrementing "+opponent.username+" rank");
+
+        authedUsers[opponent.sid] = opponent;
+
+        getGamePlayers(game, function(docs) {
+            var pIndex = docs[0].username == player.username ? 0 : 1;
+            docs[pIndex].rank = player.rank;
+            docs[pIndex].defaults = player.defaults;
+            db.collection('users', function(err, collection) {
+                collection.update({_id: player._id},  docs[pIndex]);
+                collection.update({_id: opponent._id}, { $inc : {rank : 1} });
+            });
+        });
+    } else {
+        // ok, the scores were even and less than half the game had elapsed. So, fair enough.
+        botChat("The game between "+player.username+" and "+opponent.username+" has been cancelled", 'game-cancelled');
+        io.sockets.in('game_'+game._id).emit('game:cancel', {
+            "defaulted": false
+        });
+        game.defaulted = false;
+    }
 
     db.collection('games', function(err, collection) {
         collection.update({_id: game._id}, game);
@@ -725,6 +790,10 @@ function endGame(game) {
     io.sockets.in('lobby').emit('lobby:game:end', game._id);
     delete games[game._id];
 
+    // update our player cache
+    authedUsers[winObject.socket_id] = winner;
+    authedUsers[loseObject.socket_id] = loser;
+
     getGamePlayers(game, function(docs) {
         var wIndex = docs[0].username == winner.username ? 0 : 1;
         var lIndex = wIndex == 1 ? 0 : 1;
@@ -742,10 +811,6 @@ function endGame(game) {
         db.collection('users', function(err, collection) {
             collection.update({_id: winner._id}, docs[wIndex]);
             collection.update({_id: loser._id}, docs[lIndex]);
-
-            // update our player cache
-            authedUsers[winObject.socket_id] = winner;
-            authedUsers[loseObject.socket_id] = loser;
         });
     });
 }

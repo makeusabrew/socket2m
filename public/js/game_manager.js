@@ -557,8 +557,21 @@ var GameManager = (function() {
         self.endGame(html);
     }
 
-    self.cancelGame = function(str) {
-        self.endGame(str);
+    self.cancelGame = function(options) {
+        var html = 
+        "<h2>Game aborted!</h2>"+
+        "<p>Oh no - "+_opponent.getUsername()+" left the game! ";
+
+        if (options.defaulted) {
+            html +=
+            "As it was underway, they have <strong>defaulted</strong> against you. You don't get "+
+            "the glory of a win, but your rank has increased by <strong>one</strong> point, and "+
+            "theirs has decreased due to bailing out of your duel.</p>";
+        } else {
+            html +=
+            "As it hadn't got properly underway it has been <strong>cancelled</strong>.</p>";
+        }
+        self.endGame(html);
     }
 
     self.endGame = function(str, emit) {
