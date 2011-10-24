@@ -59,8 +59,22 @@ Surface = function(elemId) {
     this.circle = function(x, y, r, colour) {
         _buffer.fillStyle = colour;
         _buffer.beginPath();
-        _buffer.arc(x+(r/2), y+(r/2), r, 0, Math.PI*2, true);
+        _buffer.arc(x+r, y+r, r, 0, Math.PI*2, true);
         _buffer.closePath();
         _buffer.fill();
+    }
+
+    this.fillText = function(x, y, text, colour, options) {
+        _buffer.fillStyle = colour;
+        if (options.font) {
+            _buffer.font = options.font;
+        }
+        if (options.textBaseline) {
+            _buffer.textBaseline = options.textBaseline;
+        }
+        if (options.textAlign) {
+            _buffer.textAlign = options.textAlign;
+        }
+        _buffer.fillText(text, x, y);
     }
 };

@@ -460,11 +460,13 @@ io.sockets.on('connection', function(socket) {
                 activePowerups[game._id] = [];
             }
 
-            activePowerups[game._id].push(powerup);
-
-            console.log("adding powerup to game stack", powerup);
-
-            io.sockets.in('game_'+game._id).emit('game:powerup:spawn', powerup);
+            if (activePowerups[game._id].length < 3) {
+                activePowerups[game._id].push(powerup);
+                console.log("adding powerup to game stack", powerup);
+                io.sockets.in('game_'+game._id).emit('game:powerup:spawn', powerup);
+            } else {
+                console.log("not spawning powerup - too many active");
+            }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:powerup:spawn");
         }
@@ -534,7 +536,9 @@ io.sockets.on('connection', function(socket) {
                     }
                 } else {
                     console.log("client reported incorrect game timeup "+elapsed+" Vs "+game.duration);
-                    var remaining = game.duration - elapsed;
+
+                    // let the client know, in millis, when to ask for the game end again.
+                    var remaining = Math.round((game.duration - elapsed)*1000);
                     socket.emit('game:timeup:rejected', remaining);
                 }
             } else {

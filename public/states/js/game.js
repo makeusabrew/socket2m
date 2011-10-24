@@ -127,5 +127,6 @@ SoundManager.preloadSound("/sounds/win.wav", "game:win");
 SoundManager.preloadSound("/sounds/lose.wav", "game:lose");
 SoundManager.preloadSound("/sounds/teleport.wav", "player:teleport");
 SoundManager.preloadSound("/sounds/weapon.wav", "weapon:change");
+SoundManager.preloadSound("/sounds/powerup.wav", "game:powerup:spawn");
 
 socket.emit('game:ready');

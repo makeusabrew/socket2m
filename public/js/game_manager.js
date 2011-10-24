@@ -111,7 +111,7 @@ var GameManager = (function() {
     self.tick = function() {
 
         // hello, time for a powerup?
-        if (Math.floor(Math.random() *1001) == 0 && _powerups.length <= 3) {
+        if (Math.floor(Math.random() *1501) == 0 && _powerups.length < 3) {
             self.spawnPowerup();
         }
 
@@ -302,7 +302,7 @@ var GameManager = (function() {
         var powerup = Powerup.factory();
         powerup.spawn(options);
         _powerups.push(powerup);
-        //SoundManager.playSound("game:powerup:spawn");
+        SoundManager.playSound("game:powerup:spawn");
     }
 
     self.fireWeapon = function(options) {

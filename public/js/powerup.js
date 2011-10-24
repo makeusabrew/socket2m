@@ -5,6 +5,7 @@ Powerup = function() {
     this.type = 0;
     this.alive = false;
     this.id = 0;
+    this.letter = "";
 }
 
 Powerup.prototype = {
@@ -15,6 +16,7 @@ Powerup.prototype = {
         this.type = options.type;
         this.id = options.id;
         this.alive = true;
+        this.letter = options.letter;
     },
 
     preRender: function() {
@@ -22,8 +24,12 @@ Powerup.prototype = {
     },
     
     render: function() {
-        //GameManager.getSurface().circle(this.x, this.y, this.r, "rgb(0, 0, 0)");
-        GameManager.getSurface().square(this.x, this.y, this.r*2, "rgb(0, 0, 0)");
+        GameManager.getSurface().circle(this.x, this.y, this.r, "rgb(0, 255, 128)");
+        GameManager.getSurface().fillText(this.x + this.r, this.y + 1, this.letter, "rgb(100, 100, 100)", {
+            "font": "bold 13px sans-serif",
+            "textBaseline": "hanging",
+            "textAlign": "center"
+        });
     },
 
     getLeft: function() {
