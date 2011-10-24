@@ -111,7 +111,7 @@ var GameManager = (function() {
     self.tick = function() {
 
         // hello, time for a powerup?
-        if (Math.floor(Math.random() *1501) == 0 && _powerups.length < 3) {
+        if (Math.floor(Math.random() *2501) == 0 && _powerups.length < 3) {
             self.spawnPowerup();
         }
 
@@ -505,6 +505,7 @@ var GameManager = (function() {
     }
 
     self.start = function(duration) {
+        _killPending = false;
         _gameOver = false;
         _suddenDeath = false;
         _chatting = false;
@@ -517,6 +518,7 @@ var GameManager = (function() {
         _powerups = [];
         _respawns = [];
         _deadEntities = [];
+        _deadPowerups = [];
     }
 
     self.handleWin = function(stats) {

@@ -248,7 +248,7 @@ io.sockets.on('connection', function(socket) {
                             "score"     : 0
                         },
                         "entityId" : 0,
-                        "duration": 90,
+                        "duration": 10,
                         "cancelled": false
                     };
                     collection.insert(game, function(err, result) {
@@ -747,9 +747,13 @@ function endGame(game) {
         // loser rank not affected
     }
 
+    console.log("increase: "+increase+" Vs decrease: "+decrease+" (ranks: "+winner.rank+" beat "+loser.rank+")");
+
     if (loser.rank - decrease < 0) {
         // ensure we can't be THAT bad - take some edge off the decrease
-        decrease -= (loser.rank - decrease);
+        // obviously the gap will be negative, so *add* it instead
+        decrease += (loser.rank - decrease);
+        console.log("capping decrease: "+decrease);
     }
     winner.rank += increase;
     loser.rank  -= decrease;

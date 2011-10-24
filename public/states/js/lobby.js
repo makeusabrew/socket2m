@@ -12,10 +12,10 @@
             _user.rank = 0;
         }
         if (_user.wins == null) {
-            _user.wins = "-";
+            _user.wins = 0;
         }
         if (_user.losses == null) {
-            _user.losses = "-";
+            _user.losses = 0;
         }
         return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' data-rank='"+_user.rank+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td><td>"+_user.wins+"</td><td>"+_user.losses+"</td></tr>");
     }
@@ -99,6 +99,10 @@
             rankingDiff = "the same as";
             winPoints = "increase by <strong>two</strong> points";
             losePoints = "decrease by <strong>one</strong> point";
+        }
+
+        if (user.rank <= 0) {
+            losePoints = "not change as you are currently unranked";
         }
 
         return "Their rank is currently <strong>"+opponent.rank+"</strong>, which is "+rankingDiff+" yours.</p>"+
