@@ -282,7 +282,7 @@ io.sockets.on('connection', function(socket) {
      * lobby - got bored waiting, cancel challenge
      */
     socket.on('lobby:challenge:cancel', function(to) {
-        var challenge = findChallenge('to', socket.id, true);
+        var challenge = findChallenge('to', to, true);
         if (challenge == null) {
             console.log("invalid challenge");
             socket.emit("lobby:challenge:cancel:invalid");
@@ -290,7 +290,12 @@ io.sockets.on('connection', function(socket) {
         }
 
         console.log("challenge from "+challenge.from+" to "+challenge.to+": cancelled");
-        io.sockets.sockets[challenge.to].emit("lobby:challenge:cancel");
+        if (io.sockets.sockets[challenge.to]) {
+            // feasibly, a reason the challenger withdrew is because the opponent left
+            // @todo perhaps handle this globally - e.g delete the challenge object
+            // when a user leaves instead?
+            io.sockets.sockets[challenge.to].emit("lobby:challenge:cancel");
+        }
     });
 
     /**
@@ -586,11 +591,15 @@ io.sockets.on('connection', function(socket) {
         if (authedUsers[socket.id] != null) {
             botChat(authedUsers[socket.id].username+" left");
 
+            // did the user have any outstanding challenges?
+            findChallenge('any', socket.id, true);
+
             // was this user in a game? cancel it if so.
             var game = findGameForSocketId(socket.id);
             if (game != null) {
                 cancelGame(game, authedUsers[socket.id]);
             }
+
             delete authedUsers[socket.id];
         }
 
@@ -898,10 +907,16 @@ function findChallenge(who, id, remove) {
     }
 
     for (var i = 0, j = challenges.length; i < j; i++) {
-        if ((who == 'any' && challenges[i]['to'] == id || challenges[i]['from'] == id) ||
-            challenges[i][who] == id) {
-            // excellent, this is the challenge we're after
-            var challenge = challenges[i];
+        //if ((who == 'any' && challenges[i]['to'] == id || challenges[i]['from'] == id) ||
+        var challenge = null;
+        if (who =='any') {
+            if (challenges[i].from == id || challenges[i].to == id) {
+               challenge = challenges[i]; 
+            }
+        } else if (challenges[i][who] == id) {
+            challenge = challenges[i];
+        }
+        if (challenge) {
             if (remove) {
                 challenges.splice(i, 1);
             }
