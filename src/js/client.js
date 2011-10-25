@@ -83,6 +83,7 @@ socket.on('msg', function(msg) {
 });
 
 loadScript("/shared/js/utils.js");
+/*
 loadScript("/js/input.js");
 loadScript("/js/game_manager.js");
 loadScript("/js/player.js");
@@ -95,3 +96,4 @@ loadScript("/js/sound_manager.js");
 
 // helpers
 loadScript("/js/message_box.js");
+*/
