@@ -224,6 +224,8 @@
         },
         'lobby:challenge:response': function(data) {
             hasOutstandingChallenge = false;
+            // hide any other modals
+            $(".modal").modal("hide");
             if (data.accepted) {
                 console.log("requesting game start...");
                 socket.emit('lobby:startgame');
@@ -233,7 +235,32 @@
         },
         'lobby:challenge:blocked': function() {
             hasOutstandingChallenge = false;
-            mbalert("Sorry, this user has just been challenged by someone else. Try again in a moment.");
+            mbalert("Sorry, this user has just challenged (or been challenged by) someone else. Try again in a moment.");
+        },
+        'lobby:challenge:cancel': function() {
+            // user cancelled their challenge against us
+            // presumably we've got a modal in our face, so get rid
+            $(".modal").modal("hide");
+            mbalert("The opponent withdrew their challenge.");
+        },
+        'lobby:challenge:cancel:invalid': function() {
+            console.log("could not cancel challenge");
+            // do we care? we tried to cancel but couldn't. so what?
+        },
+        'lobby:challenge:confirm': function(to) {
+            mbmodal(
+                "<p>You challenge has been issued. If your opponent accepts it your game will begin immediately. You'll be notified if they reject it.</p>"+
+                "<p>You can't challenge anyone else - and nobody can challenge you - while you wait for your opponent's decision. If "+
+                "you don't hear anything you can cancel this challenge whenever you wish.</p>"
+            , {
+                "Withdraw challenge": {
+                    "class"    : "danger", 
+                    "callback" : function() {
+                        hasOutstandingChallenge = false;
+                        socket.emit('lobby:challenge:cancel', to);
+                    }
+                }
+            });
         },
         'lobby:chat': function(msg) {
             addChatLine(msg);

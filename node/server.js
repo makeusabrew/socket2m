@@ -192,7 +192,7 @@ io.sockets.on('connection', function(socket) {
         // FIXME this line won't work - this gets us all sockets
         var _sockets = io.sockets.in('lobby').sockets;
         if (_sockets[to] != null) {
-            var challenge = findChallenge('to', to);
+            var challenge = findChallenge('any', to);
             if (challenge == null) {
                 // excellent! Issue the challenge from the challenger's user object
                 challenges.push({
@@ -200,6 +200,7 @@ io.sockets.on('connection', function(socket) {
                     "to"   : to 
                 });
                 _sockets[to].emit('lobby:challenge:receive', authedUsers[socket.id]);
+                socket.emit('lobby:challenge:confirm', to);
             } else {
                 // can't challenge, already got one
                 console.log('Cannot issue challenge - ID already has one outstanding');
@@ -275,6 +276,21 @@ io.sockets.on('connection', function(socket) {
         } else {
             console.log("Could not find challenge");
         }
+    });
+
+    /**
+     * lobby - got bored waiting, cancel challenge
+     */
+    socket.on('lobby:challenge:cancel', function(to) {
+        var challenge = findChallenge('to', socket.id, true);
+        if (challenge == null) {
+            console.log("invalid challenge");
+            socket.emit("lobby:challenge:cancel:invalid");
+            return;
+        }
+
+        console.log("challenge from "+challenge.from+" to "+challenge.to+": cancelled");
+        io.sockets.sockets[challenge.to].emit("lobby:challenge:cancel");
     });
 
     /**
@@ -882,7 +898,8 @@ function findChallenge(who, id, remove) {
     }
 
     for (var i = 0, j = challenges.length; i < j; i++) {
-        if (challenges[i][who] == id) {
+        if ((who == 'any' && challenges[i]['to'] == id || challenges[i]['from'] == id) ||
+            challenges[i][who] == id) {
             // excellent, this is the challenge we're after
             var challenge = challenges[i];
             if (remove) {

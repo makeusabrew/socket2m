@@ -92,6 +92,55 @@
             "show"     : true
         });
     }
+
+    this.mbmodal = function(str, handlers, options) {
+        var buttons = "";
+        for (var i in handlers) {
+            var handleOptions = handlers[i];
+            buttons += "<a data-handler='"+i+"' class='btn "+handleOptions.class+"' href='#'>"+i+"</a>";
+        }
+
+        var div = $([
+            "<div class='modal hide fade'>",
+                "<div class='modal-body'>",
+                    str,
+                "</div>",
+                "<div class='modal-footer'>",
+                    buttons,
+                "</div>",
+            "</div>"
+        ].join("\n"));
+
+        div.bind('hidden', function() {
+            div.remove();
+        });
+
+        div.bind('hide', function() {
+            //
+        });
+
+        // well, *if* we have a primary - give it focus
+        div.bind('shown', function() {
+            $("a.primary", div).focus();
+        });
+
+        $("a", div).click(function(e) {
+            e.preventDefault();
+            div.modal("hide");
+            var handler = $(this).data("handler");
+            var cb = handlers[handler].callback;
+            if (typeof cb == 'function') {
+                cb();
+            }
+        });
+
+        div.modal({
+            "backdrop" : "static",
+            "show"     : true
+        });
+
+        $("body").append(div);
+    }
 })();
 
 loadScript("/js/deps/bootstrap-modal.1.3.0.js");
