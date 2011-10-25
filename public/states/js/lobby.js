@@ -7,6 +7,7 @@
 
     function addUser(_user) {
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
+        var profileText = (_user.sid == user.sid) ? "your" : ""+_user.username+'\'s';
 
         if (_user.rank == null) {
             _user.rank = 0;
@@ -17,7 +18,18 @@
         if (_user.losses == null) {
             _user.losses = 0;
         }
-        return $("<tr><td data-id='"+_user.sid+"' data-username='"+_user.username+"' data-rank='"+_user.rank+"' class='"+_class+"'>"+_user.username+"</td><td>"+_user.rank+"</td><td>"+_user.wins+"</td><td>"+_user.losses+"</td></tr>");
+        return $(
+            "<tr>"+
+            "<td data-id='"+_user.sid+"' "+
+            "data-username='"+_user.username+"' "+
+            "data-rank='"+_user.rank+"' "+
+            "class='"+_class+"'>"+_user.username+" "+
+            "<a title=\"View "+profileText+" profile in a new window\" href='/user/"+_user.username+"' target='_blank'><img src='/img/profile.png' alt='View "+_user.username+"\'s profile' /></a>"+
+            "<td>"+_user.rank+"</td>"+
+            "<td>"+_user.wins+"</td>"+
+            "<td>"+_user.losses+"</td>"+
+            "</tr>"
+        );
     }
 
     function addGame(game) {

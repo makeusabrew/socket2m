@@ -183,3 +183,7 @@ dl dt {
 dl dt:after {
     content:": ";
 }
+
+#users table td a {
+    float:right;
+}
