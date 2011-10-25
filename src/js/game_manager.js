@@ -573,7 +573,7 @@ var GameManager = (function() {
 
         if (options.defaulted) {
             html +=
-            "As it was underway, they have <strong>defaulted</strong> against you. You don't get "+
+            "As it was underway, they have <strong>forfeited</strong> it. You don't get "+
             "the glory of a win, but your rank has increased by <strong>one</strong> point, and "+
             "theirs has decreased due to bailing out of your duel.</p>";
         } else {
