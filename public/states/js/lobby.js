@@ -59,7 +59,6 @@
                 if (hasOutstandingChallenge) {
                     mbalert("You've got a challenge outstanding - please wait.");
                 } else {
-                    hasOutstandingChallenge = true;
                     var stakeBlurb = getStakes(user, {"rank":elem.data('rank')});
                     var html = "<p>Do you want to challenge <strong>"+elem.data('username')+"</strong>? "+
                     stakeBlurb+
@@ -67,6 +66,7 @@
                     mbconfirm(html, function(result) {
                         // boom!
                         if (result) {
+                            hasOutstandingChallenge = true;
                             console.log("issuing challenge to "+targetId);
                             socket.emit('lobby:challenge:issue', targetId);
                         }

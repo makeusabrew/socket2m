@@ -66,10 +66,12 @@ this.mbconfirm = function(str, cb, okStr, cancelStr) {
     });
 
     div.bind('hide', function() {
+        /* we've disabled this for confirms so shouldn't be an issue
         if (!_confirmed && typeof cb == 'function') {
             //  assume then that we don't want to confirm
             cb(false);
         }
+        */
     });
 
     div.bind('shown', function() {
