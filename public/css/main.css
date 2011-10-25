@@ -174,3 +174,12 @@ h4.challenge {
 #footer .share {
     float:right;
 }
+
+dl dt {
+    float:left;
+    width:100px;
+}
+
+dl dt:after {
+    content:": ";
+}

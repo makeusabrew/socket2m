@@ -37,7 +37,7 @@ table.zebra-striped
     tbody
     - each game in games
         tr
-            td #{game.challenger.username} Vs #{game.challengee.username}
+            td <a href="/user/#{game.challenger.username}">#{game.challenger.username}</a> Vs <a href="/user/#{game.challengee.username}">#{game.challengee.username}</a>
             td #{game.challenger.score} - #{game.challengee.score}
             td= game.elapsed
             td= game.outcome

@@ -1,4 +1,5 @@
-var utils = require('./shared/utils');
+var utils   = require('./shared/utils');
+var db      = require('./db');
 
 module.exports = function(app) {
     /**
@@ -18,14 +19,36 @@ module.exports = function(app) {
     });
 
     /**
+     * Top 100 users
+     */
+    app.get('/users/top', function(req, res) {
+        db.collection('users', function(err, collection) {
+            collection
+            .find()
+            .limit(100)
+            .sort({rank: -1})
+            .toArray(function(err, docs) {
+                res.render('top-users', {
+                    users: docs
+                });
+            });
+        });
+    });
+
+    /**
      * User profile page
      */
-    app.get('/user/:username', function(req, res) {
-        var db = require(__dirname+"/db");
+    app.get(/\/user\/([A-z0-9_]+)/, function(req, res) {
+        var username = req.params[0];
         db.collection('users', function(err, collection) {
-            collection.findOne({"username": req.params.username}, function(err, user) {
+            collection.findOne({"username": username}, function(err, user) {
                 db.collection('games', function(err, collection) {
-                    collection.find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]}).limit(6).sort({started: -1}).toArray(function(err, docs) {
+                    collection
+                    .find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]})
+                    .limit(6)
+                    .sort({started: -1})
+                    .toArray(function(err, docs) {
+
                         var games = [];
                         docs.forEach(function(game) {
                             // we could probably do this far more efficiently, but we need to
@@ -37,7 +60,8 @@ module.exports = function(app) {
 
                             var outcome = "";
                             if (game.defaulted) {
-                                var defaulter = game.defaulter == game.challenger.db_id ?
+                                console.log(game.defaulter, game.challenger.db_id);
+                                var defaulter = game.defaulter.toString() == game.challenger.db_id.toString() ?
                                     game.challenger :
                                     game.challengee;
 
