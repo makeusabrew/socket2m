@@ -3,9 +3,15 @@ dl
     dt Username
     dd #{user.username}
 
-    dt Wins
-    - if (user.wins != null)
-        dd #{user.wins}
+    dt Kills
+    - if (user.kills != null)
+        dd #{user.kills}
+    - else 
+        dd  0
+
+    dt Deaths
+    - if (user.deaths != null)
+        dd #{user.deaths}
     - else 
         dd  0
 
@@ -15,7 +21,7 @@ dl
     - else 
         dd  0
 
-    dt Defaults
+    dt Defaults (<a title="View information about defaulting on games" href="/about#defaulting">?</a>)
     - if (user.defaults != null)
         dd #{user.defaults}
     - else 

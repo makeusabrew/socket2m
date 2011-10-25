@@ -60,7 +60,6 @@ module.exports = function(app) {
 
                             var outcome = "";
                             if (game.defaulted) {
-                                console.log(game.defaulter, game.challenger.db_id);
                                 var defaulter = game.defaulter.toString() == game.challenger.db_id.toString() ?
                                     game.challenger :
                                     game.challengee;
