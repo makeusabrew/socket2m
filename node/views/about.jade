@@ -1,0 +1,157 @@
+.container
+    .page-header
+        h1 About &quot;Sock it to 'em!&quot;
+
+        .row
+            .span11
+                p
+                | <b>Sock it to 'em</b> is a real time multiplayer game where the aim is
+                | to duel it out with an opponent - whoever has the most kills within the
+                | time limit wins!
+
+                .page-header
+                    h2 Getting started
+                p
+                | Simply head over to the <a href="/">home page</a> and login. If you
+                | don't already have an account, you can register (for free) and begin playing
+                | immediately. Once you're authenticated, you'll find yourself in the lobby.
+
+                .page-header
+                    h2 The lobby
+
+                ol
+                    li <a href="#challenging-an-opponent">Challenging an opponent</a>
+                    li <a href="#receiving-a-challenge">Receiving a challenge</a>
+                    li <a href="#chatting">Lobby chat</a>
+
+                h3#challeging-an-opponent Challenging an opponent
+
+                p
+                | When you're in the lobby you'll see a list of all the other players
+                | currently waiting to play, as well as a list of games currently in progress.
+                | At this point, simply click on a user's name to challenge them to a duel -
+                | before issuing the challenge you'll be given the opportunity to review
+                | their <a href="#rankings">ranking</a> to see what's at stake.
+
+                h3#receiving-a-challenge Receiving a challenge
+
+                p
+                | Hang around long enough and you'll probably receive a challenge - when you
+                | do you won't be able to do anything until you've either accepted it or
+                | declined it (boo, hiss). You'll be given information about your challenger's
+                | <a href="#rankings">ranking</a> before you make your decision.
+
+                h3#chatting Lobby chat
+
+                p
+                | If you don't fancy getting involved, you can while away the time chatting
+                | to your fellow lobby dwellers. Even if nobody else is present, you'll always
+                | have <b>socketbot</b> for company who'll report on any game related news.
+
+                .page-header
+                    h2#the-game The Game
+
+                ol
+                    li <a href="#basics">Basics</a>
+                    li <a href="#controls">Controls</a>
+                    li <a href="#rules">Rules</a>
+                    li <a href="#sudden-death">Sudden death</a>
+                    li <a href="#rankings">Rankings</a>
+
+                h3#basics Basics
+
+                p
+                | Each game consists of a 2D, side-on view of both players and a barren wasteland between them. If you initiated
+                | the game (e.g. you're the challenger), you'll be on the left hand side. If you accepted a challenge, you'll be
+                | on the right. Using the following <a href="#controls">controls</a> you must aim and fire your weapon in an attempt to kill your
+                | opponent as many times as possible.
+
+                h3#controls Controls
+
+                p In game control is handled exclusively by keyboard input. Put that mouse away!
+
+                table.zebra-striped
+                    thead
+                        tr
+                            th Key
+                            th Action
+                    tbody
+                        tr
+                            td Up arrow
+                            td Increase shot power
+                        tr
+                            td Down arrow
+                            td Decrease shot power
+                        tr
+                            td Left arrow
+                            td Rotate aim left
+                        tr
+                            td Right arrow
+                            td Rotate aim right
+                        tr
+                            td Space bar
+                            td <strong>Fire!</strong>
+                        tr
+                            td T
+                            td Start chat mode (<b>return key</b> to send)
+                        tr
+                            td ESC
+                            td Cancel chat mode
+
+                h3#rules Rules
+
+                p
+                | Once a game has started, the rules are pretty simple &mdash; kill your opponent as many times as possible
+                | before the time runs out! Each time you die, you will respawn on a different platform to the last, though
+                | you will never change sides. Whoever has the most kills when the timer reaches zero is declared the winner.
+
+                h3#sudden-death Sudden death
+
+                p
+                | Should the scores be level when time runs out, sudden death mode will be declared. At this stage, the next person
+                | to kill their opponent wins the game.
+
+                h3#rankings Rankings
+
+                p
+                | Game rankings are gained by defeating your opponents. What you stand to gain &mdash; or lose &mdash;
+                | depends on how your rank compares with your opponent. The following table illustrates how your ranking
+                | will change if you win or lose a game:
+                table.zebra-striped
+                    thead
+                        tr
+                            th &nbsp;
+                            th You win
+                            th You lose
+                    tbody
+                        tr
+                            td <strong>Opponent ranked higher</strong>
+                            td +3
+                            td No change
+                        tr
+                            td <strong>Same rank as you</strong>
+                            td +2
+                            td -1
+                        tr
+                            td <strong>Opponent ranked lower</strong>
+                            td +1
+                            td -2
+                
+                p As you can see, the points at stake encourage you to always take on a worthy challenger!
+            .span5
+                .page-header
+                    h2 Technical Information
+                p
+                | This game is developed and maintained by
+                | <a href="http://paynedigital.com">Payne Digital Ltd</a>.
+
+                p
+                | It is written in JavaScript - <a href="http://nodejs.org">node.js</a> powers the server
+                | side of things whilst your browser's JavaScript interpreter takes care
+                | of the client side code.
+
+                p
+                | The network communication is powered by the fantastic <a href="http://socket.io">socket.io</a>
+                | library which leverages modern browsers' WebSockets capabilities.
+
+                p The game uses no flash - just HTML5, CSS and JavaScript.

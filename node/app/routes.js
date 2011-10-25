@@ -3,14 +3,16 @@ module.exports = function(app) {
      * Home Page
      */
     app.get('/', function(req, res) {
-        res.sendfile(__dirname+"/static/index.html");
+        res.render('index', {
+            'scripts': true
+        });
     });
 
     /**
      * About Page 
      */
     app.get('/about', function(req, res) {
-        res.sendfile(__dirname+"/static/about.html");
+        res.render('about');
     });
 
     /**

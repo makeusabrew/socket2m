@@ -10,9 +10,24 @@ body
         div.topbar-inner
             div.container
                 h3 
-                    a(href='#') Socket2M
-                        span#state-wrapper(style='display:none')
+                    a(href='/') Socket2M
+                        span#state-wrapper(style='display:none') 
+                            |  /
                             span#state-title
-    div#wrapper.container !{body}
+    !{body}
     #footer
         div.well
+            div.container
+                | &copy; 2011
+                a(href='http://paynedigital.com') Payne Digital Ltd
+                div.share
+                    | <g:plusone size="medium" annotation="inline" width="200"></g:plusone>
+                    | <iframe src="//www.facebook.com/plugins/like.php?href&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
+                    iframe(allowtransparency='true',frameborder='0', scrolling='no',
+                    src='//platform.twitter.com/widgets/tweet_button.html?text=Sock it to %27em',
+                    style='width:130px; height:20px')
+
+    - if (typeof scripts !== 'undefined')
+        script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
+        script(src='/socket.io/socket.io.js')
+        script(src='/js/client.js')
