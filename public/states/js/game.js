@@ -69,6 +69,10 @@
             GameManager.actuallyFireWeapon(options);
         },
 
+        'game:weapon:fire:wait': function(msec) {
+            GameManager.reloadPlayerWeaponIn(msec);
+        },
+
         'game:powerup:spawn': function(options) {
             GameManager.actuallySpawnPowerup(options);
         },

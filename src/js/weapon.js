@@ -25,7 +25,10 @@ Weapon = function() {
         options.type = _type;
         GameManager.fireWeapon(options);
         _loaded = false;
-        _reloadAt = false;
+
+        // if we don't hear back from the server within 3 seconds, try and fire again
+        // but we expect this to get updated before then.
+        _reloadAt = new Date().getTime() + 3000;
     };
 
     this.reloadIn = function(reloadIn) {

@@ -391,7 +391,9 @@ io.sockets.on('connection', function(socket) {
 
                 io.sockets.in('game_'+game._id).emit('game:weapon:fire', options);
             } else {
-                console.log("socket "+socket.id+" trying to fire too early!");
+                var reload = (player.firedAt + weapons[player.weapon].reload - now);
+                console.log("socket "+socket.id+" trying to fire too early: wait "+reload+" ms");
+                socket.emit('game:weapon:fire:wait', reload);
             }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:bullet:spawn");

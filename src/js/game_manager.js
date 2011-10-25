@@ -334,6 +334,10 @@ var GameManager = (function() {
 
     }
 
+    self.reloadPlayerWeaponIn = function(msec) {
+        _player.setReloadTime(msec);
+    }
+
     self.getSurface = function() {
         return _surface;
     }
