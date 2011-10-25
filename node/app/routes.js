@@ -42,6 +42,10 @@ module.exports = function(app) {
         var username = req.params[0];
         db.collection('users', function(err, collection) {
             collection.findOne({"username": username}, function(err, user) {
+                if (user == null) {
+                    res.send("Invalid user");
+                    return;
+                }
                 db.collection('games', function(err, collection) {
                     collection
                     .find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]})
