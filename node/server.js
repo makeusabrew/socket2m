@@ -123,13 +123,31 @@ io.sockets.on('connection', function(socket) {
      * register - do registration
      */
     socket.on('register:register', function(data) {
+        function validateEmail(email) { 
+            var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(email);
+        } 
         var details = qs.parse(data);
-        var match = {
-            "username" : details.username,
-            "email"    : details.email
-        };
+
+        var errors = [];
+        if (details.username == null ||
+            details.username.match(/^[A-z_0-9]{1,20}$/) == null) {
+            errors.push("Please enter a valid username");
+        }
+        if (details.email == null ||
+            validateEmail(details.email) == false) {
+            errors.push("Please enter a valid email address");
+        }
+        if (details.password == null ||
+            details.password.match(/^.{4,20}$/) == null) {
+            errors.push("Please enter a valid password");
+        }
+        if (errors.length) {
+            socket.emit('msg', errors.join("<br />"));
+            return;
+        }
         db.collection('users', function(err, collection) {
-            collection.findOne(match, function(err, result) {
+            collection.findOne({ $or : [{"username": details.username}, {"email": details.email}]}, function(err, result) {
                 if (result == null) {
                     // superb. register
                     var hash = crypto.createHash('sha1');
@@ -142,7 +160,7 @@ io.sockets.on('connection', function(socket) {
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
                 } else {
-                    socket.emit('msg', 'Username or Email already in use');
+                    socket.emit('msg', 'Sorry, that username or email address is already in use.');
                 }
             });
         });
