@@ -9,6 +9,7 @@ var express = require('express'),
 // local modules
 var GameManager = require('./app/game_manager');
 var SocketBot   = require('./app/socket_bot');
+var db          = require('./app/db');
 
 app.listen(7979);
 
@@ -156,6 +157,9 @@ io.sockets.on('connection', function(socket) {
                     details.rank = 0;
                     details.kills = 0;
                     details.deaths = 0;
+                    details.defaults = 0;
+                    details.wins = 0;
+                    details.losses = 0;
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
@@ -632,7 +636,6 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-var db = require('./app/db');
 db.open(function(err, client) {
     if (err) {
         console.log("error opening mongoDb connection "+err);

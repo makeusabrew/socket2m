@@ -64,7 +64,7 @@ module.exports = function(app) {
                                     game.challenger :
                                     game.challengee;
 
-                                outcome = "Defaulted by "+defaulter.username;
+                                outcome = "Forfeited by "+defaulter.username;
                             } else if (game.cancelled) {
                                 outcome = "Cancelled";
                             } else {
