@@ -26,3 +26,7 @@ var Utils = {
         return h+":"+m+":"+s;
     }
 };
+
+if (typeof exports != 'undefined') {
+    module.exports = Utils;
+}

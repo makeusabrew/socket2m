@@ -1,3 +1,5 @@
+var utils = require('./shared/utils');
+
 module.exports = function(app) {
     /**
      * Home Page
@@ -19,13 +21,59 @@ module.exports = function(app) {
      * User profile page
      */
     app.get('/user/:username', function(req, res) {
-        var db = require(__dirname+"/../app/db");
+        var db = require(__dirname+"/db");
         db.collection('users', function(err, collection) {
-            collection.findOne({"username": req.params.username}, function(err, result) {
-                res.render('user', {
-                    user: result
+            collection.findOne({"username": req.params.username}, function(err, user) {
+                db.collection('games', function(err, collection) {
+                    collection.find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]}).limit(6).sort({started: -1}).toArray(function(err, docs) {
+                        var games = [];
+                        docs.forEach(function(game) {
+                            // we could probably do this far more efficiently, but we need to
+                            // augment the game objects before rendering them
+
+                            game.elapsed = utils.formatTime(
+                                Math.round((game.finished - game.started) / 1000)
+                            );
+
+                            var outcome = "";
+                            if (game.defaulted) {
+                                var defaulter = game.defaulter == game.challenger.db_id ?
+                                    game.challenger :
+                                    game.challengee;
+
+                                outcome = "Defaulted by "+defaulter.username;
+                            } else if (game.cancelled) {
+                                outcome = "Cancelled";
+                            } else {
+                                if (game.winner == user._id.toString()) {
+                                    outcome = "Won";
+                                } else {
+                                    outcome = "Lost";
+                                }
+                                if (game.suddendeath) {
+                                    outcome += " (Sudden Death)";
+                                }
+                            }
+
+                            game.outcome = outcome;
+
+                            games.push(game);
+                        });
+                        res.render('user', {
+                            user: user,
+                            games: games
+                        });
+                    });
                 });
             });
         });
+    });
+
+    /**
+     * Shared JS resources
+     */
+    app.get(/^\/shared\/js\/([a-z]+\.js)/, function(req, res) {
+        var file = req.params[0];
+        res.sendfile(__dirname+"/shared/"+file);
     });
 }

@@ -1,1 +1,44 @@
-#{user.username}
+h2 User Profile
+dl
+    dt Username
+    dd #{user.username}
+
+    dt Wins
+    - if (user.wins != null)
+        dd #{user.wins}
+    - else 
+        dd  0
+
+    dt Losses
+    - if (user.losses != null)
+        dd #{user.losses}
+    - else 
+        dd  0
+
+    dt Defaults
+    - if (user.defaults != null)
+        dd #{user.defaults}
+    - else 
+        dd  0
+
+    dt Ranking
+    dd #{user.rank}
+
+h3 Last six games
+
+table.zebra-striped
+    thead
+        tr
+            th Players
+            th Score
+            th Duration
+            th Outcome
+            th Date
+    tbody
+    - each game in games
+        tr
+            td #{game.challenger.username} Vs #{game.challengee.username}
+            td #{game.challenger.score} - #{game.challengee.score}
+            td= game.elapsed
+            td= game.outcome
+            td= game.started

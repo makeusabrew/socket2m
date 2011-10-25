@@ -6,21 +6,22 @@ html(lang="en")
     link(href='/css/bootstrap-1.3.0.min.css', rel='stylesheet', type='text/css')
     link(href='/css/main.css', rel='stylesheet', type='text/css')
 body
-    div.topbar
-        div.topbar-inner
-            div.container
+    .topbar
+        .topbar-inner
+            .container
                 h3 
                     a(href='/') Socket2M
                         span#state-wrapper(style='display:none') 
                             |  /
                             span#state-title
-    !{body}
+    .container
+        !{body}
     #footer
-        div.well
-            div.container
+        .well
+            .container
                 | &copy; 2011
                 a(href='http://paynedigital.com') Payne Digital Ltd
-                div.share
+                .share
                     | <g:plusone size="medium" annotation="inline" width="200"></g:plusone>
                     | <iframe src="//www.facebook.com/plugins/like.php?href&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
                     iframe(allowtransparency='true',frameborder='0', scrolling='no',
