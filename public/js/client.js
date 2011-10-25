@@ -10,6 +10,11 @@ var currentState = null;
 var stateListeners = {};
 var pageTitle = $("title").html();
 
+if (typeof io == 'undefined') {
+    clearTimeout(warnHandler);
+    $("#wrapper").html("<h2>The socket2m server is not running at the moment. Please come back later.</h2>");
+}
+
 socket.on('connect', function() {
     console.log("connected");
     clearTimeout(warnHandler);
