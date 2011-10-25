@@ -44,7 +44,7 @@
             }, 1000);
         }
 
-        return $("<tr data-id='"+game._id+"'><td>"+game.challenger.username+" Vs "+game.challengee.username+"</td><td data-game-time='"+game._id+"'>"+strRemaining+"</td>");
+        return $("<tr data-id='"+game._id+"'><td>"+game.challenger.username+" Vs "+game.challengee.username+"</td><td><span class='challenger'>"+game.challenger.score+"</span> - <span class='challengee'>"+game.challengee.score+"</span></td><td data-game-time='"+game._id+"'>"+strRemaining+"</td>");
     }
 
     function bindListeners() {
@@ -155,7 +155,7 @@
             }
             games.show();
             if (data.games.length == 0) {
-                games.append("<tr class='placeholder'><td>-</td><td>-</td></tr>");
+                games.append("<tr class='placeholder'><td>-</td><td>-</td><td>-</td></tr>");
             }
 
             for (i = 0, j = data.chatlines.length; i < j; i++) {
@@ -206,7 +206,7 @@
             $("#games table tr[data-id='"+id+"']").fadeOut('slow', function() {
                 $(this).remove();
                 if ($("#games table tbody tr").length == 0) {
-                    $("#games table tbody").append("<tr class='placeholder'><td>-</td><td>-</td></tr>");
+                    $("#games table tbody").append("<tr class='placeholder'><td>-</td><td>-</td><td>-</td></tr>");
                 }
             });
         },
@@ -261,6 +261,11 @@
                     }
                 }
             });
+        },
+        'lobby:game:scorechange': function(data) {
+            if ($("#games tr[data-id='"+data.id+"']").length) {
+                $("#games tr[data-id='"+data.id+"'] span."+data.player).html(data.score);
+            }
         },
         'lobby:chat': function(msg) {
             addChatLine(msg);

@@ -422,6 +422,11 @@ io.sockets.on('connection', function(socket) {
                     "eId": data.eId,
                     "doRespawn": respawn
                 });
+                io.sockets.in('lobby').emit('lobby:game:scorechange', {
+                    "id": game._id,
+                    "player": killer.socket_id == game.challenger.socket_id ? "challenger" : "challengee",
+                    "score": killer.score
+                });
                 if (game.suddendeath) {
                     endGame(game);
                 }
