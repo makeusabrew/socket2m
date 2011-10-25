@@ -7,7 +7,7 @@ module.exports = function(app) {
      */
     app.get('/', function(req, res) {
         res.render('index', {
-            'scripts': true
+            'startSocket': true
         });
     });
 

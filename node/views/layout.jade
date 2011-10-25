@@ -28,7 +28,8 @@ body
                     src='//platform.twitter.com/widgets/tweet_button.html?text=Sock it to %27em',
                     style='width:130px; height:20px')
 
-    - if (typeof scripts !== 'undefined')
-        script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
+    script(src='/js/boot.js')
+    - if (typeof startSocket !== 'undefined')
         script(src='/socket.io/socket.io.js')
         script(src='/js/client.js')
