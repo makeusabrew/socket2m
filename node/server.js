@@ -100,6 +100,7 @@ io.sockets.on('connection', function(socket) {
                     if (duplicateLogin) {
                         socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
                     } else {
+                        collection.update({_id: result._id}, {$set: {lastLogin: new Date()}});
                         result.sid = socket.id;
                         delete result.password;
                         authedUsers[socket.id] = result;
@@ -160,6 +161,7 @@ io.sockets.on('connection', function(socket) {
                     details.defaults = 0;
                     details.wins = 0;
                     details.losses = 0;
+                    details.registered = new Date();
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
                     socket.emit('statechange', 'login');
