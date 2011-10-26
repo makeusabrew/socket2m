@@ -18,6 +18,8 @@ require('./app/routes')(app);
 app.configure(function() {
     app.use(express.static(__dirname + '/../public'));
     app.set('view engine', 'jade');
+
+    // we have to disable layout to use template inheritence it seems
     app.set('view options', {
         'layout': false
     });
@@ -29,8 +31,8 @@ io.configure(function() {
 });
 
 io.configure('development', function() {
-    console.log("configuring development options");
-    io.set('log level', 2); // info
+    console.log("configuring development io options");
+    io.set('log level', 3); // debug
 });
 
 // keep a cached copy of all authed (lobby, in game) users
@@ -81,7 +83,7 @@ io.sockets.on('connection', function(socket) {
     /**
      * login
      */
-    socket.on('login', function(data) {
+    socket.on('login:login', function(data) {
         var details = qs.parse(data);
         db.collection('users', function(err, collection) {
 
