@@ -31,7 +31,7 @@ module.exports = function(app) {
                 var players = [];
                 res.render('top-users', {
                     'pageTitle': 'Top 100 Players',
-                    users: players
+                    users: docs
                 });
             });
         });
