@@ -8,14 +8,14 @@ html(lang="en")
         title Sock it to 'em!
     link(href='/css/bootstrap-1.3.0.min.css', rel='stylesheet', type='text/css')
     link(href='/css/main.css', rel='stylesheet', type='text/css')
-    - if (typeof trackStats !== 'undefined')
+    - if (typeof settings !== 'undefined' && settings.trackStats)
         script
             var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', '1234']);
+            _gaq.push(['_setAccount', 'UA-20517424-5']);
             _gaq.push(['_setDomainName', 'none']);
             _gaq.push(['_setAllowLinker', true]);
             _gaq.push(['_trackPageview']);
-            //_gaq.push(['_trackPageLoadTime']);
+            _gaq.push(['_trackPageLoadTime']);
 
             (function() {
                 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;

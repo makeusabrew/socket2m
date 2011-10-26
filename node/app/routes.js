@@ -3,10 +3,19 @@ var db      = require('./db');
 
 module.exports = function(app) {
     /**
+     * global view variables (bleuch)
+     */
+    var settings = {
+        'trackStats': app.enabled('trackStats')
+    };
+
+    /**
      * Home Page
      */
     app.get('/', function(req, res) {
-        res.render('index');
+        res.render('index', {
+            "settings": settings
+        });
     });
 
     /**
@@ -14,7 +23,8 @@ module.exports = function(app) {
      */
     app.get('/about', function(req, res) {
         res.render('about', {
-            'pageTitle': 'About'
+            'pageTitle': 'About',
+            "settings": settings
         });
     });
 
@@ -31,7 +41,8 @@ module.exports = function(app) {
                 var players = [];
                 res.render('top-users', {
                     'pageTitle': 'Top 100 Players',
-                    users: docs
+                    users: docs,
+                    "settings": settings
                 });
             });
         });
@@ -104,7 +115,8 @@ module.exports = function(app) {
                                         'pageTitle': 'User Profile',
                                         user: user,
                                         games: games,
-                                        stats: doc.stats
+                                        stats: doc.stats,
+                                        "settings": settings
                                     });
                                 });
                             });

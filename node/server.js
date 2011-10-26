@@ -15,8 +15,6 @@ var port        = process.argv[2] || 7979;
 app.listen(port);
 console.log("listening on port "+port);
 
-require('./app/routes')(app);
-
 app.configure(function() {
     app.use(express.static(__dirname + '/../public'));
     app.set('view engine', 'jade');
@@ -25,6 +23,11 @@ app.configure(function() {
     app.set('view options', {
         'layout': false
     });
+    app.enable('trackStats');
+});
+
+app.configure('development', function() {
+    app.disable('trackStats');
 });
 
 io.configure(function() {
@@ -36,6 +39,8 @@ io.configure('development', function() {
     console.log("configuring development io options");
     io.set('log level', 3); // debug
 });
+
+require('./app/routes')(app);
 
 // keep a cached copy of all authed (lobby, in game) users
 var authedUsers = {};
