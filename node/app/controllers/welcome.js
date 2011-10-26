@@ -11,16 +11,9 @@ var io = StateManager.io;
 var WelcomeController = {
 
     init: function(socket) {
-        var uCount = 0, gCount = 0;
-        for (var i in StateManager.authedUsers) {
-            uCount ++;
-        }
-        for (var i in StateManager.games) {
-            gCount ++;
-        }
         socket.emit('welcome:count', {
-            'users': uCount,
-            'games': gCount
+            'users': StateManager.countUsers(),
+            'games': StateManager.countGames()
         });
     },
 
@@ -36,24 +29,19 @@ var WelcomeController = {
                 if (result == null) {
                     socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
                 } else {
-                    var duplicateLogin = false;
-                    for (var i in StateManager.authedUsers) {
-                        if (StateManager.authedUsers[i].username == result.username) {
-                            duplicateLogin = true;
-                            break;
-                        }
-                    }
-                    if (duplicateLogin) {
+                    if (StateManager.isUserLoggedIn(result.username)) {
                         socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
                     } else {
                         collection.update({_id: result._id}, {$set: {lastLogin: new Date()}});
                         result.sid = socket.id;
                         delete result.password;
-                        StateManager.authedUsers[socket.id] = result;
+
+                        StateManager.addUser(result);
+
                         socket.join('lobby');
                         socket.emit('statechange', 'lobby');
                         socket.broadcast.to('lobby').emit('lobby:user:join', result);
-                        ChatManager.botChat(StateManager.authedUsers[socket.id].username+" joined the lobby");
+                        ChatManager.botChat(result.username+" joined the lobby");
                     }
                 }
             });

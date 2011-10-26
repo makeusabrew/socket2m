@@ -10,10 +10,8 @@ var StateManager   = require('./app/managers/state');
 // we have to setup the io object as soon as possible
 StateManager.io = io;
 
-// other managers
-var ChatManager    = require('./app/managers/chat');
-
 // controllers
+console.log("load controllers");
 var WelcomeController  = require('./app/controllers/welcome');
 var RegisterController = require('./app/controllers/register');
 var GameController     = require('./app/controllers/game');
@@ -25,6 +23,14 @@ var port        = process.argv[2] || 7979;
 
 app.listen(port);
 console.log("listening on port "+port);
+
+db.open(function(err, client) {
+    if (err) {
+        console.log("error opening mongoDb connection "+err);
+        throw err;
+    }
+    console.log("DB connection opened");
+});
 
 app.configure(function() {
     app.use(express.static(__dirname + '/../public'));
@@ -141,604 +147,64 @@ io.sockets.on('connection', function(socket) {
      * game - request a shot (exciting)
      */
     socket.on('game:weapon:fire', function(options) {
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-
-            var player = socket.id == game.challenger.socket_id ? game.challenger : game.challengee;
-            var now = new Date().getTime();
-            // when did they last fire?
-            player.firedAt = player.firedAt ? player.firedAt : 0;
-            player.weapon = player.weapon ? player.weapon : 0;
-
-            if (now >= player.firedAt + weapons[player.weapon].reload) {
-                // ok, go for it - but add a few options
-                player.firedAt = now;
-
-                player.shots ++;
-
-                options.x = player.x;
-                options.o = socket.id;
-                options.platform = player.platform;
-                options.reloadIn = weapons[player.weapon].reload;
-
-                var bullets = [];
-                for (var i = 0; i < weapons[player.weapon].bullets; i++) {
-                    var fuzz = 0;
-                    if (weapons[player.weapon].fuzz) {
-                        fuzz = (-weapons[player.weapon].fuzz + Math.random()*weapons[player.weapon].fuzz);
-                    }
-                    bullets.push({
-                        "a" : options.a + fuzz,
-                        "v" : options.v + fuzz,
-                        "id": ++game.entityId
-                    });
-                }
-
-                options.bullets = bullets;
-
-                trackGameEvent(game, 'weapon_fire', options);
-
-                io.sockets.in('game_'+game._id).emit('game:weapon:fire', options);
-            } else {
-                var reload = (player.firedAt + weapons[player.weapon].reload - now);
-                console.log("socket "+socket.id+" trying to fire too early: wait "+reload+" ms");
-                socket.emit('game:weapon:fire:wait', reload);
-            }
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:bullet:spawn");
-        }
+        GameController.fireWeapon(socket, options);
     });
 
     /**
      * game - bullet has killed opponent
      */
     socket.on('game:player:kill', function(data) {
-        /**
-         * @todo - verify authenticity of the kill request!
-         */
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            if (game.isFinished == null) {
-                var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
-                killer.score ++;
-
-                killer.hits ++;
-
-                var respawn = game.suddendeath ? false : true;
-
-                var data = {
-                    "id": data.id,
-                    "scores": [
-                        game.challenger.score,
-                        game.challengee.score
-                    ],
-                    "eId": data.eId,
-                    "doRespawn": respawn
-                };
-
-                trackGameEvent(game, 'player_kill', data);
-
-                io.sockets.in('game_'+game._id).emit('game:player:kill', data);
-                io.sockets.in('lobby').emit('lobby:game:scorechange', {
-                    "id": game._id,
-                    "player": killer.socket_id == game.challenger.socket_id ? "challenger" : "challengee",
-                    "score": killer.score
-                });
-                if (game.suddendeath) {
-                    endGame(game);
-                }
-            } else {
-                console.log("ignoring kill for finished game");
-            }
-
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:player:kill");
-        }
+        GameController.killPlayer(socket, data);
     });
 
     /**
      * game - player is requesting respawn. no ID needed as we will infer it
      */
     socket.on('game:player:respawn', function() {
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            respawnGamePlayer(game, socket);
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:player:respawn");
-        }
+        GameController.respawnPlayer(socket);
     });
 
     /**
      * game - player banter
      */
     socket.on('game:player:chat', function(msg) {
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            var data = {
-                "id" : socket.id,
-                "msg": msg
-            };
-            trackGameEvent(game, 'player_chat', data);
-            io.sockets.in('game_'+game._id).emit('game:player:chat', data);
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:player:chat");
-        }
+        GameController.chat(socket, msg);
     });
 
+    /**
+     * game - time for a powerup to appear
+     */
     socket.on('game:powerup:spawn', function() {
-        // let's spawn a random powerup
-        // @todo FIXME replace hard coded stuff
-        // how are we going to get round the fact that the server doesn't know the dimensions of the canvas?
-        // easiest I suppose is to deal with a more abstract unit, e.g. metres or percentages...
-        var x = Math.floor(Math.random()*801) + 75;
-        var y = Math.floor(Math.random()*521) + 20;
-        // @see #575
-        //var t = Math.floor(Math.random()*3);
-        var t = 0;
-        var r = 10;
-
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            var powerup = {
-                "x": x,
-                "y": y,
-                "type": t,
-                "letter": powerups[t].letter,
-                "r": r,
-                "id": ++game.entityId
-            };
-            if (activePowerups[game._id] == null) {
-                activePowerups[game._id] = [];
-            }
-
-            if (activePowerups[game._id].length < 3) {
-                activePowerups[game._id].push(powerup);
-                console.log("adding powerup to game stack", powerup);
-                trackGameEvent(game, 'powerup_spawn', powerup);
-                io.sockets.in('game_'+game._id).emit('game:powerup:spawn', powerup);
-            } else {
-                console.log("not spawning powerup - too many active");
-            }
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:powerup:spawn");
-        }
+        GameController.spawnPowerup(socket);
     });
 
+    /**
+     * game - powerup has been shot
+     */
     socket.on('game:powerup:claim', function(options) {
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            var powerups = activePowerups[game._id];
-            if (powerups == null) {
-                console.log("no powerups found for game "+game._id);
-                return;
-            } else {
-                // great, got powerups. is the one we're claiming valid?
-                for (var i = 0; i < powerups.length; i++) {
-                    if (powerups[i].id == options.id) {
-                        var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
-
-                        player.hits ++;
-
-                        var data = {
-                            "id": powerups[i].id,
-                            "eId": options.eId,
-                        }
-                        trackGameEvent(game, 'powerup_claim', data);
-                        io.sockets.in('game_'+game._id).emit('game:powerup:claim', data);
-                        // got it!
-                        // what does it do?
-                        console.log("player claiming powerup type "+powerups[i].type);
-                        if (powerups[i].type == 0) {
-                            // teleport
-                            respawnGamePlayer(game, socket, true);
-                        } else if (powerups[i].type == 1) {
-                            // shotgun
-                            player.weapon = 1;
-                            socket.emit("game:weapon:change", 1);
-                        } else if (powerups[i].type == 2) {
-                            // pistol
-                            player.weapon = 0;
-                            socket.emit("game:weapon:change", 0);
-                        }
-
-                        powerups.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:powerup:claim");
-        }
+        GameController.claimPowerup(socket, options);
     });
 
     /**
      * game - player thinks time is up
      */
-    socket.on('game:timeup', function(msg) {
-        var game = findGameForSocketId(socket.id);
-        if (game != null) {
-            if (game.timeup == null) {
-                var elapsed = (new Date().getTime() - game.started) / 1000;
-                if (elapsed >= game.duration) {
-                    console.log("game time is UP! Elapsed: "+elapsed+" Vs Duration: "+game.duration);
-                    game.timeup = true;
-                    if (game.challenger.score != game.challengee.score) {
-                        // excellent, we have a winner
-                        endGame(game);
-                    } else {
-                        // draw - sudden death
-                        game.suddendeath = true;
-                        console.log("scores are tied - sudden death mode");
-                        io.sockets.in('game_'+game._id).emit('game:suddendeath');
-                    }
-                } else {
-                    console.log("client reported incorrect game timeup "+elapsed+" Vs "+game.duration);
-
-                    // let the client know, in millis, when to ask for the game end again.
-                    var remaining = Math.round((game.duration - elapsed)*1000);
-                    socket.emit('game:timeup:rejected', remaining);
-                }
-            } else {
-                console.log("ignoring duplicate game:timeup message");
-            }
-        } else {
-            console.log("could not find game for socket ID "+socket.id+" in game:timeup");
-        }
+    socket.on('game:timeup', function() {
+        GameController.timeup(socket);
     });
 
     /**
      * game - player is all done, ready for next state
      */
     socket.on('game:finish', function() {
-        rejoinLobby(socket);
+        GameController.rejoinLobby(socket);
     });
 
     /**
      * disconnect / cleanup
      */
     socket.on('disconnect', function() {
-        // get rid of this user from the active user array
-        if (StateManager.authedUsers[socket.id] != null) {
-            botChat(StateManager.authedUsers[socket.id].username+" left");
-
-            // did the user have any outstanding challenges?
-            findChallenge('any', socket.id, true);
-
-            // was this user in a game? cancel it if so.
-            var game = findGameForSocketId(socket.id);
-            if (game != null) {
-                cancelGame(game, StateManager.authedUsers[socket.id]);
-            }
-
-            delete StateManager.authedUsers[socket.id];
-        }
-
-        io.sockets.emit('user:leave', socket.id);
+        // @todo I don't like state manager handling this! But whiich
+        // controller should it be handled by?
+        StateManager.handleDisconnect(socket);
     });
 });
-
-db.open(function(err, client) {
-    if (err) {
-        console.log("error opening mongoDb connection "+err);
-        throw err;
-    }
-    console.log("DB connection opened");
-});
-
-// retrieve actual player objects from collection
-function getGamePlayers(game, cb) {
-    var players = null;
-    db.collection('users', function(err, collection) {
-        collection.find({ $or : [{"_id": game.challenger.db_id}, {"_id": game.challengee.db_id}]}, function(err, cursor) {
-            cursor.toArray(function(err, docs) {
-                cb(docs);
-            });
-        });
-    });
-}
-
-// an individual socket will cancel a game
-function cancelGame(game, authedUser) {
-    if (game.isFinished) {
-        console.log("not cancelling game - already finished!");
-        return;
-    }
-
-    var player, opponent;
-    var playerObject, opponentObject;
-
-    player = authedUser;
-
-    if (authedUser.sid == game.challenger.socket_id) {
-        playerObject = game.challenger;
-        opponentObject = game.challengee;
-        opponent  = authedUsers[game.challengee.socket_id];
-    } else {
-        playerObject = game.challengee;
-        opponentObject = game.challenger;
-        opponent  = authedUsers[game.challenger.socket_id];
-    }
-
-    game.cancelled = true;
-    game.isFinished = true;
-    game.finished = new Date();
-
-    player.kills = player.kills != null ? player.kills : 0;
-    player.deaths = player.deaths != null ? player.deaths : 0;
-    player.shots = player.shots != null ? player.shots : 0;
-    player.hits = player.hits != null ? player.hits : 0;
-
-    opponent.kills = opponent.kills != null ? opponent.kills : 0;
-    opponent.deaths = opponent.deaths != null ? opponent.deaths : 0;
-    opponent.shots = opponent.shots != null ? opponent.shots : 0;
-    opponent.hits = opponent.hits != null ? opponent.hits : 0;
-
-    player.kills += playerObject.score;
-    player.deaths += opponentObject.score;
-
-    opponent.kills += opponentObject.score;
-    opponent.deaths += playerObject.score;
-
-    player.shots += playerObject.shots;
-    player.hits += playerObject.hits;
-
-    opponent.shots += opponentObject.shots;
-    opponent.hits += opponentObject.hits;
-
-
-    // game > 50% complete?
-    // OR - was this player losing?
-    var scoreReason = playerObject.score < opponentObject.score;
-    var timeReason = game.finished - game.started > ((game.duration*1000) * 0.50);
-
-    if (scoreReason || timeReason) {
-        console.log(player.username+" has forfeited!");
-
-        // naughty naughty. you won't get away with that!
-        botChat(player.username+" forfeited the game against "+opponent.username+"!", 'game-defaulted');
-
-        io.sockets.in('game_'+game._id).emit('game:cancel', {
-            "defaulted": true,
-            "scoreReason": scoreReason,
-            "timeReason": timeReason
-        });
-        game.defaulted = true;
-        game.defaulter = player._id;
-
-        if (player.rank > 0) {
-            player.rank--;
-        }
-        player.defaults = player.defaults != null ? player.defaults : 0;
-        player.defaults ++;
-
-        // we can avoid updating the whole opponent by simply doing a mongo $inc,
-        // but we still want to increment the rank to keep our authedUsers array up to date
-        opponent.rank ++;
-        console.log("incrementing "+opponent.username+" rank");
-
-        authedUsers[opponent.sid] = opponent;
-
-    } else {
-        // ok, the scores were even and less than half the game had elapsed. So, fair enough.
-        botChat("The game between "+player.username+" and "+opponent.username+" has been cancelled", 'game-cancelled');
-        io.sockets.in('game_'+game._id).emit('game:cancel', {
-            "defaulted": false
-        });
-        game.defaulted = false;
-    }
-
-    getGamePlayers(game, function(docs) {
-        var pUpdate = {
-            kills: player.kills,
-            deaths: player.deaths,
-            rank: player.rank,
-            shots: player.shots,
-            hits: player.hits
-        };
-
-        var oUpdate = {
-            kills: opponent.kills,
-            deaths: opponent.deaths,
-            rank: opponent.rank,
-            shots: opponent.shots,
-            hits: opponent.hits
-        };
-
-        db.collection('users', function(err, collection) {
-            collection.update({_id: player._id},   {$set: pUpdate});
-            collection.update({_id: opponent._id}, {$set: oUpdate});
-        });
-    });
-
-    db.collection('games', function(err, collection) {
-        collection.update({_id: game._id}, game);
-    });
-
-    console.log("cancel game - deleting game ID "+game._id);
-    io.sockets.in('lobby').emit('lobby:game:end', game._id);
-    delete games[game._id];
-}
-        
-function endGame(game) {
-    if (game.isFinished) {
-        console.log("not ending game - already finished!");
-        return;
-    }
-
-    var winner = loser = null;
-    var winObject = loseObject = null;
-
-    if (game.challenger.score > game.challengee.score) {
-        winner = authedUsers[game.challenger.socket_id];
-        loser  = authedUsers[game.challengee.socket_id];
-        winObject  = game.challenger;
-        loseObject = game.challengee;
-    } else {
-        winner = authedUsers[game.challengee.socket_id];
-        loser  = authedUsers[game.challenger.socket_id];
-        winObject  = game.challengee;
-        loseObject = game.challenger;
-    }
-
-    botChat(winner.username+" beat "+loser.username+" ("+winObject.score+" - "+loseObject.score+")", "game-finished");
-
-    game.winner = winner._id;
-    game.isFinished = true;
-    game.finished = new Date();
-
-    db.collection('games', function(err, collection) {
-        collection.update({_id: game._id}, game);
-    });
-
-    winner.rank = winner.rank != null ? winner.rank : 0;
-    loser.rank = loser.rank != null ? loser.rank : 0;
-
-    var increase = 0,
-        decrease = 0;
-
-    if (winner.rank < loser.rank) {
-        // they were better, so i get lots of points
-        increase = 3;
-        decrease = 2;
-    } else if (winner.rank == loser.rank) {
-        // even stevens
-        increase = 2;
-        decrease = 1;
-    } else {
-        // well, I should have won
-        increase = 1;
-        decrease = 0;
-        // loser rank not affected
-    }
-
-    console.log("increase: "+increase+" Vs decrease: "+decrease+" (ranks: "+winner.rank+" beat "+loser.rank+")");
-
-    if (loser.rank - decrease < 0) {
-        // ensure we can't be THAT bad - take some edge off the decrease
-        // obviously the gap will be negative, so *add* it instead
-        decrease += (loser.rank - decrease);
-        console.log("capping decrease: "+decrease);
-    }
-    winner.rank += increase;
-    loser.rank  -= decrease;
-
-
-    // add their kills and deaths
-    winner.kills = winner.kills != null ? winner.kills : 0;
-    winner.deaths = winner.deaths != null ? winner.deaths : 0;
-    winner.shots = winner.shots != null ? winner.shots : 0;
-    winner.hits = winner.hits != null ? winner.hits : 0;
-
-    loser.kills = loser.kills != null ? loser.kills : 0;
-    loser.deaths = loser.deaths != null ? loser.deaths : 0;
-    loser.shots = loser.shots != null ? loser.shots : 0;
-    loser.hits = loser.hits != null ? loser.hits : 0;
-
-    winner.kills += winObject.score;
-    winner.deaths += loseObject.score;
-
-    loser.kills += loseObject.score;
-    loser.deaths += winObject.score;
-
-    winner.shots += winObject.shots;
-    winner.hits += winObject.hits;
-
-    loser.shots += loseObject.shots;
-    loser.hits += loseObject.hits;
-
-    // and finally their, er, wins and losses
-    winner.wins = winner.wins != null ? winner.wins+1 : 1;
-    loser.losses = loser.losses != null ? loser.losses+1 : 1;
-
-    io.sockets.sockets[winObject.socket_id].emit('game:win', {
-        "rank": winner.rank,
-        "increase": increase,
-        "scores": {
-            "win": winObject.score,
-            "lose": loseObject.score
-        }
-    });
-    io.sockets.sockets[loseObject.socket_id].emit('game:lose', {
-        "rank": loser.rank,
-        "decrease": decrease,
-        "scores": {
-            "win": winObject.score,
-            "lose": loseObject.score
-        }
-    });
-
-    console.log("end game - deleting game ID "+game._id);
-    io.sockets.in('lobby').emit('lobby:game:end', game._id);
-    delete games[game._id];
-
-    // update our player cache
-    authedUsers[winObject.socket_id] = winner;
-    authedUsers[loseObject.socket_id] = loser;
-
-    getGamePlayers(game, function(docs) {
-        var wUpdate = {
-            kills: winner.kills,
-            deaths: winner.deaths,
-            wins: winner.wins,
-            rank: winner.rank,
-            shots: winner.shots,
-            hits: winner.hits
-        };
-
-        var lUpdate = {
-            kills: loser.kills,
-            deaths: loser.deaths,
-            losses: loser.losses,
-            rank: loser.rank,
-            shots: loser.shots,
-            hits: loser.hits
-        };
-
-        db.collection('users', function(err, collection) {
-            collection.update({_id: winner._id},   {$set: wUpdate});
-            collection.update({_id: loser._id}, {$set: lUpdate});
-        });
-    });
-}
-
-function rejoinLobby(socket) {
-    socket.join('lobby');
-    socket.emit('statechange', 'lobby');
-    socket.broadcast.to('lobby').emit('lobby:user:join', authedUsers[socket.id]);
-
-    botChat(authedUsers[socket.id].username+" rejoined the lobby");
-}
-
-
-function respawnGamePlayer(game, socket, teleport) {
-    if (teleport == null) {
-        teleport = false;
-    }
-    var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
-    player.platform = StateManager.getRandomPlatform(player.platform);
-
-    var data = {
-        "player": player,
-        "teleport": teleport
-    };
-
-    trackGameEvent(game, 'player_respawn', data);
-
-    io.sockets.in('game_'+game._id).emit('game:player:respawn', data);
-}
-
-function trackGameEvent(game, type, data) {
-    //db.collection('games', function(err, collection) {
-    console.log("tracking event "+type);
-    var event = [{
-        'timestamp' : new Date(),
-        'type'      : type,
-        'data'      : data
-    }];
-    if (game.events == null) {
-        game.events = [];
-    }
-    game.events.push(event);
-        //collection.update({_id: id}, {$push: {"events": event}}, {upsert:true});
-    //});
-}

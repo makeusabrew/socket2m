@@ -9,13 +9,14 @@ var LobbyController = {
         var _sockets = io.sockets.clients('lobby');
         var users = [];
         for (var i = 0, j = _sockets.length; i < j; i++) {
-            users.push(StateManager.authedUsers[_sockets[i].id]);
+            users.push(StateManager.getUserForSocket([_sockets[i].id]));
         }
 
         // simply convert the games object to an array
         var activeGames = [];
-        for (var i in StateManager.games) {
-            if (StateManeger.games[i].started != null) {
+        var games = StateManager.getGames();
+        for (var i in games) {
+            if (games[i].started != null) {
                 // we only care about games which have been *started*, not necessarily "created"
                 activeGames.push(games[i]);
             }
@@ -23,7 +24,7 @@ var LobbyController = {
 
         socket.emit('lobby:users', {
             "timestamp": new Date(),
-            "user": StateManager.authedUsers[socket.id],
+            "user": StateManager.getUserForSocket([socket.id]),
             "users": users,
             "games": activeGames,
             "chatlines": ChatManager.getChatlines()
@@ -31,7 +32,7 @@ var LobbyController = {
     },
 
     chat: function(socket, msg) {
-        ChatManager.lobbyChat(StateManager.authedUsers[socket.id], msg);
+        ChatManager.lobbyChat(StateManager.getUserForSocket([socket.id]), msg);
     },
 
     issueChallenge: function(socket, to) {
@@ -46,7 +47,7 @@ var LobbyController = {
                     "from" : socket.id,
                     "to"   : to 
                 });
-                _sockets[to].emit('lobby:challenge:receive', StateManager.authedUsers[socket.id]);
+                _sockets[to].emit('lobby:challenge:receive', StateManager.getUserForSocket([socket.id]));
                 socket.emit('lobby:challenge:confirm', to);
             } else {
                 // can't challenge, already got one
@@ -75,8 +76,8 @@ var LobbyController = {
                         "created"       : new Date(),
                         "started"       : null,
                         "challenger" : {
-                            "db_id"     : StateManager.authedUsers[challenge.from]._id,
-                            "username"  : StateManager.authedUsers[challenge.from].username,
+                            "db_id"     : StateManager.getUserForSocket([challenge.from])._id,
+                            "username"  : StateManager.getUserForSocket([challenge.from]).username,
                             "socket_id" : challenge.from,
                             "platform"  : StateManager.getRandomPlatform(),
                             "x"         : 16,
@@ -87,8 +88,8 @@ var LobbyController = {
                             "hits"      : 0
                         },
                         "challengee" : {
-                            "db_id"     : StateManager.authedUsers[challenge.to]._id,
-                            "username"  : StateManager.authedUsers[challenge.to].username,
+                            "db_id"     : StateManager.getUserForSocket([challenge.to])._id,
+                            "username"  : StateManager.getUserForSocket([challenge.to]).username,
                             "socket_id" : challenge.to,
                             "platform"  : StateManager.getRandomPlatform(),
                             "x"         : 908,

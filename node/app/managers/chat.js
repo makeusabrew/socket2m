@@ -1,8 +1,7 @@
+console.log("load chat");
 var db = require('../db');
 var SocketBot = require('../socket_bot');
-
-// private vars
-var io = require('./state').io;
+var StateManager = require('../managers/state');
 
 // cache the last 10 or so chat lines
 var chatlines = [];
@@ -32,6 +31,10 @@ var ChatManager = {
             chatlines.splice(0, 1);
         }
 
+        // @todo we can't emit here because IO is undefined...
+        // simply because State includes Chat, and we can't assign StateManager.io
+        // until after we've required state.... hum
+        // FIXME is to surely break the dependency on StateManager simply for IO object...
         io.sockets.in('lobby').emit('lobby:chat', line);
 
         // see if socketbot fancies a chat
@@ -41,7 +44,6 @@ var ChatManager = {
                 ChatManager.botChat(response.text);
             }, response.delay);
         }
-            
     },
 
     botChat: function(msg, type) {
