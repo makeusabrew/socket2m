@@ -15,7 +15,9 @@ module.exports = function(app) {
      * About Page 
      */
     app.get('/about', function(req, res) {
-        res.render('about');
+        res.render('about', {
+            'pageTitle': 'About'
+        });
     });
 
     /**
@@ -29,6 +31,7 @@ module.exports = function(app) {
             .sort({rank: -1})
             .toArray(function(err, docs) {
                 res.render('top-users', {
+                    'pageTitle': 'Top 100 Players',
                     users: docs
                 });
             });
@@ -87,6 +90,7 @@ module.exports = function(app) {
                             games.push(game);
                         });
                         res.render('user', {
+                            'pageTitle': 'User Profile',
                             user: user,
                             games: games
                         });

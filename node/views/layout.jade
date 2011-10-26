@@ -2,7 +2,10 @@
 html(lang="en")
     head
     meta(charset='utf-8')
-    title Sock it to 'em!
+    - if (typeof pageTitle != 'undefined')
+        title Sock it to 'em! - #{pageTitle}
+    - else
+        title Sock it to 'em!
     link(href='/css/bootstrap-1.3.0.min.css', rel='stylesheet', type='text/css')
     link(href='/css/main.css', rel='stylesheet', type='text/css')
     - if (typeof trackStats !== 'undefined')
@@ -25,9 +28,14 @@ body
             .container
                 h3 
                     a(href='/') Socket2M
-                        span#state-wrapper(style='display:none') 
-                            |  /
-                            span#state-title
+                        - if (typeof pageTitle != 'undefined')
+                            span#state-wrapper
+                                |  /
+                                span#state-title=pageTitle
+                        - else
+                            span#state-wrapper(style='display:none') 
+                                |  /
+                                span#state-title
     .container
         !{body}
     #footer
