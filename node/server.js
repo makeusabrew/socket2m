@@ -78,12 +78,30 @@ var powerups = {
 var activePowerups = {};
 
 io.sockets.on('connection', function(socket) {
-    socket.emit('statechange', 'login');
+    socket.emit('statechange', 'welcome');
 
     /**
-     * login
+     * welcome - loaded
+     *
+    */
+    socket.on('welcome:ready', function() {
+        var uCount = 0, gCount = 0;
+        for (var i in authedUsers) {
+            uCount ++;
+        }
+        for (var i in games) {
+            gCount ++;
+        }
+        socket.emit('welcome:count', {
+            'users': uCount,
+            'games': gCount
+        });
+    });
+
+    /**
+     * welcome - login
      */
-    socket.on('login:login', function(data) {
+    socket.on('welcome:login', function(data) {
         var details = qs.parse(data);
         db.collection('users', function(err, collection) {
 
@@ -120,9 +138,9 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
-     * login -> register
+     * welcome -> register
      */
-    socket.on('login:register', function() {
+    socket.on('welcome:register', function() {
         socket.emit('statechange', 'register');
     });
 
@@ -171,7 +189,7 @@ io.sockets.on('connection', function(socket) {
                     details.registered = new Date();
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
-                    socket.emit('statechange', 'login');
+                    socket.emit('statechange', 'welcome');
                 } else {
                     socket.emit('msg', 'Sorry, that username or email address is already in use.');
                 }
