@@ -88,12 +88,12 @@ module.exports = function(app) {
                             games.push(game);
                         });
                         db.collection('daily_rankings', function(err, collection) {
-                            collection.find({user_id: user._id}).toArray(function(err, docs) {
+                            collection.findOne({user_id: user._id}, function(err, doc) {
                                 res.render('user', {
                                     'pageTitle': 'User Profile',
                                     user: user,
                                     games: games,
-                                    stats: docs
+                                    stats: doc.stats
                                 });
                             });
                         });

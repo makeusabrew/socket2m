@@ -51,3 +51,56 @@ block content
                 td= game.elapsed
                 td= game.outcome
                 td= game.started
+
+    h3 Daily Ranking
+    #ranking_chart
+
+    #stats(style='display:none')
+        - each stat in stats
+            span(data-date='#{stat.date}',
+                 data-wins='#{stat.wins}',
+                 data-losses='#{stat.losses}',
+                 data-rank='#{stat.rank}')
+
+block scripts
+    script(src='https://www.google.com/jsapi')
+    script
+        google.load("visualization", "1", {packages:["corechart"]});
+        $(function() {
+            var data = new google.visualization.DataTable();
+            data.addColumn("string", "Date");
+            data.addColumn("number", "Wins");
+            data.addColumn("number", "Losses");
+            data.addColumn("number", "Rank");
+            data.addRows($("#stats span").length);
+            var i = 0;
+            var max = 0;
+            $("#stats span").each(function() {
+                var date = new Date($(this).data("date"));
+                date = date.getDate()+"/"+date.getMonth()+"/"+date.getYear();
+                data.setValue(i, 0, date);
+                data.setValue(i, 1, parseInt($(this).data("wins")));
+                data.setValue(i, 2, parseInt($(this).data("losses")));
+                data.setValue(i, 3, parseInt($(this).data("rank")));
+                if ($(this).data("wins") > max) {
+                    max = $(this).data("wins");
+                }
+                if ($(this).data("losses") > max) {
+                    max = $(this).data("losses");
+                }
+                if ($(this).data("rank") > max) {
+                    max = $(this).data("rank");
+                }
+                i++;
+            });
+            if (i > 0) {
+                var chart = new google.visualization.LineChart(document.getElementById('ranking_chart'));
+                chart.draw(data, {width:900, height:400, title: 'Daily Ranking',
+                    vAxis: {
+                        //format: '#,###', makes stuff like 0, 1, 1 (instead of 0.5 for the middle)
+                        maxValue: Math.ceil(max*1.1),
+                        minValue: 0
+                    }
+                });
+            }
+        });

@@ -20,14 +20,14 @@ db.open(function(err, client) {
                 process.exit(0);
             }
             db.collection('daily_rankings', function(err, collection) {
-                var stats = [{
+                var stats = {
                     date: updateDate,
                     rank: doc.rank || 0,
                     wins: doc.wins || 0,
                     losses: doc.losses || 0,
                     kills: doc.kills || 0,
                     defaults: doc.defaults || 0
-                }];
+                };
                 collection
                 .update({user_id: doc._id}, {$push: {"stats": stats}}, {upsert:true});
             });
