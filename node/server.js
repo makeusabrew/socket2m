@@ -1,14 +1,25 @@
+#!/usr/local/bin/node
+
 var express = require('express'),
     app     = express.createServer(),
     io      = require('socket.io').listen(app),
 
-    qs      = require('querystring'),
-    sio     = require('socket.io'),
-    crypto  = require('crypto');
+    sio     = require('socket.io');
 
-// local modules
-var GameManager = require('./app/game_manager');
-var SocketBot   = require('./app/socket_bot');
+var StateManager   = require('./app/managers/state');
+// we have to setup the io object as soon as possible
+StateManager.io = io;
+
+// other managers
+var ChatManager    = require('./app/managers/chat');
+
+// controllers
+var WelcomeController  = require('./app/controllers/welcome');
+var RegisterController = require('./app/controllers/register');
+var GameController     = require('./app/controllers/game');
+var LobbyController    = require('./app/controllers/lobby');
+
+// other local stuff
 var db          = require('./app/db');
 var port        = process.argv[2] || 7979;
 
@@ -43,201 +54,52 @@ io.configure('development', function() {
 
 require('./app/routes')(app);
 
-// keep a cached copy of all authed (lobby, in game) users
-var authedUsers = {};
-
-// keep a copy of any outstanding challenges between players
-var challenges = [];
-
-// keep a copy of all active games in progress
-var games = {};
-
-// cache the last 10 or so chat lines
-var chatlines = [];
-
-// weapon types
-var weapons = {
-    "0" : {
-        "reload"  : 2000,
-        "bullets" : 1,
-        "fuzz"    : 0
-    },
-    "1" : {
-        "reload"  : 3000,
-        "bullets" : 4,
-        "fuzz"    : 5 
-    }
-};
-
-// powerup types
-var powerups = {
-    "0" : {
-        "letter": "T"
-    },
-    "1" : {
-        "letter": "S"
-    },
-    "2" : {
-        "letter": "P"
-    }
-};
-
-// keep track of the active powerups in each game
-var activePowerups = {};
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'welcome');
+    ChatManager.lobbyChat("whatever", "foo");
 
     /**
      * welcome - loaded
      *
     */
     socket.on('welcome:ready', function() {
-        var uCount = 0, gCount = 0;
-        for (var i in authedUsers) {
-            uCount ++;
-        }
-        for (var i in games) {
-            gCount ++;
-        }
-        socket.emit('welcome:count', {
-            'users': uCount,
-            'games': gCount
-        });
+        WelcomeController.init(socket);
     });
 
     /**
      * welcome - login
      */
     socket.on('welcome:login', function(data) {
-        var details = qs.parse(data);
-        db.collection('users', function(err, collection) {
-
-            var hash = crypto.createHash('sha1');
-            hash.update(details.password);
-            details.password = hash.digest('hex');
-
-            collection.findOne(details, function(err, result) {
-                if (result == null) {
-                    socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
-                } else {
-                    duplicateLogin = false;
-                    for (var i in authedUsers) {
-                        if (authedUsers[i].username == result.username) {
-                            duplicateLogin = true;
-                            break;
-                        }
-                    }
-                    if (duplicateLogin) {
-                        socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
-                    } else {
-                        collection.update({_id: result._id}, {$set: {lastLogin: new Date()}});
-                        result.sid = socket.id;
-                        delete result.password;
-                        authedUsers[socket.id] = result;
-                        socket.join('lobby');
-                        socket.emit('statechange', 'lobby');
-                        socket.broadcast.to('lobby').emit('lobby:user:join', result);
-                        botChat(authedUsers[socket.id].username+" joined the lobby");
-                    }
-                }
-            });
-        });
+        WelcomeController.login(socket, data);
     });
 
     /**
      * welcome -> register
      */
     socket.on('welcome:register', function() {
-        socket.emit('statechange', 'register');
+        WelcomeController.goRegister(socket);
     });
 
     /**
      * register - do registration
      */
     socket.on('register:register', function(data) {
-        function validateEmail(email) { 
-            var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(email);
-        } 
-        var details = qs.parse(data);
-
-        var errors = [];
-        if (details.username == null ||
-            details.username.match(/^[A-z_0-9]{1,20}$/) == null) {
-            errors.push("Please enter a valid username");
-        }
-        if (details.email == null ||
-            validateEmail(details.email) == false) {
-            errors.push("Please enter a valid email address");
-        }
-        if (details.password == null ||
-            details.password.match(/^.{4,20}$/) == null) {
-            errors.push("Please enter a valid password");
-        }
-        if (errors.length) {
-            socket.emit('msg', errors.join("<br />"));
-            return;
-        }
-        db.collection('users', function(err, collection) {
-            collection.findOne({ $or : [{"username": details.username}, {"email": details.email}]}, function(err, result) {
-                if (result == null) {
-                    // superb. register
-                    var hash = crypto.createHash('sha1');
-                    hash.update(details.password);
-                    details.password = hash.digest('hex');
-                    details.rank = 0;
-                    details.kills = 0;
-                    details.deaths = 0;
-                    details.defaults = 0;
-                    details.wins = 0;
-                    details.losses = 0;
-                    details.shots = 0;
-                    details.hits = 0;
-                    details.registered = new Date();
-                    collection.insert(details);
-                    socket.emit('msg', 'Congratulations, you\'re registered!');
-                    socket.emit('statechange', 'welcome');
-                } else {
-                    socket.emit('msg', 'Sorry, that username or email address is already in use.');
-                }
-            });
-        });
+        RegisterController.register(socket, data);
     });
 
     /**
      * lobby / user list
      */
     socket.on('lobby:ready', function() {
-        var _sockets = io.sockets.clients('lobby');
-        var users = [];
-        for (var i = 0, j = _sockets.length; i < j; i++) {
-            users.push(authedUsers[_sockets[i].id]);
-        }
-
-        // simply convert the games object to an array
-        var activeGames = [];
-        for (var i in games) {
-            if (games[i].started != null) {
-                // we only care about games which have been *started*, not necessarily "created"
-                activeGames.push(games[i]);
-            }
-        }
-
-        socket.emit('lobby:users', {
-            "timestamp": new Date(),
-            "user": authedUsers[socket.id],
-            "users": users,
-            "games": activeGames,
-            "chatlines": chatlines
-        });
+        LobbyController.init(socket);
     });
 
     /**
      * lobby banter
      */
     socket.on('lobby:chat', function(msg) {
-        lobbyChat(authedUsers[socket.id], msg);
+        LobbyController.chat(socket, msg);
     });
         
 
@@ -292,7 +154,7 @@ io.sockets.on('connection', function(socket) {
                             "db_id"     : authedUsers[challenge.from]._id,
                             "username"  : authedUsers[challenge.from].username,
                             "socket_id" : challenge.from,
-                            "platform"  : GameManager.getRandomPlatform(),
+                            "platform"  : GameController.getRandomPlatform(),
                             "x"         : 16,
                             "a"         : 315,
                             "v"         : Math.floor(Math.random()* 150) + 25,
@@ -304,7 +166,7 @@ io.sockets.on('connection', function(socket) {
                             "db_id"     : authedUsers[challenge.to]._id,
                             "username"  : authedUsers[challenge.to].username,
                             "socket_id" : challenge.to,
-                            "platform"  : GameManager.getRandomPlatform(),
+                            "platform"  : GameController.getRandomPlatform(),
                             "x"         : 908,
                             "a"         : 225,
                             "v"         : Math.floor(Math.random()* 150) + 25,
@@ -987,48 +849,6 @@ function rejoinLobby(socket) {
     botChat(authedUsers[socket.id].username+" rejoined the lobby");
 }
 
-function lobbyChat(author, msg, type) {
-    /**
-     * @todo - any sweary mary filtering?
-     */
-    if (type == null) {
-        type = 'normal';
-    }
-
-    var line = {
-        'timestamp': new Date(),
-        'author' : author,
-        'msg'    : msg,
-        'type'   : type
-    };
-
-    db.collection('chatlines', function(err, collection) {
-        collection.insert(line);
-    });
-
-    chatlines.push(line);
-    if (chatlines.length > 10) {
-        chatlines.splice(0, 1);
-    }
-
-    io.sockets.in('lobby').emit('lobby:chat', line);
-
-    // see if socketbot fancies a chat
-    var response = SocketBot.respondTo(msg);
-    if (response) {
-        setTimeout(function() {
-            botChat(response.text);
-        }, response.delay);
-    }
-        
-}
-
-function botChat(msg, type) {
-    if (type == null) {
-        type = 'bot';
-    }
-    lobbyChat(SocketBot.object, msg, type);
-}
 
 function findChallenge(who, id, remove) {
     if (remove == null) {
@@ -1060,7 +880,7 @@ function respawnGamePlayer(game, socket, teleport) {
         teleport = false;
     }
     var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
-    player.platform = GameManager.getRandomPlatform(player.platform);
+    player.platform = GameController.getRandomPlatform(player.platform);
 
     var data = {
         "player": player,
