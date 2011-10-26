@@ -94,13 +94,18 @@ module.exports = function(app) {
 
                             games.push(game);
                         });
-                        db.collection('daily_rankings', function(err, collection) {
-                            collection.findOne({user_id: user._id}, function(err, doc) {
-                                res.render('user', {
-                                    'pageTitle': 'User Profile',
-                                    user: user,
-                                    games: games,
-                                    stats: doc.stats
+                        collection
+                        .find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]})
+                        .count(function(err, count) {
+                            user.gamesPlayed = count;
+                            db.collection('daily_rankings', function(err, collection) {
+                                collection.findOne({user_id: user._id}, function(err, doc) {
+                                    res.render('user', {
+                                        'pageTitle': 'User Profile',
+                                        user: user,
+                                        games: games,
+                                        stats: doc.stats
+                                    });
                                 });
                             });
                         });

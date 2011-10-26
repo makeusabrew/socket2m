@@ -7,6 +7,9 @@ block content
             dt Username
             dd <a href="/user/#{user.username}">#{user.username}</a>
 
+            dt Ranking
+            dd #{user.rank}
+
             dt Wins
             - if (user.wins != null)
                 dd #{user.wins}
@@ -24,6 +27,3 @@ block content
                 dd #{user.defaults}
             - else 
                 dd  0
-
-            dt Ranking
-            dd #{user.rank}
