@@ -511,16 +511,62 @@ var GameManager = (function() {
         }
     }
 
-    self.start = function(duration) {
+    self.start = function(data) {
+        // set up
+        var challenger = data.challenger;
+        var challengee = data.challengee;
+        $("#state-title").html("Game On: "+challenger.username+" Vs "+challengee.username);
+        $("#game .stats").html("0");
+
+        self.bindKeys();
+
+
+        var p1 = Player.factory({
+            "id": challenger.socket_id,
+            "x" : challenger.x,
+            "y" : self.getCoordinateForPlatform(challenger.platform),
+            "a" : challenger.a,
+            "v" : challenger.v,
+            "c" : "rgb(0, 255, 0)",
+            "side": "left",
+            "username" : challenger.username
+        });
+        var p2 = Player.factory({
+            "id": challengee.socket_id,
+            "x" : challengee.x,
+            "y" : self.getCoordinateForPlatform(challengee.platform),
+            "a" : challengee.a,
+            "v" : challengee.v,
+            "c" : "rgb(0, 0, 255)",
+            "side": "right",
+            "username" : challengee.username
+        });
+
+        if (challenger.socket_id == data.user.sid) {
+            // we're "player 1" - face right
+            self.setPlayer(p1);
+            self.setOpponent(p2);
+        } else {
+            // we're p2 so... well, you get it
+            self.setPlayer(p2);
+            self.setOpponent(p1);
+        }
+
+        // bind any canvas rendering to #viewport
+        self.initSurface("viewport");
+
+        self.addPlatforms();
+
         _killPending = false;
         _gameOver = false;
         _suddenDeath = false;
         _chatting = false;
         _notifiedOfTimeout = false;
         _screenDuration = -1;
-        _duration = duration;
+        _duration = data.duration;
         _lastTick = new Date().getTime();
         _entities = [];
+        // we don't need to reset platforms
         //_platforms = [];
         _powerups = [];
         _respawns = [];

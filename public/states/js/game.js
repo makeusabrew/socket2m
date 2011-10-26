@@ -1,68 +1,10 @@
 (function() {
-    var user = null;
-
     stateListeners = {
         'game:start': function(data) {
             console.log("starting game");
-            console.log(data);
-            started = true;
-
-            challenger = data.challenger;
-            challengee = data.challengee;
-            user = data.user;
-            $("#state-title").html("Game On: "+challenger.username+" Vs "+challengee.username);
-            $("#game .stats").html("0");
-
-            GameManager.bindKeys();
-
-
-            var p1 = Player.factory({
-                "id": challenger.socket_id,
-                "x" : challenger.x,
-                "y" : GameManager.getCoordinateForPlatform(challenger.platform),
-                "a" : challenger.a,
-                "v" : challenger.v,
-                "c" : "rgb(0, 255, 0)",
-                "side": "left",
-                "username" : challenger.username
-            });
-            var p2 = Player.factory({
-                "id": challengee.socket_id,
-                "x" : challengee.x,
-                "y" : GameManager.getCoordinateForPlatform(challengee.platform),
-                "a" : challengee.a,
-                "v" : challengee.v,
-                "c" : "rgb(0, 0, 255)",
-                "side": "right",
-                "username" : challengee.username
-            });
-
-            if (challenger.socket_id == user.sid) {
-                // we're "player 1" - face right
-                GameManager.setPlayer(p1);
-                GameManager.setOpponent(p2);
-            } else {
-                // we're p2 so... well, you get it
-                GameManager.setPlayer(p2);
-                GameManager.setOpponent(p1);
-            }
-
-            // bind any canvas rendering to #viewport
-            GameManager.initSurface("viewport");
-
-            GameManager.addPlatforms();
-
-            $("#game #volume").click(function(e) {
-                e.preventDefault();
-                SoundManager.toggleSounds();
-            });
-
-            GameManager.start(data.duration);
-
+            GameManager.start(data);
             // GO!
-            console.log("starting tick()");
             tick();
-
         },
 
         'game:weapon:fire': function(options) {
@@ -82,7 +24,6 @@
         },
 
         'game:weapon:change': function(type) {
-            console.log("got weapon change", type);
             GameManager.changePlayerWeapon(type);
         },
 
@@ -120,6 +61,11 @@
     };
 
 })();
+
+$("#game #volume").click(function(e) {
+    e.preventDefault();
+    SoundManager.toggleSounds();
+});
 
 // preload some sfx
 SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
