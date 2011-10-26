@@ -29,16 +29,15 @@ socket.on('statechange', function(state) {
         checkComplete = function(_faded, _data) {
 
         if (_faded != null) {
-            console.log("fade out complete");
+            //console.log("fade out complete");
             faded = _faded;
         }
         if (_data != null) {
-            console.log("data complete");
+            //console.log("data complete");
             data = _data;
         }
 
         if (faded && data) {
-            console.log("fade & data complete");
             $("#wrapper").html(data);
             var heading = $("#wrapper h1:first");
             $("#state-wrapper").hide().children("#state-title").html(heading.html());
@@ -53,10 +52,13 @@ socket.on('statechange', function(state) {
             loadScript('/states/js/'+state+'.js?t='+ts);
             currentState = state;
             for (var _event in stateListeners) {
-                console.log("binding "+_event+" listener");
+                //console.debug("binding "+_event+" listener");
                 socket.on(_event, stateListeners[_event]);
             }
             console.log("changed state to "+state);
+            if (typeof _gaq != 'undefined') {
+                _gaq.push(['_trackPageview', '/'+state]);
+            }
         }
     }
     $("#state-wrapper").fadeOut('fast');
@@ -66,7 +68,7 @@ socket.on('statechange', function(state) {
 
     // unbind handlers
     for (var _event in stateListeners) {
-        console.log("removing "+_event+" listener");
+        //console.debug("removing "+_event+" listener");
         socket.removeListener(_event, stateListeners[_event]);
     }
 

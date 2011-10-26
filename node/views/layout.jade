@@ -5,6 +5,20 @@ html(lang="en")
     title Sock it to 'em!
     link(href='/css/bootstrap-1.3.0.min.css', rel='stylesheet', type='text/css')
     link(href='/css/main.css', rel='stylesheet', type='text/css')
+    - if (typeof trackStats !== 'undefined')
+        script
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', '1234']);
+            _gaq.push(['_setDomainName', 'none']);
+            _gaq.push(['_setAllowLinker', true]);
+            _gaq.push(['_trackPageview']);
+            //_gaq.push(['_trackPageLoadTime']);
+
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
 body
     .topbar
         .topbar-inner
