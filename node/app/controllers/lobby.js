@@ -1,5 +1,6 @@
 var ChatManager = require('../managers/chat');
 var StateManager = require('../managers/state');
+var db = require('../db');
 
 var io = StateManager.io;
 
@@ -30,7 +31,125 @@ var LobbyController = {
     },
 
     chat: function(socket, msg) {
-        ChatManager.lobbyChat(authedUsers[socket.id], msg);
+        ChatManager.lobbyChat(StateManager.authedUsers[socket.id], msg);
+    },
+
+    issueChallenge: function(socket, to) {
+        // make sure the ID we're challenging is in the lobby
+        // FIXME this line won't work - this gets us all sockets which means we can challenge ANYONE!
+        var _sockets = io.sockets.in('lobby').sockets;
+        if (_sockets[to] != null) {
+            var challenge = StateManager.findChallenge('any', to);
+            if (challenge == null) {
+                // excellent! Issue the challenge from the challenger's user object
+                StateManager.addChallenge({
+                    "from" : socket.id,
+                    "to"   : to 
+                });
+                _sockets[to].emit('lobby:challenge:receive', StateManager.authedUsers[socket.id]);
+                socket.emit('lobby:challenge:confirm', to);
+            } else {
+                // can't challenge, already got one
+                console.log('Cannot issue challenge - ID already has one outstanding');
+                socket.emit('lobby:challenge:blocked');
+            }
+        } else {
+            console.log("Could not find ID to challenge in lobby "+to);
+        }
+    },
+
+    respondToChallenge: function(socket, accepted) {
+        // the third arg here deletes the challenge from the challenges array
+        var challenge = StateManager.findChallenge('to', socket.id, true);
+
+        if (challenge != null) {
+            console.log("challenge from "+challenge.from+" to "+challenge.to+": "+accepted);
+            var _sockets = [
+                io.sockets.sockets[challenge.to],
+                io.sockets.sockets[challenge.from]
+            ];
+            if (accepted) {
+                db.collection('games', function(err, collection) {
+                    
+                    var game = {
+                        "created"       : new Date(),
+                        "started"       : null,
+                        "challenger" : {
+                            "db_id"     : StateManager.authedUsers[challenge.from]._id,
+                            "username"  : StateManager.authedUsers[challenge.from].username,
+                            "socket_id" : challenge.from,
+                            "platform"  : StateManager.getRandomPlatform(),
+                            "x"         : 16,
+                            "a"         : 315,
+                            "v"         : Math.floor(Math.random()* 150) + 25,
+                            "score"     : 0,
+                            "shots"     : 0,
+                            "hits"      : 0
+                        },
+                        "challengee" : {
+                            "db_id"     : StateManager.authedUsers[challenge.to]._id,
+                            "username"  : StateManager.authedUsers[challenge.to].username,
+                            "socket_id" : challenge.to,
+                            "platform"  : StateManager.getRandomPlatform(),
+                            "x"         : 908,
+                            "a"         : 225,
+                            "v"         : Math.floor(Math.random()* 150) + 25,
+                            "score"     : 0,
+                            "shots"     : 0,
+                            "hits"      : 0
+                        },
+                        "entityId" : 0,
+                        "duration": 90,
+                        "cancelled": false
+                    };
+                    collection.insert(game, function(err, result) {
+                        StateManager.addGame(result[0]);
+                    });
+                });
+
+                for (var i = 0; i < 2; i++) {
+                    _sockets[i].leave('lobby');
+                    // @todo can we actually hook into event listeners on join / leave instead? probably...
+                    io.sockets.emit('user:leave', _sockets[i].id);
+                }
+            }
+            for (var i = 0; i < 2; i++) {
+                _sockets[i].emit('lobby:challenge:response', {
+                    "accepted": accepted,
+                    "to": socket.id
+                });
+            }
+        } else {
+            console.log("Could not find challenge");
+        }
+    },
+
+    cancelChallenge: function(socket, to) {
+        var challenge = StateManager.findChallenge('to', to, true);
+        if (challenge == null) {
+            console.log("invalid challenge");
+            socket.emit("lobby:challenge:cancel:invalid");
+            return;
+        }
+
+        console.log("challenge from "+challenge.from+" to "+challenge.to+": cancelled");
+        if (io.sockets.sockets[challenge.to]) {
+            // feasibly, a reason the challenger withdrew is because the opponent left
+            // @todo perhaps handle this globally - e.g delete the challenge object
+            // when a user leaves instead?
+            io.sockets.sockets[challenge.to].emit("lobby:challenge:cancel");
+        }
+    },
+
+    startGame: function(socket) {
+        // is this user allowed - e.g. do they have an active game?
+        var game = StateManager.findGameForSocketId(socket.id);
+        if (game == null) {
+            console.log("could not find game for socket ID "+socket.id+" in "+arguments.callee);
+            return;
+        }
+
+        socket.emit('statechange', 'game');
     }
 };
 

@@ -3,6 +3,8 @@ var SocketBot = require('../socket_bot');
 
 // private vars
 var io = require('./state').io;
+
+// cache the last 10 or so chat lines
 var chatlines = [];
 
 var ChatManager = {
