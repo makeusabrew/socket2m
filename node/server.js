@@ -705,10 +705,10 @@ function cancelGame(game, authedUser) {
     var timeReason = game.finished - game.started > ((game.duration*1000) * 0.50);
 
     if (scoreReason || timeReason) {
-        console.log(player.username+" has defaulted!");
+        console.log(player.username+" has forfeited!");
 
         // naughty naughty. you won't get away with that!
-        botChat(player.username+" defaulted against "+opponent.username+"!", 'game-defaulted');
+        botChat(player.username+" forfeited the game against "+opponent.username+"!", 'game-defaulted');
 
         io.sockets.in('game_'+game._id).emit('game:cancel', {
             "defaulted": true,
