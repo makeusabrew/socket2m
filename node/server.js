@@ -18,6 +18,9 @@ require('./app/routes')(app);
 app.configure(function() {
     app.use(express.static(__dirname + '/../public'));
     app.set('view engine', 'jade');
+    app.set('view options', {
+        'layout': false
+    });
 });
 
 io.configure(function() {

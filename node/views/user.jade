@@ -1,50 +1,53 @@
-h2 User Profile
-dl
-    dt Username
-    dd #{user.username}
+extends layout
 
-    dt Kills
-    - if (user.kills != null)
-        dd #{user.kills}
-    - else 
-        dd  0
+block content
+    h2 User Profile
+    dl
+        dt Username
+        dd #{user.username}
 
-    dt Deaths
-    - if (user.deaths != null)
-        dd #{user.deaths}
-    - else 
-        dd  0
+        dt Kills
+        - if (user.kills != null)
+            dd #{user.kills}
+        - else 
+            dd  0
 
-    dt Losses
-    - if (user.losses != null)
-        dd #{user.losses}
-    - else 
-        dd  0
+        dt Deaths
+        - if (user.deaths != null)
+            dd #{user.deaths}
+        - else 
+            dd  0
 
-    dt Forfeits (<a title="View information about forfeiting games" href="/about#forfeits">?</a>)
-    - if (user.defaults != null)
-        dd #{user.defaults}
-    - else 
-        dd  0
+        dt Losses
+        - if (user.losses != null)
+            dd #{user.losses}
+        - else 
+            dd  0
 
-    dt Ranking
-    dd #{user.rank}
+        dt Forfeits (<a title="View information about forfeiting games" href="/about#forfeits">?</a>)
+        - if (user.defaults != null)
+            dd #{user.defaults}
+        - else 
+            dd  0
 
-h3 Last six games
+        dt Ranking
+        dd #{user.rank}
 
-table.zebra-striped
-    thead
-        tr
-            th Players
-            th Score
-            th Duration
-            th Outcome
-            th Date
-    tbody
-    - each game in games
-        tr
-            td <a href="/user/#{game.challenger.username}">#{game.challenger.username}</a> Vs <a href="/user/#{game.challengee.username}">#{game.challengee.username}</a>
-            td #{game.challenger.score} - #{game.challengee.score}
-            td= game.elapsed
-            td= game.outcome
-            td= game.started
+    h3 Last six games
+
+    table.zebra-striped
+        thead
+            tr
+                th Players
+                th Score
+                th Duration
+                th Outcome
+                th Date
+        tbody
+        - each game in games
+            tr
+                td <a href="/user/#{game.challenger.username}">#{game.challenger.username}</a> Vs <a href="/user/#{game.challengee.username}">#{game.challengee.username}</a>
+                td #{game.challenger.score} - #{game.challengee.score}
+                td= game.elapsed
+                td= game.outcome
+                td= game.started

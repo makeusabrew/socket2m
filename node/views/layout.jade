@@ -37,7 +37,8 @@ body
                                 |  /
                                 span#state-title
     .container
-        !{body}
+        block content
+
     #footer
         .well.container
             | &copy; 2011
@@ -51,6 +52,4 @@ body
 
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
     script(src='/js/boot.js')
-    - if (typeof startSocket !== 'undefined')
-        script(src='/socket.io/socket.io.js')
-        script(src='/js/run.js')
+    block scripts

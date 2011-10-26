@@ -6,9 +6,7 @@ module.exports = function(app) {
      * Home Page
      */
     app.get('/', function(req, res) {
-        res.render('index', {
-            'startSocket': true
-        });
+        res.render('index');
     });
 
     /**
@@ -89,10 +87,15 @@ module.exports = function(app) {
 
                             games.push(game);
                         });
-                        res.render('user', {
-                            'pageTitle': 'User Profile',
-                            user: user,
-                            games: games
+                        db.collection('daily_rankings', function(err, collection) {
+                            collection.find({user_id: user._id}).toArray(function(err, docs) {
+                                res.render('user', {
+                                    'pageTitle': 'User Profile',
+                                    user: user,
+                                    games: games,
+                                    stats: docs
+                                });
+                            });
                         });
                     });
                 });
