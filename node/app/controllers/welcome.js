@@ -2,6 +2,7 @@ var qs     = require('querystring'),
     crypto = require('crypto');
 
 var StateManager = require('../managers/state');
+var ChatManager  = require('../managers/chat');
 var db = require('../db');
 
 // private
@@ -26,7 +27,7 @@ var WelcomeController = {
     login: function(socket, data) {
         var details = qs.parse(data);
         db.collection('users', function(err, collection) {
-
+            
             var hash = crypto.createHash('sha1');
             hash.update(details.password);
             details.password = hash.digest('hex');
@@ -35,7 +36,7 @@ var WelcomeController = {
                 if (result == null) {
                     socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
                 } else {
-                    duplicateLogin = false;
+                    var duplicateLogin = false;
                     for (var i in StateManager.authedUsers) {
                         if (StateManager.authedUsers[i].username == result.username) {
                             duplicateLogin = true;

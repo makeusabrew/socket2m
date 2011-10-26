@@ -57,7 +57,6 @@ require('./app/routes')(app);
 
 io.sockets.on('connection', function(socket) {
     socket.emit('statechange', 'welcome');
-    ChatManager.lobbyChat("whatever", "foo");
 
     /**
      * welcome - loaded
@@ -529,8 +528,8 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('disconnect', function() {
         // get rid of this user from the active user array
-        if (authedUsers[socket.id] != null) {
-            botChat(authedUsers[socket.id].username+" left");
+        if (StateManager.authedUsers[socket.id] != null) {
+            botChat(StateManager.authedUsers[socket.id].username+" left");
 
             // did the user have any outstanding challenges?
             findChallenge('any', socket.id, true);
@@ -538,10 +537,10 @@ io.sockets.on('connection', function(socket) {
             // was this user in a game? cancel it if so.
             var game = findGameForSocketId(socket.id);
             if (game != null) {
-                cancelGame(game, authedUsers[socket.id]);
+                cancelGame(game, StateManager.authedUsers[socket.id]);
             }
 
-            delete authedUsers[socket.id];
+            delete StateManager.authedUsers[socket.id];
         }
 
         io.sockets.emit('user:leave', socket.id);
@@ -553,6 +552,7 @@ db.open(function(err, client) {
         console.log("error opening mongoDb connection "+err);
         throw err;
     }
+    console.log("DB connection opened");
 });
 
 function findGameForSocketId(sid) {
