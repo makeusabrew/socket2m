@@ -363,13 +363,6 @@ io.sockets.on('connection', function(socket) {
 
                 // notify the lobby dwellers
                 io.sockets.in('lobby').emit('lobby:game:start', game);
-
-                // could do the timeout this way?
-                /*
-                game.timeHandler = setTimeout(function() {
-                    //
-                }, game.duration*1000);
-                */
             }
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:ready");
@@ -413,6 +406,8 @@ io.sockets.on('connection', function(socket) {
 
                 options.bullets = bullets;
 
+                trackGameEvent(game, 'weapon_fire', options);
+
                 io.sockets.in('game_'+game._id).emit('game:weapon:fire', options);
             } else {
                 var reload = (player.firedAt + weapons[player.weapon].reload - now);
@@ -439,7 +434,7 @@ io.sockets.on('connection', function(socket) {
 
                 var respawn = game.suddendeath ? false : true;
 
-                io.sockets.in('game_'+game._id).emit('game:player:kill', {
+                var data = {
                     "id": data.id,
                     "scores": [
                         game.challenger.score,
@@ -447,7 +442,11 @@ io.sockets.on('connection', function(socket) {
                     ],
                     "eId": data.eId,
                     "doRespawn": respawn
-                });
+                };
+
+                trackGameEvent(game, 'player_kill', data);
+
+                io.sockets.in('game_'+game._id).emit('game:player:kill', data);
                 io.sockets.in('lobby').emit('lobby:game:scorechange', {
                     "id": game._id,
                     "player": killer.socket_id == game.challenger.socket_id ? "challenger" : "challengee",
@@ -483,10 +482,12 @@ io.sockets.on('connection', function(socket) {
     socket.on('game:player:chat', function(msg) {
         var game = findGameForSocketId(socket.id);
         if (game != null) {
-            io.sockets.in('game_'+game._id).emit('game:player:chat', {
+            var data = {
                 "id" : socket.id,
                 "msg": msg
-            });
+            };
+            trackGameEvent(game, 'player_chat', data);
+            io.sockets.in('game_'+game._id).emit('game:player:chat', data);
         } else {
             console.log("could not find game for socket ID "+socket.id+" in game:player:chat");
         }
@@ -521,6 +522,7 @@ io.sockets.on('connection', function(socket) {
             if (activePowerups[game._id].length < 3) {
                 activePowerups[game._id].push(powerup);
                 console.log("adding powerup to game stack", powerup);
+                trackGameEvent(game, 'powerup_spawn', powerup);
                 io.sockets.in('game_'+game._id).emit('game:powerup:spawn', powerup);
             } else {
                 console.log("not spawning powerup - too many active");
@@ -542,10 +544,13 @@ io.sockets.on('connection', function(socket) {
                 for (var i = 0; i < powerups.length; i++) {
                     if (powerups[i].id == options.id) {
                         var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
-                        io.sockets.in('game_'+game._id).emit('game:powerup:claim', {
+
+                        var data = {
                             "id": powerups[i].id,
                             "eId": options.eId,
-                        });
+                        }
+                        trackGameEvent(game, 'powerup_claim', data);
+                        io.sockets.in('game_'+game._id).emit('game:powerup:claim', data);
                         // got it!
                         // what does it do?
                         console.log("player claiming powerup type "+powerups[i].type);
@@ -961,10 +966,30 @@ function respawnGamePlayer(game, socket, teleport) {
         teleport = false;
     }
     var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
-
     player.platform = GameManager.getRandomPlatform(player.platform);
-    io.sockets.in('game_'+game._id).emit('game:player:respawn', {
+
+    var data = {
         "player": player,
         "teleport": teleport
-    });
+    };
+
+    trackGameEvent(game, 'player_respawn', data);
+
+    io.sockets.in('game_'+game._id).emit('game:player:respawn', data);
+}
+
+function trackGameEvent(game, type, data) {
+    //db.collection('games', function(err, collection) {
+    console.log("tracking event "+type);
+    var event = [{
+        'timestamp' : new Date(),
+        'type'      : type,
+        'data'      : data
+    }];
+    if (game.events == null) {
+        game.events = [];
+    }
+    game.events.push(event);
+        //collection.update({_id: id}, {$push: {"events": event}}, {upsert:true});
+    //});
 }
