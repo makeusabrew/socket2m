@@ -23,14 +23,12 @@ app.configure(function() {
     app.set('view options', {
         'layout': false
     });
+    app.enable('trackStats');
 });
 
 app.configure('development', function() {
+    console.log("Configuring development app options");
     app.disable('trackStats');
-});
-
-app.configure('production', function() {
-    app.enable('trackStats');
 });
 
 io.configure(function() {
