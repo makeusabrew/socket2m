@@ -10,8 +10,10 @@ var express = require('express'),
 var GameManager = require('./app/game_manager');
 var SocketBot   = require('./app/socket_bot');
 var db          = require('./app/db');
+var port        = process.argv[2] || 7979;
 
-app.listen(7979);
+app.listen(port);
+console.log("listening on port "+port);
 
 require('./app/routes')(app);
 

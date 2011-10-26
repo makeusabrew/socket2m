@@ -5,7 +5,7 @@ var warnHandler = setTimeout(function() {
     $("#wrapper").html("<h2>It doesn't look like the socket2m server is running at the moment. Please come back later.</h2>");
 }, 1500);
 
-var socket = (typeof io != 'undefined') ? io.connect(null, {port: 7979}) : {'on':function(){}};
+var socket = (typeof io != 'undefined') ? io.connect() : {'on':function(){}};
 var currentState = null;
 var stateListeners = {};
 var pageTitle = $("title").html();
