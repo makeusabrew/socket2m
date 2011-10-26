@@ -28,9 +28,10 @@ module.exports = function(app) {
             .limit(100)
             .sort({rank: -1})
             .toArray(function(err, docs) {
+                var players = [];
                 res.render('top-users', {
                     'pageTitle': 'Top 100 Players',
-                    users: docs
+                    users: players
                 });
             });
         });
@@ -46,6 +47,12 @@ module.exports = function(app) {
                 if (user == null) {
                     res.send("Invalid user");
                     return;
+                }
+                if (!user.shots) {
+                    user.accuracy = 0;
+                } else {
+                    var hits = user.hits || 0;
+                    user.accuracy = Math.round((hits / user.shots)*100);
                 }
                 db.collection('games', function(err, collection) {
                     collection

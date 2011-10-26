@@ -6,6 +6,9 @@ block content
         dt Username
         dd #{user.username}
 
+        dt Ranking
+        dd #{user.rank}
+
         dt Kills
         - if (user.kills != null)
             dd #{user.kills}
@@ -30,8 +33,8 @@ block content
         - else 
             dd  0
 
-        dt Ranking
-        dd #{user.rank}
+        dt Accuracy
+            dd #{user.accuracy}&#37;
 
     h3 Last six games
 
@@ -95,7 +98,7 @@ block scripts
             });
             if (i > 0) {
                 var chart = new google.visualization.LineChart(document.getElementById('ranking_chart'));
-                chart.draw(data, {width:900, height:400, title: 'Daily Ranking',
+                chart.draw(data, {width:940, height:500, title: 'Daily Ranking',
                     vAxis: {
                         //format: '#,###', makes stuff like 0, 1, 1 (instead of 0.5 for the middle)
                         maxValue: Math.ceil(max*1.1),

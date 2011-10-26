@@ -187,3 +187,7 @@ dl dt:after {
 #users table td a {
     float:right;
 }
+
+#ranking_chart {
+    height:500px;
+}

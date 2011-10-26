@@ -164,6 +164,8 @@ io.sockets.on('connection', function(socket) {
                     details.defaults = 0;
                     details.wins = 0;
                     details.losses = 0;
+                    details.shots = 0;
+                    details.hits = 0;
                     details.registered = new Date();
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
@@ -266,7 +268,9 @@ io.sockets.on('connection', function(socket) {
                             "x"         : 16,
                             "a"         : 315,
                             "v"         : Math.floor(Math.random()* 150) + 25,
-                            "score"     : 0
+                            "score"     : 0,
+                            "shots"     : 0,
+                            "hits"      : 0
                         },
                         "challengee" : {
                             "db_id"     : authedUsers[challenge.to]._id,
@@ -276,7 +280,9 @@ io.sockets.on('connection', function(socket) {
                             "x"         : 908,
                             "a"         : 225,
                             "v"         : Math.floor(Math.random()* 150) + 25,
-                            "score"     : 0
+                            "score"     : 0,
+                            "shots"     : 0,
+                            "hits"      : 0
                         },
                         "entityId" : 0,
                         "duration": 90,
@@ -389,6 +395,8 @@ io.sockets.on('connection', function(socket) {
                 // ok, go for it - but add a few options
                 player.firedAt = now;
 
+                player.shots ++;
+
                 options.x = player.x;
                 options.o = socket.id;
                 options.platform = player.platform;
@@ -434,6 +442,8 @@ io.sockets.on('connection', function(socket) {
             if (game.isFinished == null) {
                 var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
                 killer.score ++;
+
+                killer.hits ++;
 
                 var respawn = game.suddendeath ? false : true;
 
@@ -547,6 +557,8 @@ io.sockets.on('connection', function(socket) {
                 for (var i = 0; i < powerups.length; i++) {
                     if (powerups[i].id == options.id) {
                         var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
+
+                        player.hits ++;
 
                         var data = {
                             "id": powerups[i].id,
@@ -683,17 +695,17 @@ function cancelGame(game, authedUser) {
     }
 
     var player, opponent;
-    var pScore, oScore;
+    var playerObject, opponentObject;
 
     player = authedUser;
 
     if (authedUser.sid == game.challenger.socket_id) {
-        pScore = game.challenger.score;
-        oScore = game.challengee.score;
+        playerObject = game.challenger;
+        opponentObject = game.challengee;
         opponent  = authedUsers[game.challengee.socket_id];
     } else {
-        pScore = game.challengee.score;
-        oScore = game.challenger.score;
+        playerObject = game.challengee;
+        opponentObject = game.challenger;
         opponent  = authedUsers[game.challenger.socket_id];
     }
 
@@ -701,10 +713,32 @@ function cancelGame(game, authedUser) {
     game.isFinished = true;
     game.finished = new Date();
 
+    player.kills = player.kills != null ? player.kills : 0;
+    player.deaths = player.deaths != null ? player.deaths : 0;
+    player.shots = player.shots != null ? player.shots : 0;
+    player.hits = player.hits != null ? player.hits : 0;
+
+    opponent.kills = opponent.kills != null ? opponent.kills : 0;
+    opponent.deaths = opponent.deaths != null ? opponent.deaths : 0;
+    opponent.shots = opponent.shots != null ? opponent.shots : 0;
+    opponent.hits = opponent.hits != null ? opponent.hits : 0;
+
+    player.kills += playerObject.score;
+    player.deaths += opponentObject.score;
+
+    opponent.kills += opponentObject.score;
+    opponent.deaths += playerObject.score;
+
+    player.shots += playerObject.shots;
+    player.hits += playerObject.hits;
+
+    opponent.shots += opponentObject.shots;
+    opponent.hits += opponentObject.hits;
+
 
     // game > 50% complete?
     // OR - was this player losing?
-    var scoreReason = pScore < oScore;
+    var scoreReason = playerObject.score < opponentObject.score;
     var timeReason = game.finished - game.started > ((game.duration*1000) * 0.50);
 
     if (scoreReason || timeReason) {
@@ -734,15 +768,6 @@ function cancelGame(game, authedUser) {
 
         authedUsers[opponent.sid] = opponent;
 
-        getGamePlayers(game, function(docs) {
-            var pIndex = docs[0].username == player.username ? 0 : 1;
-            docs[pIndex].rank = player.rank;
-            docs[pIndex].defaults = player.defaults;
-            db.collection('users', function(err, collection) {
-                collection.update({_id: player._id},  docs[pIndex]);
-                collection.update({_id: opponent._id}, { $inc : {rank : 1} });
-            });
-        });
     } else {
         // ok, the scores were even and less than half the game had elapsed. So, fair enough.
         botChat("The game between "+player.username+" and "+opponent.username+" has been cancelled", 'game-cancelled');
@@ -751,6 +776,29 @@ function cancelGame(game, authedUser) {
         });
         game.defaulted = false;
     }
+
+    getGamePlayers(game, function(docs) {
+        var pUpdate = {
+            kills: player.kills,
+            deaths: player.deaths,
+            rank: player.rank,
+            shots: player.shots,
+            hits: player.hits
+        };
+
+        var oUpdate = {
+            kills: opponent.kills,
+            deaths: opponent.deaths,
+            rank: opponent.rank,
+            shots: opponent.shots,
+            hits: opponent.hits
+        };
+
+        db.collection('users', function(err, collection) {
+            collection.update({_id: player._id},   {$set: pUpdate});
+            collection.update({_id: opponent._id}, {$set: oUpdate});
+        });
+    });
 
     db.collection('games', function(err, collection) {
         collection.update({_id: game._id}, game);
@@ -828,15 +876,25 @@ function endGame(game) {
     // add their kills and deaths
     winner.kills = winner.kills != null ? winner.kills : 0;
     winner.deaths = winner.deaths != null ? winner.deaths : 0;
+    winner.shots = winner.shots != null ? winner.shots : 0;
+    winner.hits = winner.hits != null ? winner.hits : 0;
 
     loser.kills = loser.kills != null ? loser.kills : 0;
     loser.deaths = loser.deaths != null ? loser.deaths : 0;
+    loser.shots = loser.shots != null ? loser.shots : 0;
+    loser.hits = loser.hits != null ? loser.hits : 0;
 
     winner.kills += winObject.score;
     winner.deaths += loseObject.score;
 
     loser.kills += loseObject.score;
     loser.deaths += winObject.score;
+
+    winner.shots += winObject.shots;
+    winner.hits += winObject.hits;
+
+    loser.shots += loseObject.shots;
+    loser.hits += loseObject.hits;
 
     // and finally their, er, wins and losses
     winner.wins = winner.wins != null ? winner.wins+1 : 1;
@@ -868,22 +926,27 @@ function endGame(game) {
     authedUsers[loseObject.socket_id] = loser;
 
     getGamePlayers(game, function(docs) {
-        var wIndex = docs[0].username == winner.username ? 0 : 1;
-        var lIndex = wIndex == 1 ? 0 : 1;
+        var wUpdate = {
+            kills: winner.kills,
+            deaths: winner.deaths,
+            wins: winner.wins,
+            rank: winner.rank,
+            shots: winner.shots,
+            hits: winner.hits
+        };
 
-        docs[wIndex].kills = winner.kills;
-        docs[wIndex].deaths = winner.deaths;
-        docs[wIndex].wins = winner.wins;
-        docs[wIndex].rank = winner.rank;
-
-        docs[lIndex].kills = loser.kills;
-        docs[lIndex].deaths = loser.deaths;
-        docs[lIndex].losses = loser.losses;
-        docs[lIndex].rank = loser.rank;
+        var lUpdate = {
+            kills: loser.kills,
+            deaths: loser.deaths,
+            losses: loser.losses,
+            rank: loser.rank,
+            shots: loser.shots,
+            hits: loser.hits
+        };
 
         db.collection('users', function(err, collection) {
-            collection.update({_id: winner._id}, docs[wIndex]);
-            collection.update({_id: loser._id}, docs[lIndex]);
+            collection.update({_id: winner._id},   {$set: wUpdate});
+            collection.update({_id: loser._id}, {$set: lUpdate});
         });
     });
 }
