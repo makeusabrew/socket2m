@@ -3,7 +3,7 @@
  */
 var warnHandler = setTimeout(function() {
     $("#wrapper").html("<h2>It doesn't look like the socket2m server is running at the moment. Please come back later.</h2>");
-}, 1500);
+}, 2500);
 
 var socket = (typeof io != 'undefined') ? io.connect() : {'on':function(){}};
 var currentState = null;
@@ -49,7 +49,8 @@ socket.on('statechange', function(state) {
             $("#state-wrapper").fadeIn('fast');
             $("#wrapper").fadeIn('fast');
 
-            loadScript('/states/js/'+state+'.js?t='+ts);
+            //loadScript('/states/js/'+state+'.js?t='+ts);
+            window[state+"Actions"].init();
             currentState = state;
             for (var _event in stateListeners) {
                 //console.debug("binding "+_event+" listener");
@@ -85,6 +86,7 @@ socket.on('msg', function(msg) {
 });
 
 loadScript("/shared/js/utils.js");
+
 /*
 loadScript("/js/input.js");
 loadScript("/js/game_manager.js");

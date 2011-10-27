@@ -16,7 +16,13 @@ for (var i = sourceFiles.length-1; i >= 0; i--) {
         sourceFiles.splice(i, 1);
     }
 }
+
+// hard coded for socket2m!
 sourceFiles.unshift("client.js");
+sourceFiles.push("states/game.js");
+sourceFiles.push("states/lobby.js");
+sourceFiles.push("states/register.js");
+sourceFiles.push("states/welcome.js");
 
 var compile = function(file, cb) {
     var code = fs.readFileSync(file, "utf8");
