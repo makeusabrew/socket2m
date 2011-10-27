@@ -46,7 +46,8 @@ var GameManager = (function() {
         if (tickTime >= _lastFps + 1000) {
             _lastFps = tickTime;
             var fps = Math.round(10 / _delta) / 10;
-            $("#debug #fps").html(fps+" fps");
+            //$("#debug #fps").html(fps+" fps");
+            document.getElementById("fps").innerHTML = fps+" fps";
         }
 
         _lastTick = tickTime;
@@ -98,15 +99,17 @@ var GameManager = (function() {
         }
 
         if (Input.isKeyDown("LEFT_ARROW")) {
-            _player.decreaseAngle();
+            _player.decreaseAngle(_delta);
         } else if (Input.isKeyDown("RIGHT_ARROW")) {
-            _player.increaseAngle();
+            _player.increaseAngle(_delta);
         }
 
         if (Input.isKeyDown("DOWN_ARROW")) {
-            _player.decreaseVelocity();
+            _player.decreaseVelocity(_delta);
         } else if (Input.isKeyDown("UP_ARROW")) {
-            _player.increaseVelocity();
+            _player.increaseVelocity(_delta);
+        } else {
+            console.log("neither down");
         }
     }
 
@@ -567,6 +570,7 @@ var GameManager = (function() {
         _screenDuration = -1;
         _duration = data.duration;
         _lastTick = new Date().getTime();
+        _lastFps = _lastTick;
         _entities = [];
         // we don't need to reset platforms
         //_platforms = [];

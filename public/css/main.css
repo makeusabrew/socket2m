@@ -24,9 +24,13 @@
     right:0;
 }
 
-#debug #fps {
+#debug span {
     display:inline-block;
-    width:40px;
+    margin:0 1em;
+}
+
+#debug #fps {
+    width:45px;
 }
 
 #volume {
@@ -177,7 +181,7 @@ h4.challenge {
 
 dl dt {
     float:left;
-    width:100px;
+    width:110px;
 }
 
 dl dt:after {

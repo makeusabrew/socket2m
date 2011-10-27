@@ -94,23 +94,25 @@ Player = function(options) {
         return this._username;
     }
 
-    this.decreaseAngle = function() {
-        this._a --;
+    this.decreaseAngle = function(delta) {
+        this._a -= 60 * delta;
     }
 
-    this.increaseAngle = function() {
-        this._a ++;
+    this.increaseAngle = function(delta) {
+        this._a += 60 * delta;
     }
 
-    this.decreaseVelocity = function() {
-        if (this._v > 25) {
-            this._v --;
+    this.decreaseVelocity = function(delta) {
+        this._v -= 60 * delta;
+        if (this._v < 25) {
+            this._v = 25;
         }
     }
 
-    this.increaseVelocity = function() {
-        if (this._v < 200) {
-            this._v ++;
+    this.increaseVelocity = function(delta) {
+        this._v += 60 * delta;
+        if (this._v > 200) {
+            this._v = 200;
         }
     }
 
