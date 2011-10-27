@@ -1,12 +1,12 @@
 var qs     = require('querystring'),
     crypto = require('crypto');
 
-var StateManager = require('../managers/state');
-var ChatManager  = require('../managers/chat');
-var db = require('../db');
+var StateManager = require('app/managers/state');
+var ChatManager  = require('app/managers/chat');
+var db = require('app/db');
 
 // private
-var io = StateManager.io;
+var io = require('app/managers/socket').getIO();
 
 var WelcomeController = {
 

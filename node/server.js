@@ -2,23 +2,24 @@
 
 var express = require('express'),
     app     = express.createServer(),
-    io      = require('socket.io').listen(app),
+    io      = require('socket.io').listen(app);
 
-    sio     = require('socket.io');
+require.paths.unshift(__dirname);
 
-var StateManager   = require('./app/managers/state');
-// we have to setup the io object as soon as possible
-StateManager.io = io;
+var SocketManager = require('app/managers/socket');
+SocketManager.setIO(io);
+
+var StateManager   = require('app/managers/state');
 
 // controllers
 console.log("load controllers");
-var WelcomeController  = require('./app/controllers/welcome');
-var RegisterController = require('./app/controllers/register');
-var GameController     = require('./app/controllers/game');
-var LobbyController    = require('./app/controllers/lobby');
+var WelcomeController  = require('app/controllers/welcome');
+var RegisterController = require('app/controllers/register');
+var GameController     = require('app/controllers/game');
+var LobbyController    = require('app/controllers/lobby');
 
 // other local stuff
-var db          = require('./app/db');
+var db          = require('app/db');
 var port        = process.argv[2] || 7979;
 
 app.listen(port);

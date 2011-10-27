@@ -1,6 +1,11 @@
 console.log("load state");
-var ChatManager = require('./chat');
-// private stuff
+var ChatManager = require('app/managers/chat');
+var io          = require('app/managers/socket').getIO();
+
+/**
+ * private
+ */
+
 // keep a copy of any outstanding challenges between players
 var challenges = [];
 
@@ -42,9 +47,6 @@ var activePowerups = {};
 
 var StateManager = {
     
-    // track the io object
-    io: null,
-
     findChallenge: function(who, id, remove) {
         if (remove == null) {
             remove = false;

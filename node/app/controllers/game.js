@@ -1,8 +1,8 @@
-var ChatManager = require('../managers/chat');
-var StateManager = require('../managers/state');
+var ChatManager = require('app/managers/chat');
+var StateManager = require('app/managers/state');
 
 // private variables
-var io = StateManager.io;
+var io = require('app/managers/socket').getIO();
 
 var GameController = {
     init: function(socket) {
