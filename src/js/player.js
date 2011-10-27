@@ -95,11 +95,11 @@ Player = function(options) {
     }
 
     this.decreaseAngle = function(delta) {
-        this._a -= 60 * delta;
+        this._a -= 50 * delta;
     }
 
     this.increaseAngle = function(delta) {
-        this._a += 60 * delta;
+        this._a += 50 * delta;
     }
 
     this.decreaseVelocity = function(delta) {

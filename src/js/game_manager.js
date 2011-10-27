@@ -108,8 +108,6 @@ var GameManager = (function() {
             _player.decreaseVelocity(_delta);
         } else if (Input.isKeyDown("UP_ARROW")) {
             _player.increaseVelocity(_delta);
-        } else {
-            console.log("neither down");
         }
     }
 
