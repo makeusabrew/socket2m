@@ -111,11 +111,15 @@ module.exports = function(app) {
                             user.gamesPlayed = count;
                             db.collection('daily_rankings', function(err, collection) {
                                 collection.findOne({user_id: user._id}, function(err, doc) {
+                                    var stats = [];
+                                    if (doc != null) {
+                                        stats = doc.stats;
+                                    }
                                     res.render('user', {
                                         'pageTitle': 'User Profile',
                                         user: user,
                                         games: games,
-                                        stats: doc.stats,
+                                        stats: stats,
                                         "settings": settings
                                     });
                                 });
