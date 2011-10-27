@@ -1,6 +1,7 @@
 console.log("load state");
 var ChatManager = require('app/managers/chat');
 var io          = require('app/managers/socket').getIO();
+var db          = require('app/db');
 
 /**
  * private
@@ -214,7 +215,7 @@ var StateManager = {
         winner.wins = winner.wins != null ? winner.wins+1 : 1;
         loser.losses = loser.losses != null ? loser.losses+1 : 1;
 
-        StateManager.io.sockets.sockets[winObject.socket_id].emit('game:win', {
+        io.sockets.sockets[winObject.socket_id].emit('game:win', {
             "rank": winner.rank,
             "increase": increase,
             "scores": {
@@ -222,7 +223,7 @@ var StateManager = {
                 "lose": loseObject.score
             }
         });
-        StateManager.io.sockets.sockets[loseObject.socket_id].emit('game:lose', {
+        io.sockets.sockets[loseObject.socket_id].emit('game:lose', {
             "rank": loser.rank,
             "decrease": decrease,
             "scores": {
@@ -232,7 +233,7 @@ var StateManager = {
         });
 
         console.log("end game - deleting game ID "+game._id);
-        StateManager.io.sockets.in('lobby').emit('lobby:game:end', game._id);
+        io.sockets.in('lobby').emit('lobby:game:end', game._id);
 
         delete games[game._id];
 
@@ -326,7 +327,7 @@ var StateManager = {
             // naughty naughty. you won't get away with that!
             ChatManager.botChat(player.username+" forfeited the game against "+opponent.username+"!", 'game-defaulted');
 
-            StateManager.io.sockets.in('game_'+game._id).emit('game:cancel', {
+            io.sockets.in('game_'+game._id).emit('game:cancel', {
                 "defaulted": true,
                 "scoreReason": scoreReason,
                 "timeReason": timeReason
@@ -350,7 +351,7 @@ var StateManager = {
         } else {
             // ok, the scores were even and less than half the game had elapsed. So, fair enough.
             ChatManager.botChat("The game between "+player.username+" and "+opponent.username+" has been cancelled", 'game-cancelled');
-            StateManager.io.sockets.in('game_'+game._id).emit('game:cancel', {
+            io.sockets.in('game_'+game._id).emit('game:cancel', {
                 "defaulted": false
             });
             game.defaulted = false;
@@ -384,7 +385,7 @@ var StateManager = {
         });
 
         console.log("cancel game - deleting game ID "+game._id);
-        StateManager.io.sockets.in('lobby').emit('lobby:game:end', game._id);
+        io.sockets.in('lobby').emit('lobby:game:end', game._id);
         delete games[game._id];
     },
 
@@ -500,7 +501,7 @@ var StateManager = {
             delete authedUsers[socket.id];
         }
 
-        StateManager.io.sockets.emit('user:leave', socket.id);
+        io.sockets.emit('user:leave', socket.id);
     }
 };
 

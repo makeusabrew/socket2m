@@ -1,6 +1,7 @@
-var qs = require('querystring');
+var qs     = require('querystring'),
+    crypto = require('crypto');
 
-var db = ('app/db');
+var db = require('app/db');
 var io = require('app/managers/socket').getIO();
 
 function validateEmail(email) { 

@@ -239,7 +239,7 @@ var GameController = {
             console.log("could not find game for socket ID "+socket.id+" in "+arguments.callee);
             return;
         }
-        if (game.timeup == null) {
+        if (game.timeup != null) {
             console.log("ignoring duplicate game:timeup message");
             return;
         }
@@ -268,8 +268,8 @@ var GameController = {
     rejoinLobby: function(socket) {
         socket.join('lobby');
         socket.emit('statechange', 'lobby');
-        socket.broadcast.to('lobby').emit('lobby:user:join', authedUsers[socket.id]);
-        ChatManager.botChat(authedUsers[socket.id].username+" rejoined the lobby");
+        socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
+        ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" rejoined the lobby");
     },
 
     /**
