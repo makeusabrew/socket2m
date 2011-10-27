@@ -17,12 +17,10 @@ var GameController = {
         var _sockets = io.sockets.clients('game_'+game._id);
         console.log("players present: "+_sockets.length);
         if (_sockets.length == 2) {
-            game.started = new Date();
-
-            ChatManager.botChat("Game on! "+game.challenger.username+" Vs "+game.challengee.username, 'game');
+            game.playersPrepared = 0;
 
             for (var i = 0; i < 2; i++) {
-                _sockets[i].emit('game:start', {
+                _sockets[i].emit('game:prepare', {
                     "user"      : StateManager.getUserForSocket(_sockets[i].id),
                     "challenger": game.challenger,
                     "challengee": game.challengee,
@@ -30,7 +28,24 @@ var GameController = {
                     "duration"  : game.duration
                 });
             }
+        }
+    },
 
+    start: function(socket) {
+        var game = StateManager.findGameForSocketId(socket.id);
+        if (game == null) {
+            console.log("could not find game for socket ID "+socket.id+" in "+arguments.callee);
+            return;
+        }
+        game.playersPrepared ++;
+        if (game.playersPrepared == 2) {
+            delete game.playersPrepared;
+
+            game.started = new Date();
+
+            console.log("both players prepared - let's go!");
+            ChatManager.botChat("Game on! "+game.challenger.username+" Vs "+game.challengee.username, 'game');
+            io.sockets.in('game_'+game._id).emit('game:start');
             // notify the lobby dwellers
             io.sockets.in('lobby').emit('lobby:game:start', game);
         }

@@ -3,9 +3,14 @@ var gameActions = (function() {
         self.init = function() {
             console.log("game init");
             stateListeners = {
-                'game:start': function(data) {
-                    console.log("starting game");
-                    GameManager.start(data);
+                'game:prepare': function(data) {
+                    console.log("preparing game");
+                    GameManager.prepare(data);
+                },
+
+                'game:start': function() {
+                    console.log("starting game...");
+                    GameManager.start(socket);
                     // GO!
                     tick();
                 },

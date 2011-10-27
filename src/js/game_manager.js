@@ -514,7 +514,7 @@ var GameManager = (function() {
         }
     }
 
-    self.start = function(data) {
+    self.prepare = function(data) {
         // set up
         var challenger = data.challenger;
         var challengee = data.challengee;
@@ -567,8 +567,6 @@ var GameManager = (function() {
         _notifiedOfTimeout = false;
         _screenDuration = -1;
         _duration = data.duration;
-        _lastTick = new Date().getTime();
-        _lastFps = _lastTick;
         _entities = [];
         // we don't need to reset platforms
         //_platforms = [];
@@ -576,6 +574,14 @@ var GameManager = (function() {
         _respawns = [];
         _deadEntities = [];
         _deadPowerups = [];
+        socket.emit('game:prepared');
+
+    }
+
+    self.start = function(socket) {
+        // save the delta calculation til the last possible moment
+        _lastTick = new Date().getTime();
+        _lastFps = _lastTick;
     }
 
     self.handleWin = function(stats) {

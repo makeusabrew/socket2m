@@ -156,6 +156,13 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
+     * game - client all set, let's go
+     */
+    socket.on('game:prepared', function() {
+        GameController.start(socket);
+    });
+
+    /**
      * game - request a shot (exciting)
      */
     socket.on('game:weapon:fire', function(options) {
