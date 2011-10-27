@@ -149,7 +149,7 @@ var LobbyController = {
             return;
         }
 
-        socket.emit('statechange', 'game');
+        socket.emit('state:change', 'game');
     }
 };
 

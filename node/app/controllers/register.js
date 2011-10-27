@@ -48,7 +48,7 @@ var RegisterController = {
                     details.registered = new Date();
                     collection.insert(details);
                     socket.emit('msg', 'Congratulations, you\'re registered!');
-                    socket.emit('statechange', 'welcome');
+                    socket.emit('state:change', 'welcome');
                 } else {
                     socket.emit('msg', 'Sorry, that username or email address is already in use.');
                 }

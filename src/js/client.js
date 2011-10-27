@@ -20,11 +20,9 @@ socket.on('connect', function() {
     clearTimeout(warnHandler);
 });
 
-socket.on('statechange', function(state) {
+socket.on('state:change', function(state) {
 
-    var ts = new Date().getTime(),
-
-        faded    = false,
+    var faded    = false,
         data     = null,
         checkComplete = function(_faded, _data) {
 
@@ -49,7 +47,6 @@ socket.on('statechange', function(state) {
             $("#state-wrapper").fadeIn('fast');
             $("#wrapper").fadeIn('fast');
 
-            //loadScript('/states/js/'+state+'.js?t='+ts);
             window[state+"Actions"].init();
             currentState = state;
             for (var _event in stateListeners) {
@@ -73,9 +70,14 @@ socket.on('statechange', function(state) {
         socket.removeListener(_event, stateListeners[_event]);
     }
 
+    socket.emit('state:fetch', state, function(response) {
+        checkComplete(null, response);
+    });
+    /*
     $.get('/states/'+state+'.html?t='+ts, {}, function(response) {
         checkComplete(null, response);
     });
+    */
 });
 
 /**

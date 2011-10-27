@@ -2,7 +2,8 @@
 
 var express = require('express'),
     app     = express.createServer(),
-    io      = require('socket.io').listen(app);
+    io      = require('socket.io').listen(app),
+    fs      = require('fs');
 
 require.paths.unshift(__dirname);
 
@@ -63,7 +64,13 @@ require('./app/routes')(app);
 
 
 io.sockets.on('connection', function(socket) {
-    socket.emit('statechange', 'welcome');
+    socket.emit('state:change', 'welcome');
+
+    socket.on('state:fetch', function(state, cb) {
+        fs.readFile(__dirname+'/../public/states/'+state+'.html', 'utf8', function(err, data) {
+            cb(data);
+        });
+    });
 
     /**
      * welcome - loaded

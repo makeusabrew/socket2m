@@ -267,7 +267,7 @@ var GameController = {
 
     rejoinLobby: function(socket) {
         socket.join('lobby');
-        socket.emit('statechange', 'lobby');
+        socket.emit('state:change', 'lobby');
         socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
         ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" rejoined the lobby");
     },

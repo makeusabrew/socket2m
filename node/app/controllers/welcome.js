@@ -39,7 +39,7 @@ var WelcomeController = {
                         StateManager.addUser(result);
 
                         socket.join('lobby');
-                        socket.emit('statechange', 'lobby');
+                        socket.emit('state:change', 'lobby');
                         socket.broadcast.to('lobby').emit('lobby:user:join', result);
                         ChatManager.botChat(result.username+" joined the lobby");
                     }
@@ -49,7 +49,7 @@ var WelcomeController = {
     },
 
     goRegister: function(socket) {
-        socket.emit('statechange', 'register');
+        socket.emit('state:change', 'register');
     }
 };
 
