@@ -51,6 +51,10 @@ var gameActions = (function() {
                     GameManager.showChatMessage(msg);
                 },
 
+                'game:timeup:rejected': function(wait) {
+                    GameManager.delayTimeup(wait);
+                },
+
                 'game:win': function(stats) {
                     GameManager.handleWin(stats);
                 },

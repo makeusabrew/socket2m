@@ -23,6 +23,7 @@ var GameManager = (function() {
         _screenDuration = -1,
 
         _notifiedOfTimeout = false,
+        _timeupHandler = null,
 
         _gameOver = false,
 
@@ -57,7 +58,7 @@ var GameManager = (function() {
             // is anything?
         } else {
             // duration tick tick tick
-            if (_duration >= 0) {
+            if (_duration > 0) {
                 _duration -= _delta;
                 if (Math.ceil(_duration) != _screenDuration) {
                     _screenDuration = Math.ceil(_duration);
@@ -640,6 +641,7 @@ var GameManager = (function() {
     }
 
     self.endGame = function(str, emit) {
+        clearTimeout(_timeupHandler);
         cancelRequestAnimFrame(animFrame);
         _gameOver = true;
         Input.releaseKeys();
@@ -701,6 +703,15 @@ var GameManager = (function() {
     self.changePlayerWeapon = function(type) {
         SoundManager.playSound("weapon:change");
         _player.changeWeapon(type);
+    }
+
+    self.delayTimeup = function(wait) {
+        // the server has told us our timeup signal was too early - wait
+        console.log("retrying timeup in "+wait);
+        _timeupHandler = setTimeout(function() {
+            console.log("retrying timeup...");
+            socket.emit('game:timeup');
+        }, wait);
     }
 
     return self;
