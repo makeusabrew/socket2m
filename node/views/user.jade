@@ -83,7 +83,18 @@ block scripts
             var max = 0;
             $("#stats span").each(function() {
                 var date = new Date($(this).data("date"));
-                date = date.getDate()+"/"+date.getMonth()+"/"+date.getYear();
+                date = (function(date, splitter) {
+                    var d = date.getDate();
+                    var m = date.getMonth() + 1;
+                    if (d < 10) {
+                        d = "1"+d;
+                    }
+                    if (m < 10) {
+                        m = "1"+m;
+                    }
+                    return d+splitter+m;
+                })(date, '/');
+
                 data.setValue(i, 0, date);
                 data.setValue(i, 1, parseInt($(this).data("wins")));
                 data.setValue(i, 2, parseInt($(this).data("losses")));
