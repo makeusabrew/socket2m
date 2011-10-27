@@ -2,6 +2,7 @@ var GameManager = (function() {
     var self = {},
         _frame = 0,
         _lastTick = 0,
+        _lastFps = 0,
         _delta = 0,
 
         _surface = null,
@@ -42,7 +43,8 @@ var GameManager = (function() {
         // we want a delta in *seconds*, to make it easier to scale our values
         _delta = (tickTime - _lastTick) / 1000;
 
-        if (tickTime % 20 == 0) {
+        if (tickTime >= _lastFps + 1000) {
+            _lastFps = tickTime;
             var fps = Math.round(10 / _delta) / 10;
             $("#debug #fps").html(fps+" fps");
         }
