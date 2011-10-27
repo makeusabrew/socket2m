@@ -102,10 +102,10 @@ var Client = (function(enabled) {
 
 
 $(function() {
+    // preload some sfx - we do this here rather than in game because they seem to cause the odd loading issue
+    // which we can't afford in game
+    SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
     if (!Client.iOS()) {
-        // preload some sfx - we do this here rather than in game because they seem to cause the odd loading issue
-        // which we can't afford in game
-        SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
         SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
         SoundManager.preloadSound("/sounds/boo.wav", "player:die");
         SoundManager.preloadSound("/sounds/chat.wav", "chat");

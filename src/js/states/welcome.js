@@ -2,8 +2,14 @@ var welcomeActions = (function() {
     self = {};
     self.init = function() {
         console.log("welcome init");
+            
         $("#login form").submit(function(e) {
             e.preventDefault();
+            if (Client.iOS()) {
+                SoundManager.playSound("weapon:fire");
+                SoundManager.pauseSound("weapon:fire");
+                //SoundManager.bootSounds();
+            }
 
             socket.emit("welcome:login", $(this).serialize());
         });
