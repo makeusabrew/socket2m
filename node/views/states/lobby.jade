@@ -1,0 +1,48 @@
+#lobby
+    .page-header
+        h1 The Lobby
+    .row.userlist
+        .span8
+            .page-header
+                h3 Users
+            p
+             | Simply click any other user's name in the list to issue them a challenge. If
+             | they accept, your game will begin immediately.
+            #users
+                table.zebra-striped
+                    thead
+                        tr
+                            th Username
+                            th Rank (<a href="/about#rankings" target="_blank">?</a>)
+                            th Wins
+                            th Losses
+                    tbody
+                #tweet-challengers(style='display:none')
+                    p
+                     | As there's nobody else in the lobby, why not tweet a challenge to your followers? There's
+                     | no faster way to find some competition!
+
+                    #tweet-frame
+        .span8
+            .page-header
+                h3 Games in progress
+            p 
+             | The games below are taking place right now. If you'd like to get involved then
+             | why not read up on <a href="/about#the-game" target="_blank">how to play</a>?
+
+            #games
+                table.zebra-striped
+                    thead
+                        tr
+                            th Players
+                            th Score
+                            th Time Remaining
+                    tbody
+
+    .row
+        .span16
+            h3 Lobby chat
+            #chat-container
+                #chat
+            form
+                input.span16(type='text', placeholder='enter your message', name='chat', autocomplete="off")

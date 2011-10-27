@@ -4,6 +4,7 @@ var welcomeActions = (function() {
         console.log("welcome init");
         $("#login form").submit(function(e) {
             e.preventDefault();
+
             socket.emit("welcome:login", $(this).serialize());
         });
 
@@ -26,19 +27,6 @@ var welcomeActions = (function() {
             }
         };
         socket.emit("welcome:ready");
-
-        // preload some sfx - we do this here rather than in game because they seem to cause the odd loading issue
-        // which we can't afford in game
-        SoundManager.preloadSound("/sounds/bang.wav", "weapon:fire");
-        SoundManager.preloadSound("/sounds/applause.wav", "player:kill");
-        SoundManager.preloadSound("/sounds/boo.wav", "player:die");
-        SoundManager.preloadSound("/sounds/chat.wav", "chat");
-        SoundManager.preloadSound("/sounds/sudden_death.wav", "game:suddendeath");
-        SoundManager.preloadSound("/sounds/win.wav", "game:win");
-        SoundManager.preloadSound("/sounds/lose.wav", "game:lose");
-        SoundManager.preloadSound("/sounds/teleport.wav", "player:teleport");
-        SoundManager.preloadSound("/sounds/weapon.wav", "weapon:change");
-        SoundManager.preloadSound("/sounds/powerup.wav", "game:powerup:spawn");
 
     }
     return self;

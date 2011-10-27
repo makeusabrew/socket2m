@@ -14,6 +14,7 @@ var StateManager   = require('app/managers/state');
 
 // controllers
 console.log("load controllers");
+var StaticController   = require('app/controllers/static');
 var WelcomeController  = require('app/controllers/welcome');
 var RegisterController = require('app/controllers/register');
 var GameController     = require('app/controllers/game');
@@ -67,9 +68,12 @@ io.sockets.on('connection', function(socket) {
     socket.emit('state:change', 'welcome');
 
     socket.on('state:fetch', function(state, cb) {
+        /*
         fs.readFile(__dirname+'/../public/states/'+state+'.html', 'utf8', function(err, data) {
             cb(data);
         });
+        */
+        cb(StaticController.fetchContentsForState(state));
     });
 
     /**

@@ -1,0 +1,25 @@
+#register
+    .page-header
+        h1 Register
+    p Please simply fill out the details below to register for your free account.
+    form(method='post', action='')
+        .clearfix
+            label(for='username') Username *
+            .input
+                input(type='text', name='username', id='username', required='', placeholder='username', pattern='[A-z_0-9]{1,20}')
+                span.help-inline A-z, 0-9 and underscores only. Maximum of 20 characters.
+        .clearfix
+            label(for='email') Email Address *
+            .input
+                input(type="email", name="email", id="email", required="", placeholder="my@email.com")
+                span.help-inline Please take care when entering your email address.
+        .clearfix
+            label(for='password') Password *
+            .input
+                input(type="password", name="password", id="password", required="", pattern=".{4,20}")
+                span.help-inline 4-20 characters. We won't ask you to confirm it, so <strong>make sure it's right!</strong>
+        p.alert-message.warning(style='display:none;')
+         | <strong>Hello there!</strong> Please double check that all your details are correct before completing your registration.
+
+        .actions
+            input(type="submit", value="Register", class="btn primary")
