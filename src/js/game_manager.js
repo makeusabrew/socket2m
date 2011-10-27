@@ -575,6 +575,45 @@ var GameManager = (function() {
         _respawns = [];
         _deadEntities = [];
         _deadPowerups = [];
+
+        if (Client.isTouchDevice()) {
+            // @todo hide stuff with media queries
+            $(".topbar").hide();
+            $("#footer").hide();
+
+            $("#touchControls").show();
+
+            document.getElementById("left").ontouchstart = function() {
+                Input.keyDown("LEFT_ARROW");
+            };
+            document.getElementById("left").ontouchend = function() {
+                Input.keyUp("LEFT_ARROW");
+            };
+            document.getElementById("right").ontouchstart = function() {
+                Input.keyDown("RIGHT_ARROW");
+            };
+            document.getElementById("right").ontouchend = function() {
+                Input.keyUp("RIGHT_ARROW");
+            };
+            document.getElementById("up").ontouchstart = function() {
+                Input.keyDown("UP_ARROW");
+            };
+            document.getElementById("up").ontouchend = function() {
+                Input.keyUp("UP_ARROW");
+            };
+            document.getElementById("down").ontouchstart = function() {
+                Input.keyDown("DOWN_ARROW");
+            };
+            document.getElementById("down").ontouchend = function() {
+                Input.keyUp("DOWN_ARROW");
+            };
+            document.getElementById("space").ontouchstart = function() {
+                Input.keyDown("SPACE_BAR");
+            };
+            document.getElementById("space").ontouchend = function() {
+                Input.keyUp("SPACE_BAR");
+            };
+        }
         socket.emit('game:prepared');
 
     }
@@ -649,6 +688,10 @@ var GameManager = (function() {
         mbalert(str, function() {
             socket.emit('game:finish');
         });
+        if (Client.isTouchDevice()) {
+            $(".topbar").show();
+            $("#footer").show();
+        }
     }
 
     self.setSuddenDeath = function() {

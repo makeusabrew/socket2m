@@ -75,6 +75,33 @@
     padding:20px 0;
 }
 
+#outer #touchControls {
+    position:absolute;
+    z-index:1;
+    text-align:center;
+    bottom:0;
+    left:20%;
+    /**
+     * disable copy / paste dialog on an over eager touch
+     */
+    -webkit-user-select: none;
+}
+
+#touchControls div {
+    background:#000;
+    color:#fff;
+    font-weight:bold;
+    margin: 0 1.25em;
+    float:left;
+    width:45px;
+    height:45px;
+}
+
+#touchControls div:active {
+    background:#fff;
+    color:#000;
+}
+
 .chatbubble,
 #chatform {
     position:absolute;

@@ -20,7 +20,7 @@ Powerup.prototype = {
     },
 
     preRender: function() {
-        GameManager.getSurface().clearRect(this.x, this.y, this.r*2, this.r*2);
+        GameManager.getSurface().clearRect(this.x-1, this.y-1, (this.r+1)*2, (this.r+1)*2);
     },
     
     render: function() {
