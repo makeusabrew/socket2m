@@ -117,7 +117,7 @@ block scripts
             });
             if (i > 0) {
                 var chart = new google.visualization.LineChart(document.getElementById('ranking_chart'));
-                chart.draw(data, {width:940, height:500, title: 'Daily Ranking',
+                chart.draw(data, {width:940, height:500, title: 'Wins, Losses & Ranking over time',
                     vAxis: {
                         //format: '#,###', makes stuff like 0, 1, 1 (instead of 0.5 for the middle)
                         maxValue: Math.ceil(max*1.1),
