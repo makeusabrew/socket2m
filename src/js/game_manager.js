@@ -2,6 +2,7 @@ var GameManager = (function() {
     var self = {},
         _frame = 0,
         _lastTick = 0,
+        _tickTime = 0,
         _lastFps = 0,
         _delta = 0,
         _right = 0,
@@ -46,18 +47,18 @@ var GameManager = (function() {
             return;
         }
 
-        var tickTime = new Date().getTime();
+        _tickTime = new Date().getTime();
         // we want a delta in *seconds*, to make it easier to scale our values
-        _delta = (tickTime - _lastTick) / 1000;
+        _delta = (_tickTime - _lastTick) / 1000;
+        _lastTick = _tickTime;
 
-        if (tickTime >= _lastFps + 1000) {
-            _lastFps = tickTime;
+        if (_tickTime >= _lastFps + 1000) {
+            _lastFps = _tickTime;
             var fps = Math.round(10 / _delta) / 10;
             //$("#debug #fps").html(fps+" fps");
             _fpsElem.innerHTML = fps+" fps";
         }
 
-        _lastTick = tickTime;
 
         if (!_suddenDeath) {
             // duration tick tick tick
