@@ -127,6 +127,7 @@ var GameManager = (function() {
         }
 
         var i = _respawns.length;
+        var j;
         if (i) {
             while (i--) {
                 var player = _respawns[i];
@@ -145,8 +146,8 @@ var GameManager = (function() {
 
         // ... bleuch.
         i = _deadEntities.length;
-        var j = _entities.length;
         if (i) {
+            j = _entities.length;
             // loop back through our dead entities array
             while (i--) {
                 // and loop back through our actually entities trying to match it
@@ -156,7 +157,6 @@ var GameManager = (function() {
                         console.log("killing entity "+_entities[j].getId());
                         _entities[j].kill();
                         _entities.splice(j, 1);
-                        j--;
                         break;
                     }
                 }
@@ -165,23 +165,27 @@ var GameManager = (function() {
         }
 
         // ... more bleuch.
-        for (var i = 0, j = _deadPowerups.length; i < j; i++) {
-            for (var k = _powerups.length-1; k >= 0; k--) {
-                if (_powerups[k].getId() == _deadPowerups[i]) {
-                    console.log("killing powerup "+_powerups[k].getId());
-                    _powerups[k].kill();
-                    _powerups.splice(k, 1);
-                    break;
+        i = _deadPowerups.length;
+        if (i) {
+            j = _powerups.length;
+            while (i--) {
+                while (j--) {
+                    if (_powerups[j].getId() == _deadPowerups[i]) {
+                        console.log("killing powerup "+_powerups[j].getId());
+                        _powerups[j].kill();
+                        _powerups.splice(j, 1);
+                        break;
+                    }
                 }
             }
+            _deadPowerups = [];
         }
-
-        _deadPowerups = [];
 
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
         // this means it isn't fast - anything we can do? @todo
-        for (var i = _entities.length-1; i >= 0; i--) {
+        i = _entities.length;
+        while (i--) {
             _entities[i].tick(_delta);
 
             // check the entity didn't die during its tick method
@@ -189,9 +193,10 @@ var GameManager = (function() {
                 // what about players? let's cheat temporarily because
                 // we know all entities are bullets, and we also know
                 // that all bullets want to do is hit their opponents and platforms...
-                if (_entities[i].getOwner() == _player.getId() &&
-                    self.entitiesTouching(_entities[i], _opponent) &&
-                    _killPending == false) {
+                if (_killPending == false &&
+                    _entities[i].getOwner() == _player.getId() &&
+                    self.entitiesTouching(_entities[i], _opponent)) {
+
                     _killPending = true;
 
                     // we know the bullet should die, so remove it immediately
@@ -210,7 +215,8 @@ var GameManager = (function() {
 
                 if (!_entities[i].isDead()) {
                     // powerups?
-                    for (var j = _powerups.length-1; j >= 0; j--) {
+                    j = _powerups.length;
+                    while (j--) {
                         // theoretically this could be awkward if both player's bullets hit the powerup at the same time...
                         // but we'll worry about that later
                         if (_entities[i].getOwner() == _player.getId() &&
@@ -265,15 +271,20 @@ var GameManager = (function() {
         _player.renderSight();
         _opponent.render();
 
-        for (var i = 0, j = _platforms.length; i < j; i++) {
+        var i = 0;
+
+        i = _platforms.length;
+        while (i--) {
             _platforms[i].render();
         }
 
-        for (var i = 0, j = _entities.length; i < j; i++) {
+        i = _entities.length;
+        while (i--) {
             _entities[i].render();
         }
 
-        for (var i = 0, j = _powerups.length; i < j; i++) {
+        i = _powerups.length;
+        while (i--) {
             _powerups[i].render();
         }
     }
