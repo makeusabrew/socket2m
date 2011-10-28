@@ -31,7 +31,11 @@ var GameManager = (function() {
 
         _killPending = false,
 
-        _chatting = false;
+        _chatting = false,
+
+        /* dom optimisations */
+        _fpsElem = null,
+        _countDownElem = null;
 
         
     
@@ -48,7 +52,7 @@ var GameManager = (function() {
             _lastFps = tickTime;
             var fps = Math.round(10 / _delta) / 10;
             //$("#debug #fps").html(fps+" fps");
-            document.getElementById("fps").innerHTML = fps+" fps";
+            _fpsElem.innerHTML = fps+" fps";
         }
 
         _lastTick = tickTime;
@@ -60,9 +64,10 @@ var GameManager = (function() {
             // duration tick tick tick
             if (_duration > 0) {
                 _duration -= _delta;
+                // @todo can we avoid calling Math.ceil every frame?
                 if (Math.ceil(_duration) != _screenDuration) {
                     _screenDuration = Math.ceil(_duration);
-                    $("#countdown").html(Utils.formatTime(_screenDuration));
+                    _countDownElem.innerHTML = Utils.formatTime(_screenDuration);
                 }
             } else if (!_notifiedOfTimeout) {
                 _notifiedOfTimeout = true;
@@ -79,10 +84,12 @@ var GameManager = (function() {
     self.preRender = function() {
         _player.preRender();
         _opponent.preRender();
-        for (var i = 0, j = _entities.length; i < j; i++) {
+        var i = _entities.length;
+        while (i--) {
             _entities[i].preRender();
         }
-        for (var i = 0, j = _powerups.length; i < j; i++) {
+        i = _powerups.length;
+        while (i--) {
             _powerups[i].preRender();
         }
     }
@@ -115,37 +122,47 @@ var GameManager = (function() {
     self.tick = function() {
 
         // hello, time for a powerup?
-        if (Math.floor(Math.random() *2501) == 0 && _powerups.length < 3) {
+        if (_powerups.length < 3 && Math.floor(Math.random() *2501) == 0) {
             self.spawnPowerup();
         }
 
-        for (var i = 0, j = _respawns.length; i < j; i++) {
-            var player = _respawns[i];
-            var user = player.socket_id == _player.getId() ? _player : _opponent;
-            user.spawn({
-                "x" : player.x,
-                "y" : self.getCoordinateForPlatform(player.platform)
-            });
-            if (user.getId() == _opponent.getId()) {
-                // it's our opponent, so clear our pending kill flag
-                _killPending = false;
+        var i = _respawns.length;
+        if (i) {
+            while (i--) {
+                var player = _respawns[i];
+                var user = player.socket_id == _player.getId() ? _player : _opponent;
+                user.spawn({
+                    "x" : player.x,
+                    "y" : self.getCoordinateForPlatform(player.platform)
+                });
+                if (user.getId() == _opponent.getId()) {
+                    // it's our opponent, so clear our pending kill flag
+                    _killPending = false;
+                }
+                _respawns = [];
             }
         }
-        _respawns = [];
 
         // ... bleuch.
-        for (var i = 0, j = _deadEntities.length; i < j; i++) {
-            for (var k = _entities.length-1; k >= 0; k--) {
-                if (_entities[k].getId() == _deadEntities[i]) {
-                    console.log("killing entity "+_entities[k].getId());
-                    _entities[k].kill();
-                    _entities.splice(k, 1);
-                    break;
+        i = _deadEntities.length;
+        var j = _entities.length;
+        if (i) {
+            // loop back through our dead entities array
+            while (i--) {
+                // and loop back through our actually entities trying to match it
+                while (j--) {
+                    // if this is the entity to kill, get rid of it and decrement the entity count
+                    if (_entities[j].getId() == _deadEntities[i]) {
+                        console.log("killing entity "+_entities[j].getId());
+                        _entities[j].kill();
+                        _entities.splice(j, 1);
+                        j--;
+                        break;
+                    }
                 }
             }
+            _deadEntities = [];
         }
-
-        _deadEntities = [];
 
         // ... more bleuch.
         for (var i = 0, j = _deadPowerups.length; i < j; i++) {
@@ -614,6 +631,11 @@ var GameManager = (function() {
                 Input.keyUp("SPACE_BAR");
             };
         }
+
+        /* dom elems, for pure speed */
+        _fpsElem       = document.getElementById("fps");
+        _countDownElem = document.getElementById("countdown");
+
         socket.emit('game:prepared');
 
     }
