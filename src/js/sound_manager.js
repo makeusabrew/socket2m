@@ -48,8 +48,8 @@ var SoundManager = (function() {
             if (_aliases[path] != null) {
                 path = _aliases[path];
             } else {
-                console.log("warning - "+path+" was not preloaded");
-                self.preloadSound(path);
+                console.log("warning - "+path+" was not preloaded - aborting");
+                return;
             }
                 
         }
