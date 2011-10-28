@@ -3,28 +3,30 @@ extends layout
 block content
     h2 Top 100 Users
 
-    - each user in users
-        dl
-            dt Username
-            dd <a href="/user/#{user.username}">#{user.username}</a>
+    ol
+        - each user in users
+            li
+                dl
+                    dt Username
+                    dd <a href="/user/#{user.username}">#{user.username}</a>
 
-            dt Ranking
-            dd #{user.rank}
+                    dt Ranking
+                    dd #{user.rank}
 
-            dt Wins
-            - if (user.wins != null)
-                dd #{user.wins}
-            - else 
-                dd  0
+                    dt Wins
+                    - if (user.wins != null)
+                        dd #{user.wins}
+                    - else 
+                        dd  0
 
-            dt Losses
-            - if (user.losses != null)
-                dd #{user.losses}
-            - else 
-                dd  0
+                    dt Losses
+                    - if (user.losses != null)
+                        dd #{user.losses}
+                    - else 
+                        dd  0
 
-            dt Defaults
-            - if (user.defaults != null)
-                dd #{user.defaults}
-            - else 
-                dd  0
+                    dt Forfeits (<a title="View information about forfeiting games" href="/about#forfeits">?</a>)
+                    - if (user.defaults != null)
+                        dd #{user.defaults}
+                    - else 
+                        dd  0

@@ -1,7 +1,8 @@
 extends layout
 
 block content
-    h2 User Profile
+    h2 User Profile / #{user.username}
+    p Here are #{user.username}'s summary statistics. Why not check if they are in the <a href="/users/top">top 100 ranked players</a>?
     dl
         dt Username
         dd #{user.username}
@@ -12,15 +13,9 @@ block content
         dt Games Played
         dd #{user.gamesPlayed}
 
-        dt Kills
-        - if (user.kills != null)
-            dd #{user.kills}
-        - else 
-            dd  0
-
-        dt Deaths
-        - if (user.deaths != null)
-            dd #{user.deaths}
+        dt Wins
+        - if (user.wins != null)
+            dd #{user.wins}
         - else 
             dd  0
 
@@ -33,6 +28,18 @@ block content
         dt Forfeits (<a title="View information about forfeiting games" href="/about#forfeits">?</a>)
         - if (user.defaults != null)
             dd #{user.defaults}
+        - else 
+            dd  0
+
+        dt Kills
+        - if (user.kills != null)
+            dd #{user.kills}
+        - else 
+            dd  0
+
+        dt Deaths
+        - if (user.deaths != null)
+            dd #{user.deaths}
         - else 
             dd  0
 
