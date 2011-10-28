@@ -1,7 +1,7 @@
 var currentState = null;
 var stateListeners = {};
 var pageTitle = $("title").html();
-var socket = null;
+var socket = socket || null;
 /**
  * storing a global reference to the canvas surface isn't ideal, but it's best for performance
  */
@@ -9,13 +9,15 @@ var gSurface = null;
 
 var Client = (function(enabled) {
     var self = {};
-    self.init = function() {
+    self.start = function() {
         if (!enabled) {
             $("#wrapper").html("<h2>The socket2m server is not running at the moment. Please come back later.</h2>");
             return;
         }
 
-        socket = io.connect();
+        if (socket == null) {
+            socket = io.connect();
+        }
 
         socket.on('connect', function() {
             console.log("connected");
@@ -122,7 +124,7 @@ $(function() {
         SoundManager.preloadSound("/sounds/weapon.wav", "weapon:change");
         SoundManager.preloadSound("/sounds/powerup.wav", "game:powerup:spawn");
     }
-    Client.init();
+    Client.start();
 });
 
 /*

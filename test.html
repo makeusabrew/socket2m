@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <link href='public/css/bootstrap-1.3.0.min.css' rel='stylesheet' type='text/css' />
+    </head>
+    <body>
+        <h1>Test Harness</h1>
+        <div id="wrapper"></div>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script>
+        <script src='public/js/boot.js'></script>
+        <script src='http://socket2m.build:7979/socket.io/socket.io.js'></script>
+        <script>
+            var socket = io.connect(null, {port:7979});
+        </script>
+        <script src='src/js/sound_manager.js'></script>
+        <script src='src/js/client.js'></script>
+    </body>
+</html>
