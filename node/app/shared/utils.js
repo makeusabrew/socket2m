@@ -1,7 +1,8 @@
 var Utils = {
     formatTime: function(_secs) {
-        var formatted = "";
-
+        if (_secs < 0) {
+            return "0:00";
+        }
         var mins = Math.floor(_secs / 60);
         var secs = _secs % 60;
         if (secs < 10) {
