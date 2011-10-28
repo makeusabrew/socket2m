@@ -34,8 +34,11 @@ var compile = function(file, cb) {
     }
 
     var ast = jsp.parse(code); // parse code and get the initial AST
-    ast = pro.ast_mangle(ast); // get a new AST with mangled names
+
+    ast = pro.ast_lift_variables(ast);
+    ast = pro.ast_mangle(ast);
     ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
+
     var final_code = pro.gen_code(ast); // compressed code here
 
     compressedFiles[file] = final_code;
@@ -45,7 +48,11 @@ var compile = function(file, cb) {
         for (var i in compressedFiles) {
             output += compressedFiles[i]+";";
         }
-        cb(output);
+        // we have to now recompress to shrink the top level names
+        var ast = jsp.parse(output);
+        ast = pro.ast_mangle(ast, {"toplevel":true, "except": ["ga", "la", "ra", "wa"]});
+        var final_code = pro.gen_code(ast);
+        cb(final_code);
     }
 }
 
