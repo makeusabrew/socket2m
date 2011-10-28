@@ -1,4 +1,4 @@
-var registerActions = (function() {
+var ra = (function() {
     var self = {};
     var _values = {
         "email" : "",

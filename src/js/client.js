@@ -44,7 +44,9 @@ var Client = (function(enabled) {
                     $("#state-wrapper").fadeIn('fast');
                     $("#wrapper").fadeIn('fast');
 
-                    window[state+"Actions"].init();
+                    // we can't do this, cos we mangle the top level vars
+                    // window[state+"Actions"].init();
+                    window[state.charAt(0)+"a"].init();
                     currentState = state;
                     for (var _event in stateListeners) {
                         //console.debug("binding "+_event+" listener");

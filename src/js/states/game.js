@@ -1,4 +1,4 @@
-var gameActions = (function() {
+var ga = (function() {
         var self = {};
         self.init = function() {
             console.log("game init");

@@ -1,4 +1,4 @@
-var lobbyActions = (function() {
+var la = (function() {
     var self = {};
     self.init = function() {
         console.log("lobby init");

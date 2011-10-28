@@ -1,4 +1,4 @@
-var welcomeActions = (function() {
+var wa = (function() {
     self = {};
     self.init = function() {
         console.log("welcome init");
@@ -28,7 +28,7 @@ var welcomeActions = (function() {
                 var gCount = data.games;
                 var gString = gCount != 1 ? "games" : "game";
                 $("#login form").after(
-                    "<p>There "+uPrefix+" <strong>"+uCount+"</strong> "+uString+" in the lobby and <strong>"+gCount+"</strong> "+gString+" in progress right now.</p>"
+                    "<p>There "+uPrefix+" <strong>"+uCount+"</strong> active "+uString+" and <strong>"+gCount+"</strong> "+gString+" in progress right now.</p>"
                 );
             }
         };
