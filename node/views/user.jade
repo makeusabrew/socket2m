@@ -37,7 +37,7 @@ block content
             dd  0
 
         dt Accuracy
-            dd #{user.accuracy}&#37;
+        dd #{user.accuracy}&#37;
 
     h3 Last six games
 
@@ -50,15 +50,20 @@ block content
                 th Outcome
                 th Date
         tbody
-        - each game in games
-            tr
-                td <a href="/user/#{game.challenger.username}">#{game.challenger.username}</a> Vs <a href="/user/#{game.challengee.username}">#{game.challengee.username}</a>
-                td #{game.challenger.score} - #{game.challengee.score}
-                td= game.elapsed
-                td= game.outcome
-                td= game.started
+        - if (!games.length)
+            td(colspan=5)
+                #{user.username} hasn't finished any games yet.
+        - else
+            - each game in games
+                tr
+                    td <a href="/user/#{game.challenger.username}">#{game.challenger.username}</a> Vs <a href="/user/#{game.challengee.username}">#{game.challengee.username}</a>
+                    td #{game.challenger.score} - #{game.challengee.score}
+                    td= game.elapsed
+                    td= game.outcome
+                    td= game.started
 
-    h3 Daily Ranking
+    h3 Daily Statistics
+    p The following chart maps this user's wins, losses and ranking over time. It is updated once a day shortly after midnight (GMT).
     #ranking_chart
 
     #stats(style='display:none')
@@ -119,5 +124,7 @@ block scripts
                         minValue: 0
                     }
                 });
+            } else {
+                $("#ranking_chart").html("Sorry, this user hasn't got any statistics recorded. Try again tomorrow.");
             }
         });
