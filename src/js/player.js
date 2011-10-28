@@ -42,23 +42,20 @@ Player = function(options) {
     }
 
     this.preRender = function() {
-        var surface = GameManager.getSurface();
-
-        surface.clearRect(this.aim.x | 0, this.aim.y | 0, 5, 5);
-        surface.clearRect(this._x | 0, this._y | 0, 16, 32);
+        gSurface.clearRect(this.aim.x | 0, this.aim.y | 0, 5, 5);
+        gSurface.clearRect(this._x | 0, this._y | 0, 16, 32);
     }
 
     this.render = function() {
-        GameManager.getSurface().fillRect(this._x | 0, this._y | 0, 16, 32, this._c);
+        gSurface.fillRect(this._x | 0, this._y | 0, 16, 32, this._c);
     }
 
     this.renderSight = function() {
-        var surface = GameManager.getSurface();
         // draw where I'm aiming
         this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
         this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
 
-        GameManager.getSurface().square(this.aim.x, this.aim.y, 5, "rgb(0, 0, 0)");
+        gSurface.square(this.aim.x, this.aim.y, 5, "rgb(0, 0, 0)");
     }
 
     this.fireWeapon = function() {

@@ -4,6 +4,8 @@ var GameManager = (function() {
         _lastTick = 0,
         _lastFps = 0,
         _delta = 0,
+        _right = 0,
+        _bottom = 0,
 
         _surface = null,
 
@@ -57,10 +59,7 @@ var GameManager = (function() {
 
         _lastTick = tickTime;
 
-        if (_suddenDeath) {
-            // timer is irrelevant
-            // is anything?
-        } else {
+        if (!_suddenDeath) {
             // duration tick tick tick
             if (_duration > 0) {
                 _duration -= _delta;
@@ -289,6 +288,7 @@ var GameManager = (function() {
         }
     }
 
+    /*
     self.initSurface = function(elem) {
         self.setSurface(new Surface(elem));
     }
@@ -296,6 +296,7 @@ var GameManager = (function() {
     self.setSurface = function(surface) {
         _surface = surface;
     }
+    */
 
     self.setPlayer = function(player) {
         _player = player;
@@ -370,9 +371,11 @@ var GameManager = (function() {
         _player.setReloadTime(msec);
     }
 
+    /*
     self.getSurface = function() {
         return _surface;
     }
+    */
 
     self.getLeft = function() {
         return 0;
@@ -383,11 +386,11 @@ var GameManager = (function() {
     }
 
     self.getBottom = function() {
-        return self.getTop() + _surface.getHeight();
+        return _bottom;
     }
 
     self.getRight = function() {
-        return self.getLeft() + _surface.getWidth();
+        return _right;
     }
 
     self.entitiesTouching = function(e1, e2) {
@@ -585,7 +588,10 @@ var GameManager = (function() {
         }
 
         // bind any canvas rendering to #viewport
-        self.initSurface("viewport");
+        //self.initSurface("viewport");
+        gSurface = new Surface("viewport");
+        _bottom = self.getTop() + gSurface.getHeight();
+        _right = self.getLeft() + gSurface.getWidth();
 
         self.addPlatforms();
 

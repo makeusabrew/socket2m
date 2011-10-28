@@ -2,6 +2,10 @@ var currentState = null;
 var stateListeners = {};
 var pageTitle = $("title").html();
 var socket = null;
+/**
+ * storing a global reference to the canvas surface isn't ideal, but it's best for performance
+ */
+var gSurface = null;
 
 var Client = (function(enabled) {
     var self = {};

@@ -54,13 +54,11 @@ Bullet.prototype = {
     },
 
     preRender: function() {
-        var buffer = GameManager.getSurface();
-        buffer.clearRect(this._x | 0, this._y | 0, this._w, this._w);
+        gSurface.clearRect(this._x | 0, this._y | 0, this._w, this._w);
     },
 
     render: function() {
-        var buffer = GameManager.getSurface();
-        buffer.square(this._x | 0, this._y | 0, this._w, "rgb(255, 0, 0)");
+        gSurface.square(this._x | 0, this._y | 0, this._w, "rgb(255, 0, 0)");
     },
 
     kill: function() {

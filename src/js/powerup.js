@@ -20,12 +20,12 @@ Powerup.prototype = {
     },
 
     preRender: function() {
-        GameManager.getSurface().clearRect(this.x-1, this.y-1, (this.r+1)*2, (this.r+1)*2);
+        gSurface.clearRect(this.x-1, this.y-1, (this.r+1)*2, (this.r+1)*2);
     },
     
     render: function() {
-        GameManager.getSurface().circle(this.x, this.y, this.r, "rgb(0, 255, 128)");
-        GameManager.getSurface().fillText(this.x + this.r, this.y + 1, this.letter, "rgb(100, 100, 100)", {
+        gSurface.circle(this.x, this.y, this.r, "rgb(0, 255, 128)");
+        gSurface.fillText(this.x + this.r, this.y + 1, this.letter, "rgb(100, 100, 100)", {
             "font": "bold 13px sans-serif",
             "textBaseline": "hanging",
             "textAlign": "center"

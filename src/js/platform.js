@@ -14,7 +14,7 @@ Platform.prototype = {
     },
 
     render: function() {
-        GameManager.getSurface().fillRect(this.x, this.y, this.w, this.h, "rgb(0, 0, 0)");
+        gSurface.fillRect(this.x, this.y, this.w, this.h, "rgb(0, 0, 0)");
     },
 
     getLeft: function() {
