@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    h2 Game Report: #{game.challenger.username} Vs #{game.challengee.username}
+    h3= game.started
+
+    p Final score: #{game.challenger.score} - #{game.challengee.score}
+    p #{game.outcome}
+    p Game duration: #{game.elapsed}

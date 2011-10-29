@@ -31,6 +31,13 @@ module.exports = function(app) {
     });
 
     /**
+     * Game page
+     */
+    app.get(/\/game\/([a-f0-9]+)/, function(req, res) {
+        PageController.viewGame(req, res);
+    });
+
+    /**
      * Shared JS resources
      */
     app.get(/^\/shared\/js\/([a-z]+\.js)/, function(req, res) {

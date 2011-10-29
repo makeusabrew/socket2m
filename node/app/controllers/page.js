@@ -7,6 +7,44 @@ var app = null;
  */
 var settings = {};
 
+var augmentGame = function(game, user) {
+    game.elapsed = utils.formatTime(
+        Math.round((game.finished - game.started) / 1000)
+    );
+
+    var outcome = "";
+    if (game.defaulted) {
+        var defaulter = game.defaulter.toString() == game.challenger.db_id.toString() ?
+            game.challenger :
+            game.challengee;
+
+        outcome = "Forfeited by "+defaulter.username;
+    } else if (game.cancelled) {
+        outcome = "Cancelled";
+    } else {
+        if (user) {
+            if (game.winner == user._id.toString()) {
+                outcome = "Won";
+            } else {
+                outcome = "Lost";
+            }
+        } else {
+            // no user = general game view, so add the victor
+            var winner= game.winner.toString() == game.challenger.db_id.toString() ?
+                game.challenger :
+                game.challengee;
+
+            outcome = "Won by "+winner.username;
+        }
+
+        if (game.suddendeath) {
+            outcome += " (Sudden Death)";
+        }
+    }
+
+    game.outcome = outcome;
+}
+
 var PageController = {
     init: function(app) {
         settings.trackStats = app.enabled('trackStats')
@@ -67,32 +105,7 @@ var PageController = {
                         docs.forEach(function(game) {
                             // we could probably do this far more efficiently, but we need to
                             // augment the game objects before rendering them
-
-                            game.elapsed = utils.formatTime(
-                                Math.round((game.finished - game.started) / 1000)
-                            );
-
-                            var outcome = "";
-                            if (game.defaulted) {
-                                var defaulter = game.defaulter.toString() == game.challenger.db_id.toString() ?
-                                    game.challenger :
-                                    game.challengee;
-
-                                outcome = "Forfeited by "+defaulter.username;
-                            } else if (game.cancelled) {
-                                outcome = "Cancelled";
-                            } else {
-                                if (game.winner == user._id.toString()) {
-                                    outcome = "Won";
-                                } else {
-                                    outcome = "Lost";
-                                }
-                                if (game.suddendeath) {
-                                    outcome += " (Sudden Death)";
-                                }
-                            }
-
-                            game.outcome = outcome;
+                            augmentGame(game, user);
 
                             games.push(game);
                         });
@@ -117,6 +130,20 @@ var PageController = {
                             });
                         });
                     });
+                });
+            });
+        });
+    },
+
+    viewGame: function(req, res) {
+        var gameId = new db.bson_serializer.ObjectID(req.params[0]);
+
+        db.collection('games', function(err, collection) {
+            collection.findOne({_id: gameId}, function(err, game) {
+                augmentGame(game);
+                res.render('game', {
+                    'pageTitle': 'Game Report',
+                    game: game
                 });
             });
         });
