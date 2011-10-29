@@ -18,7 +18,20 @@ var WelcomeController = {
     },
 
     login: function(socket, data) {
-        var details = qs.parse(data);
+        try {
+            var details = qs.parse(data);
+        } catch (e) {
+            // well, if we had a parse error or whatever, the deets were invalid
+            socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
+            return;
+        }
+
+        if (!details.username ||
+            !details.password) {
+            socket.emit('msg', 'Sorry, these details don\'t appear to be valid. Please try again.');
+            return;
+        }
+
         db.collection('users', function(err, collection) {
             
             var hash = crypto.createHash('sha1');

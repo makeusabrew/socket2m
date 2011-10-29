@@ -1,9 +1,10 @@
 var mongo   = require('mongodb'),
-    client  = null;
+    client  = null,
+    Config  = require('app/config');
 
-console.log("init new db connection");
+console.log("init new db connection to "+Config.getValue("db.name"))
 module.exports = new mongo.Db(
-    'socket2m',
+    Config.getValue("db.name"),
     new mongo.Server(
         'localhost',
         mongo.Connection.DEFAULT_PORT,

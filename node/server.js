@@ -7,6 +7,8 @@ var express = require('express'),
 
 require.paths.unshift(__dirname);
 
+var Config = require("./app/config");
+
 var SocketManager = require('app/managers/socket');
 SocketManager.setIO(io);
 
@@ -22,7 +24,7 @@ var LobbyController    = require('app/controllers/lobby');
 
 // other local stuff
 var db          = require('app/db');
-var port        = process.argv[2] || 7979;
+var port        = Config.getValue("port");
 
 app.listen(port);
 console.log("listening on port "+port);
