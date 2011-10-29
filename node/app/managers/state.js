@@ -111,11 +111,11 @@ var StateManager = {
     trackGameEvent: function(game, type, data) {
         //db.collection('games', function(err, collection) {
         console.log("tracking event "+type);
-        var event = [{
+        var event = {
             'timestamp' : new Date(),
             'type'      : type,
             'data'      : data
-        }];
+        };
         if (game.events == null) {
             game.events = [];
         }

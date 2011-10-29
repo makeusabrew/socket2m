@@ -141,6 +141,52 @@ var PageController = {
         db.collection('games', function(err, collection) {
             collection.findOne({_id: gameId}, function(err, game) {
                 augmentGame(game);
+                if (game.events) {
+                    var i = game.events.length;
+                    while (i--) {
+                        var title = "";
+                        // @todo make it friendly
+                        var event = game.events[i];
+                        switch (event.type) {
+                            case "weapon_fire":
+                                var player = event.data.o == game.challenger.socket_id ?
+                                    game.challenger :
+                                    game.challengee;
+                                title = player.username+" fired";
+                                break;
+                            case "powerup_spawn":
+                                title = "teleport powerup spawned";
+                                break;
+                            case "powerup_claim":
+                                title = "teleport powerup claimed";
+                                break;
+                            case "player_kill":
+                                var victim = event.data.id == game.challenger.socket_id ?
+                                    game.challenger :
+                                    game.challengee;
+                                title = victim.username+" was killed!";
+                                break;
+                            case "player_chat":
+                                var player = event.data.id == game.challenger.socket_id ?
+                                    game.challenger :
+                                    game.challengee;
+                                title = player.username+" chatted";
+                                break;
+                            case "player_respawn":
+                                title = event.data.player.username;
+                                if (event.data.teleport) {
+                                    title += " teleported";
+                                } else {
+                                    title += " respawned";
+                                }
+                                break;
+                            default:
+                                title = game.events[i].type;
+                                break;
+                        }
+                        game.events[i].friendlyTitle = title;
+                    }
+                }
                 res.render('game', {
                     'pageTitle': 'Game Report',
                     game: game

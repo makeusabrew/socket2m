@@ -7,3 +7,10 @@ block content
     p Final score: #{game.challenger.score} - #{game.challengee.score}
     p #{game.outcome}
     p Game duration: #{game.elapsed}
+
+    h3 Timeline
+
+    ol#timeline
+        - each event in game.events
+            li(class=event.type)
+                time(datetime=event.timestamp) #{event.friendlyTitle}
