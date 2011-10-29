@@ -122,7 +122,7 @@ block scripts
                 }
                 i++;
             });
-            if (i > 0) {
+            if (i > 1) {
                 var chart = new google.visualization.LineChart(document.getElementById('ranking_chart'));
                 chart.draw(data, {width:940, height:500, title: 'Wins, Losses & Ranking over time',
                     vAxis: {
@@ -131,7 +131,10 @@ block scripts
                         minValue: 0
                     }
                 });
+            } else if (i == 1) {
+                $("#ranking_chart").html("Sorry, this user has only got one day's worth of statistics recorded which wouldn't make "+
+                    "for a very interesting chart. Please check again tomorrow.");
             } else {
-                $("#ranking_chart").html("Sorry, this user hasn't got any statistics recorded. Try again tomorrow.");
+                $("#ranking_chart").html("Sorry, this user hasn't got any statistics recorded yet. Try again in a couple of days.");
             }
         });
