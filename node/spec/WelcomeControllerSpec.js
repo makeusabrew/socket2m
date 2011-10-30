@@ -17,8 +17,16 @@ var WelcomeController = require('app/controllers/welcome');
 
 describe('Welcome Controller', function() {
     var socket;
+    var db = null;
     beforeEach(function() {
         socket = new Socket();
+        if (db == null) {
+            require("app/db").open(function(err, client) {
+                db = client;
+                asyncSpecDone();
+            });
+            asyncSpecWait();
+        }
     });
 
     it('should report user and game count on init', function() {
@@ -52,11 +60,6 @@ describe('Welcome Controller', function() {
 
     it('should emit an error message with blank login details', function() {
         WelcomeController.login(socket, "username=&password=");
-        expect(
-            socket.getEmission(0).namespace
-        ).toEqual(
-            'msg'
-        );
 
         expect(
             socket.getEmission(0).data
@@ -67,11 +70,6 @@ describe('Welcome Controller', function() {
 
     it('should emit an error message with invalid login details format', function() {
         WelcomeController.login(socket, {});
-        expect(
-            socket.getEmission(0).namespace
-        ).toEqual(
-            'msg'
-        );
 
         expect(
             socket.getEmission(0).data
@@ -88,11 +86,6 @@ describe('Welcome Controller', function() {
         }, "socket did not receive emissions", 500);
 
         runs(function() {
-            expect(
-                socket.getEmission(0).namespace
-            ).toEqual(
-                'msg'
-            );
 
             expect(
                 socket.getEmission(0).data
@@ -102,7 +95,6 @@ describe('Welcome Controller', function() {
         });
     });
 
-    /* @ see DB stuff above
     it ('should emit an error message when a user is already logged in', function() {
         // setup / fixture-esque stuff
         require("app/managers/state").addUser({
@@ -118,11 +110,6 @@ describe('Welcome Controller', function() {
         }, "socket did not receive emissions", 500);
 
         runs(function() {
-            expect(
-                socket.getEmission(0).namespace
-            ).toEqual(
-                'msg'
-            );
 
             expect(
                 socket.getEmission(0).data
@@ -131,7 +118,6 @@ describe('Welcome Controller', function() {
             );
         });
     });
-    */
 
     it('should emit a register statechange message on goRegister', function() {
         WelcomeController.goRegister(socket);
@@ -141,6 +127,7 @@ describe('Welcome Controller', function() {
 
         expect(emissions[0].namespace).toEqual('state:change');
         expect(emissions[0].data).toEqual('register');
+
+        this.after(function() { db.close(); });
     });
 });
-
