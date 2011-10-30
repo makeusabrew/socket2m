@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<project name="Socket2M" default="test">
+
+    <property name="project.dir" value="." />
+    <property name="node.dir" value="node" />
+    <property name="reports.dir" value="node/reports" />
+    <property name="mode" value="testing" override="true" />
+
+    <target name="clean" description="Cleanup">
+        <delete dir="${reports.dir}" />
+    </target>
+
+    <target name="test" description="Tests" depends="clean">
+        <echo msg="Running Test Suite" />
+        <exec dir="${node.dir}" checkreturn="true" passthru="true" command="NODE_ENV=${mode} jasmine-node spec/ --junitreport" />
+    </target>
+
+    <target name="dist">
+        <echo msg="creating temporary files" />
+        <delete dir="/tmp/${env.BUILD_TAG}" />
+        <copy todir="/tmp/${env.BUILD_TAG}" overwrite="true" includeemptydirs="true">
+            <fileset dir="." />
+        </copy>
+        <echo msg="removing build data" />
+        <delete includeemptydirs="true" verbose="false" failonerror="true">
+            <fileset dir="/tmp/${env.BUILD_TAG}">
+                <include name="tmp/templates_c/*.tpl.php" />
+                <include name="log/*.log" />
+                <include name=".git**" />
+                <include name="test**" />
+                <include name="*.xml" />
+                <include name="README" />
+            </fileset>
+        </delete>
+        <echo msg="compressing archive" />
+        <tar destfile="/tmp/${env.BUILD_TAG}.tar.bz2" basedir="/tmp/${env.BUILD_TAG}" compression="bzip2" />
+        <echo msg="copying to remote host" />
+        <exec checkreturn="true" passthru="true" command="scp /tmp/${env.BUILD_TAG}.tar.bz2 ${env.remote_user}@${env.remote_host}:${env.remote_dir}" />
+        <echo msg="setting up remote project" />
+        <exec checkreturn="true" passthru="true" command="ssh ${env.remote_user}@${env.remote_host}
+            'mkdir ${env.remote_dir}/${env.BUILD_TAG};
+            tar -xjf ${env.remote_dir}/${env.BUILD_TAG}.tar.bz2 -C ${env.remote_dir}/${env.BUILD_TAG};
+            rm ${env.remote_symlink}; ln -f -s ${env.remote_dir}/${env.BUILD_TAG} ${env.remote_symlink};
+            rm -f ${env.remote_dir}/*.tar.bz2;
+            chmod 0777 ${env.remote_symlink}/tmp/ ${env.remote_symlink}/log/ -R;'" />
+        <echo msg="cleaning up" />
+        <exec checkreturn="true" passthru="true" command="rm -f /tmp/${env.BUILD_TAG}.tar.bz2" />
+        <echo msg="done" />
+    </target>
+</project>
