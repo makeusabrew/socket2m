@@ -12,7 +12,7 @@
 
     <target name="test" description="Tests" depends="clean">
         <echo msg="Running Test Suite" />
-        <exec dir="${node.dir}" checkreturn="true" passthru="true" command="NODE_ENV=${mode} jasmine-node spec/ --junitreport" />
+        <exec dir="${node.dir}" checkreturn="true" passthru="true" command="NODE_ENV=${mode} jasmine-node spec/ --junitreport --noColor" />
     </target>
 
     <target name="dist">
