@@ -281,6 +281,15 @@ var GameController = {
     },
 
     rejoinLobby: function(socket) {
+        // @see #639 - lobby join race condition
+        // the problem is that in order for another user to receive initial
+        // lobby info, they have to have *all* lobby listeners bound
+        // so if they emit lobby:ready as we emit lobby:user:join, they might
+        // get us in LobbyController.init AND as a result of emit() below
+        // hmm
+        // as an aside, why can't the actual join, broadcast and chat be done
+        // inside LobbyController.init()? more oop, more DRY as we have the
+        // same code in the WelcomeController...
         socket.join('lobby');
         socket.emit('state:change', 'lobby');
         socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
