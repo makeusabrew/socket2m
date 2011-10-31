@@ -70,11 +70,6 @@ io.sockets.on('connection', function(socket) {
     socket.emit('state:change', 'welcome');
 
     socket.on('state:fetch', function(state, cb) {
-        /*
-        fs.readFile(__dirname+'/../public/states/'+state+'.html', 'utf8', function(err, data) {
-            cb(data);
-        });
-        */
         cb(StaticController.fetchContentsForState(state));
     });
 
