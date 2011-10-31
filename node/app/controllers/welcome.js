@@ -45,7 +45,8 @@ var WelcomeController = {
                     if (StateManager.isUserLoggedIn(result.username)) {
                         socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
                     } else {
-                        collection.update({_id: result._id}, {$set: {lastLogin: new Date()}});
+                        result.logins = result.logins ? result.logins+1 : 1;
+                        collection.update({_id: result._id}, {$set: {lastLogin: new Date(), logins: result.logins}});
                         result.sid = socket.id;
                         delete result.password;
 

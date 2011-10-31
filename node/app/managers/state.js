@@ -498,10 +498,14 @@ var StateManager = {
                 StateManager.cancelGame(game, authedUsers[socket.id]);
             }
 
-            delete authedUsers[socket.id];
+            StateManager.removeUser(socket.id);
         }
 
         io.sockets.emit('user:leave', socket.id);
+    },
+
+    removeUser: function(id) {
+        delete authedUsers[id];
     }
 };
 

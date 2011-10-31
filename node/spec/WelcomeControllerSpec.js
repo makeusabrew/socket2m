@@ -13,17 +13,23 @@ db.open(function(err, client) {
 */
 
 var Socket = require('spec/stubs/socket');
+var io = require('spec/stubs/io');
+require('app/managers/socket').setIO(io);
+
+var StateManager = require("app/managers/state");
 var WelcomeController = require('app/controllers/welcome');
 
 describe('Welcome Controller', function() {
     var socket;
     var db = null;
     beforeEach(function() {
-        socket = new Socket();
+        socket = new Socket("1234");
         if (db == null) {
             require("app/db").open(function(err, client) {
-                db = client;
-                asyncSpecDone();
+                require("spec/helpers/fixtures").import(__dirname+'/fixtures/users.js', function() {
+                    db = client;
+                    asyncSpecDone();
+                });
             });
             asyncSpecWait();
         }
@@ -97,8 +103,9 @@ describe('Welcome Controller', function() {
 
     it ('should emit an error message when a user is already logged in', function() {
         // setup / fixture-esque stuff
-        require("app/managers/state").addUser({
-            "sid": "1234",
+        
+        StateManager.addUser({
+            "sid": "12345",
             "username" : "test"
         });
 
@@ -116,6 +123,36 @@ describe('Welcome Controller', function() {
             ).toEqual(
                 "Sorry, this user already appears to be logged in. Please try again."
             );
+
+            StateManager.removeUser("12345");
+        });
+    });
+
+    it('should set a new user\'s login count to one', function() {
+        WelcomeController.login(socket, "username=test&password=test");
+
+        waitsFor(function() {
+            return socket.hasEmission();
+        }, "socket did not receive emissions", 500);
+
+        runs(function() {
+            expect(
+                StateManager.getUserForSocket("1234").logins
+            ).toEqual(1);
+        });
+    });
+
+    it('should increment an existing user\s login count', function() {
+        WelcomeController.login(socket, "username=test2&password=test");
+
+        waitsFor(function() {
+            return socket.hasEmission();
+        }, "socket did not receive emissions", 500);
+
+        runs(function() {
+            expect(
+                StateManager.getUserForSocket("1234").logins
+            ).toEqual(5);
         });
     });
 
