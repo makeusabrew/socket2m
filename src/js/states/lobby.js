@@ -2,6 +2,7 @@ var la = (function() {
     var self = {};
     self.init = function() {
         console.log("lobby init");
+
         stateListeners = {
             'lobby:users': function(data) {
                 LobbyManager.init(data);

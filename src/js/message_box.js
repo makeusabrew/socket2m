@@ -1,11 +1,14 @@
-this.mbalert = function(str, cb) {
+this.mbalert = function(str, cb, okStr) {
+    if (okStr == null) {
+        okStr = "OK";
+    }
     var div = $([
         "<div class='modal hide fade'>",
             "<div class='modal-body'>",
                 str,
             "</div>",
             "<div class='modal-footer'>",
-                "<a class='btn primary' href='#'>OK</a>",
+                "<a class='btn primary' href='#'>"+okStr+"</a>",
             "</div>",
         "</div>"
     ].join("\n"));
