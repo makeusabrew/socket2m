@@ -15,11 +15,6 @@ var Input = {
     capturedKeys: {},
     target: null,
     triggers: {},
-    // macs are rubbish. we get phantom keyups on keydown repeats
-    // to counter, we actually trigger the keyUp with a setTimeout delay
-    // we need to store a ref to these handlers in case a keydown cancels
-    // it before it fires
-    upHandlers: {},
 
     keyDown: function(k) {
         Input.keysPressed[k] = true;
@@ -62,7 +57,6 @@ var Input = {
             if (Input.isCapturedKey(key)) {
                 e.preventDefault();
             }
-            clearTimeout(Input.upHandlers[key]);
             Input.keyDown(key);
         });
 
@@ -75,12 +69,7 @@ var Input = {
                     Input.triggers[key](e);
                 }
             }
-            // trigger the keyup in 35ms - if we get a keydown
-            // before this triggers we'll cancel it as we assume
-            // it was a phantom message
-            Input.upHandlers[key] = setTimeout(function() {
-                Input.keyUp(key);
-            }, 35);
+            Input.keyUp(key);
         });
     },
 
