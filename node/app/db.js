@@ -1,6 +1,6 @@
 var mongo   = require('mongodb'),
     client  = null,
-    Config  = require('app/config');
+    Config  = require('./config');
 
 console.log("init new db connection to "+Config.getValue("db.name"))
 module.exports = new mongo.Db(
