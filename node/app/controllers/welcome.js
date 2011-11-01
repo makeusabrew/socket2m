@@ -8,6 +8,20 @@ var db = require('app/db');
 // private
 var io = require('app/managers/socket').getIO();
 
+function validateEmail(email) { 
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+} 
+
+function _authUser(collection, result, socket) {
+    result.logins = result.logins ? result.logins+1 : 1;
+    collection.update({_id: result._id}, {$set: {lastLogin: new Date(), logins: result.logins}});
+    result.sid = socket.id;
+    delete result.password;
+
+    StateManager.addUser(result);
+}
+
 var WelcomeController = {
 
     init: function(socket) {
@@ -45,17 +59,9 @@ var WelcomeController = {
                     if (StateManager.isUserLoggedIn(result.username)) {
                         socket.emit('msg', 'Sorry, this user already appears to be logged in. Please try again.');
                     } else {
-                        result.logins = result.logins ? result.logins+1 : 1;
-                        collection.update({_id: result._id}, {$set: {lastLogin: new Date(), logins: result.logins}});
-                        result.sid = socket.id;
-                        delete result.password;
 
-                        StateManager.addUser(result);
-
-                        socket.join('lobby');
+                        _authUser(collection, result, socket);
                         socket.emit('state:change', 'lobby');
-                        socket.broadcast.to('lobby').emit('lobby:user:join', result);
-                        ChatManager.botChat(result.username+" joined the lobby");
                     }
                 }
             });
@@ -64,6 +70,58 @@ var WelcomeController = {
 
     goRegister: function(socket) {
         socket.emit('state:change', 'register');
+    },
+
+    register: function(socket, data) {
+        var details = qs.parse(data);
+
+        var errors = [];
+        if (details.username == null ||
+            details.username.match(/^[A-z_0-9]{1,20}$/) == null) {
+            errors.push("Please enter a valid username");
+        }
+        if (details.email == null ||
+            validateEmail(details.email) == false) {
+            errors.push("Please enter a valid email address");
+        }
+        if (details.password == null ||
+            details.password.match(/^.{4,20}$/) == null) {
+            errors.push("Please enter a valid password");
+        }
+        if (errors.length) {
+            socket.emit('msg', errors.join("<br />"));
+            return;
+        }
+        db.collection('users', function(err, collection) {
+            collection.findOne({ $or : [{"username": details.username}, {"email": details.email}]}, function(err, result) {
+                if (result == null) {
+                    // superb. register
+                    var hash = crypto.createHash('sha1');
+                    hash.update(details.password);
+                    details.password = hash.digest('hex');
+                    details.rank = 0;
+                    details.kills = 0;
+                    details.deaths = 0;
+                    details.defaults = 0;
+                    details.wins = 0;
+                    details.losses = 0;
+                    details.shots = 0;
+                    details.hits = 0;
+                    details.registered = new Date();
+
+                    collection.insert(details, function(err, result) {
+                        _authUser(collection, result[0], socket);
+                        socket.emit('state:change', 'intro');
+                    });
+                } else {
+                    socket.emit('msg', 'Sorry, that username or email address is already in use.');
+                }
+            });
+        });
+    },
+
+    introDone: function(socket) {
+        socket.emit('state:change', 'lobby');
     }
 };
 

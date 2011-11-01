@@ -5,6 +5,10 @@ var io = require('app/managers/socket').getIO();
 
 var LobbyController = {
     init: function(socket) {
+        socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
+        ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" joined the lobby");
+        socket.join('lobby');
+
         var _sockets = io.sockets.clients('lobby');
         var users = [];
         for (var i = 0, j = _sockets.length; i < j; i++) {

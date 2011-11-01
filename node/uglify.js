@@ -20,6 +20,7 @@ for (var i = sourceFiles.length-1; i >= 0; i--) {
 // hard coded for socket2m!
 sourceFiles.unshift("client.js");
 sourceFiles.push("states/game.js");
+sourceFiles.push("states/intro.js");
 sourceFiles.push("states/lobby.js");
 sourceFiles.push("states/register.js");
 sourceFiles.push("states/welcome.js");
@@ -50,7 +51,7 @@ var compile = function(file, cb) {
         }
         // we have to now recompress to shrink the top level names
         var ast = jsp.parse(output);
-        ast = pro.ast_mangle(ast, {"toplevel":true, "except": ["ga", "la", "ra", "wa"]});
+        ast = pro.ast_mangle(ast, {"toplevel":true, "except": ["ga", "la", "ra", "wa", "ia"]});
         var final_code = pro.gen_code(ast);
         cb(final_code);
     }

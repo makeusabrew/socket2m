@@ -18,7 +18,6 @@ var StateManager   = require('app/managers/state');
 console.log("load controllers");
 var StaticController   = require('app/controllers/static');
 var WelcomeController  = require('app/controllers/welcome');
-var RegisterController = require('app/controllers/register');
 var GameController     = require('app/controllers/game');
 var LobbyController    = require('app/controllers/lobby');
 
@@ -96,10 +95,17 @@ io.sockets.on('connection', function(socket) {
     });
 
     /**
-     * register - do registration
+     * welcome - do registration
      */
-    socket.on('register:register', function(data) {
-        RegisterController.register(socket, data);
+    socket.on('welcome:register:done', function(data) {
+        WelcomeController.register(socket, data);
+    });
+
+    /**
+     * welcome - finished intro 
+     */
+    socket.on('welcome:intro:done', function() {
+        WelcomeController.introDone(socket);
     });
 
     /**

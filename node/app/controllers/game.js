@@ -290,10 +290,7 @@ var GameController = {
         // as an aside, why can't the actual join, broadcast and chat be done
         // inside LobbyController.init()? more oop, more DRY as we have the
         // same code in the WelcomeController...
-        socket.join('lobby');
         socket.emit('state:change', 'lobby');
-        socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
-        ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" rejoined the lobby");
     },
 
     /**

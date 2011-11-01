@@ -27,7 +27,7 @@ var ra = (function() {
 
         $("#register form").submit(function(e) {
             e.preventDefault();
-            socket.emit("register:register", $(this).serialize());
+            socket.emit("welcome:register:done", $(this).serialize());
         });
     }
     return self;
