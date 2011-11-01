@@ -101,10 +101,10 @@ block scripts
                     var d = date.getDate();
                     var m = date.getMonth() + 1;
                     if (d < 10) {
-                        d = "1"+d;
+                        d = "0"+d;
                     }
                     if (m < 10) {
-                        m = "1"+m;
+                        m = "0"+m;
                     }
                     return d+splitter+m;
                 })(date, '/');
