@@ -9,6 +9,11 @@ var LobbyManager = (function() {
     var initCount = 0;
 
     function addUser(_user) {
+        if ($("td[data-id='"+_user.sid+"']").length) {
+            console.warn("Not adding user ID "+_user.sid+" to table - already present");
+            return;
+        }
+
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
         var profileText = (_user.sid == user.sid) ? "your" : ""+_user.username+'\'s';
 
@@ -192,13 +197,15 @@ var LobbyManager = (function() {
     self.addUser = function(user) {
         console.log("user joining lobby", user);
         var u = addUser(user);
-        $("#users table tbody").append(u);
-        // put the hide *after* DOM insertion to fix FF issues
-        u.hide();
-        u.fadeIn('slow');
-        
-        // well, if anyone else joined, obviously we're not alone
-        $("#tweet-challengers").hide();
+        if (u) {
+            $("#users table tbody").append(u);
+            // put the hide *after* DOM insertion to fix FF issues
+            u.hide();
+            u.fadeIn('slow');
+            
+            // well, if anyone else joined, obviously we're not alone
+            $("#tweet-challengers").hide();
+        }
 
         bindListeners();
     }
