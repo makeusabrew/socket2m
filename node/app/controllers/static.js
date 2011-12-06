@@ -6,8 +6,11 @@ var compiledContents = {};
 var StaticController = {
     fetchContentsForState: function(state) {
         if (compiledContents[state] == null) {
-            var data = fs.readFileSync(__dirname+"/../../views/states/"+state+".jade");
-            var fn = jade.compile(data);
+            var filename = __dirname+"/../../views/states/"+state+".jade";
+            var data = fs.readFileSync(filename);
+            var fn = jade.compile(data, {
+                filename: filename
+            });
             var output = fn();
             compiledContents[state] = output;
         }

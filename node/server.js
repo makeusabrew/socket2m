@@ -64,7 +64,7 @@ require('./app/routes')(app);
 
 
 io.sockets.on('connection', function(socket) {
-    socket.emit('state:change', 'intro');
+    socket.emit('state:change', 'welcome');
 
     socket.on('state:fetch', function(state, cb) {
         cb(StaticController.fetchContentsForState(state));

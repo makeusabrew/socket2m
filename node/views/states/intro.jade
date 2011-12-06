@@ -2,8 +2,49 @@
     .page-header
         h1 You're registered!
 
-    h2 Welcome to Socket2M!
+    .page-header
+        h2 Welcome to Socket2M!
 
-    p Some intro blurb about the game, controls etc will go here.
+    p Welcome aboard! Before you get stuck in why not take a minute to learn a few of the basics about the game?
 
-    a(href='#', class='btn success proceed') Continue to the lobby
+    p
+        a(href='#', class='btn proceed') No thanks &ndash; take me straight in!
+
+    .page-header
+        h2
+            The Lobby
+
+    p
+     | You'll be heading here straight after you've read all this so it's worth
+     | spending a moment familiarising yourself with what you can get up to once
+     | you're there:
+
+    include ../includes/lobby
+
+    .page-header
+        h2
+            The Game
+
+    p
+     | This is where things get serious! If you don't want to be a sitting duck
+     | the first time you enter the fray then it's worth giving the following points
+     | a quick read:
+
+    ol
+        li <a href="#basics">Basics</a>
+        li <a href="#controls">Controls</a>
+        li <a href="#rules">Rules</a>
+
+    include ../includes/game-simple
+
+    .page-header
+        h2 What else?
+
+    p
+     | Whilst you'll spend most of your time in the lobby or hopefully in game, there
+     | are a few other bits and pieces you might be interested in. You can read up
+     | about all of them, and revisit the lobby and game tips shown above on the
+     | <a href='/about' target="_blank">About Socket2M</a> page.
+
+    p
+        a(href='#', class='btn success proceed') I'm ready &ndash; let's go! 
