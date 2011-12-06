@@ -5,24 +5,22 @@ var express = require('express'),
     io      = require('socket.io').listen(app),
     fs      = require('fs');
 
-require.paths.unshift(__dirname);
-
 var Config = require("./app/config");
 
-var SocketManager = require('app/managers/socket');
+var SocketManager = require('./app/managers/socket');
 SocketManager.setIO(io);
 
-var StateManager   = require('app/managers/state');
+var StateManager   = require('./app/managers/state');
 
 // controllers
 console.log("load controllers");
-var StaticController   = require('app/controllers/static');
-var WelcomeController  = require('app/controllers/welcome');
-var GameController     = require('app/controllers/game');
-var LobbyController    = require('app/controllers/lobby');
+var StaticController   = require('./app/controllers/static');
+var WelcomeController  = require('./app/controllers/welcome');
+var GameController     = require('./app/controllers/game');
+var LobbyController    = require('./app/controllers/lobby');
 
 // other local stuff
-var db          = require('app/db');
+var db          = require('./app/db');
 var port        = Config.getValue("port");
 
 app.listen(port);
@@ -66,7 +64,7 @@ require('./app/routes')(app);
 
 
 io.sockets.on('connection', function(socket) {
-    socket.emit('state:change', 'welcome');
+    socket.emit('state:change', 'intro');
 
     socket.on('state:fetch', function(state, cb) {
         cb(StaticController.fetchContentsForState(state));

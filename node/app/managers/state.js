@@ -1,7 +1,7 @@
 console.log("load state");
-var ChatManager = require('app/managers/chat');
-var io          = require('app/managers/socket').getIO();
-var db          = require('app/db');
+var ChatManager = require('../managers/chat');
+var io          = require('../managers/socket').getIO();
+var db          = require('../db');
 
 /**
  * private

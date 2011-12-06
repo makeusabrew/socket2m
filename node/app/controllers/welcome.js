@@ -1,12 +1,12 @@
 var qs     = require('querystring'),
     crypto = require('crypto');
 
-var StateManager = require('app/managers/state');
-var ChatManager  = require('app/managers/chat');
-var db = require('app/db');
+var StateManager = require('../managers/state');
+    ChatManager  = require('../managers/chat');
+    db           = require('../db');
 
 // private
-var io = require('app/managers/socket').getIO();
+var io = require('../managers/socket').getIO();
 
 function validateEmail(email) { 
     var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

@@ -1,4 +1,4 @@
-var PageController = require('app/controllers/page');
+var PageController = require('./controllers/page');
 
 module.exports = function(app) {
     PageController.init(app);

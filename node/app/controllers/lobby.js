@@ -1,7 +1,7 @@
-var ChatManager = require('app/managers/chat');
-var StateManager = require('app/managers/state');
-var db = require('app/db');
-var io = require('app/managers/socket').getIO();
+var ChatManager  = require('../managers/chat'),
+    StateManager = require('../managers/state'),
+    db           = require('../db'),
+    io           = require('../managers/socket').getIO();
 
 var LobbyController = {
     init: function(socket) {

@@ -1,5 +1,5 @@
-var utils   = require('app/shared/utils');
-var db      = require('app/db');
+var utils   = require('../shared/utils'),
+    db      = require('../db');
 
 var app = null;
 /**

@@ -1,7 +1,7 @@
 console.log("load chat");
-var db        = require('app/db');
-var SocketBot = require('app/socket_bot');
-var io        = require('app/managers/socket').getIO();
+var db        = require('../db');
+var SocketBot = require('../socket_bot');
+var io        = require('../managers/socket').getIO();
 
 // cache the last 10 or so chat lines
 var chatlines = [];
