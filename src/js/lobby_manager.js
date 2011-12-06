@@ -6,7 +6,6 @@ var LobbyManager = (function() {
     var serverTime = null;
     var gameHandlers = {};
     var hasOutstandingChallenge = false;
-    var initCount = 0;
 
     function addUser(_user) {
         if ($("td[data-id='"+_user.sid+"']").length) {
@@ -133,7 +132,6 @@ var LobbyManager = (function() {
     }
 
     self.init = function(data) {
-        initCount ++;
         $("#lobby form").submit(function(e) {
             e.preventDefault();
             var input = $(this).find("input");
@@ -183,15 +181,6 @@ var LobbyManager = (function() {
         }
 
         bindListeners();
-
-        if (initCount == 1 && user.logins == 1) {
-            bootbox.alert(
-                "<h2>Welcome "+user.username+"!</h2>"+
-                "<p>Since it's your first time playing the game, why not familarise yourself "+
-                "with <a href=# onclick='window.open(\"/about#the-game\", \"_blank\")'>how it works</a>?</p>"+
-                "<p>Please note that this link will open in a new window.</p>"
-            , null, "Dismiss");
-        }
     }
 
     self.addUser = function(user) {
