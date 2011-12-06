@@ -725,7 +725,7 @@ var GameManager = (function() {
         _gameOver = true;
         Input.releaseKeys();
         $("#countdown").html("Game Over");
-        mbalert(str, function() {
+        bootbox.alert(str, function() {
             socket.emit('game:finish');
         });
         if (Client.isTouchDevice()) {

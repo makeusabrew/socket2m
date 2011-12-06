@@ -9,6 +9,11 @@ var LobbyManager = (function() {
     var initCount = 0;
 
     function addUser(_user) {
+        if ($("td[data-id='"+_user.sid+"']").length) {
+            console.warn("Not adding user ID "+_user.sid+" to table - already present");
+            return;
+        }
+
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
         var profileText = (_user.sid == user.sid) ? "your" : ""+_user.username+'\'s';
 
@@ -72,13 +77,13 @@ var LobbyManager = (function() {
             if (targetId != null && targetId != user.sid) {
                 // excellent! challenge time
                 if (hasOutstandingChallenge) {
-                    mbalert("You've got a challenge outstanding - please wait.");
+                    bootbox.alert("You've got a challenge outstanding - please wait.");
                 } else {
                     var stakeBlurb = getStakes(user, {"rank":elem.data('rank')});
                     var html = "<p>Do you want to challenge <strong>"+elem.data('username')+"</strong>? "+
                     stakeBlurb+
                     "<h4 class='challenge'>Issue the challenge?</h4>";
-                    mbconfirm(html, function(result) {
+                    bootbox.confirm(html, function(result) {
                         // boom!
                         if (result) {
                             hasOutstandingChallenge = true;
@@ -180,7 +185,7 @@ var LobbyManager = (function() {
         bindListeners();
 
         if (initCount == 1 && user.logins == 1) {
-            mbalert(
+            bootbox.alert(
                 "<h2>Welcome "+user.username+"!</h2>"+
                 "<p>Since it's your first time playing the game, why not familarise yourself "+
                 "with <a href=# onclick='window.open(\"/about#the-game\", \"_blank\")'>how it works</a>?</p>"+
@@ -192,13 +197,15 @@ var LobbyManager = (function() {
     self.addUser = function(user) {
         console.log("user joining lobby", user);
         var u = addUser(user);
-        $("#users table tbody").append(u);
-        // put the hide *after* DOM insertion to fix FF issues
-        u.hide();
-        u.fadeIn('slow');
-        
-        // well, if anyone else joined, obviously we're not alone
-        $("#tweet-challengers").hide();
+        if (u) {
+            $("#users table tbody").append(u);
+            // put the hide *after* DOM insertion to fix FF issues
+            u.hide();
+            u.fadeIn('slow');
+            
+            // well, if anyone else joined, obviously we're not alone
+            $("#tweet-challengers").hide();
+        }
 
         bindListeners();
     }
@@ -252,7 +259,7 @@ var LobbyManager = (function() {
         stakeBlurb+
         "<h4 class='challenge'>Accept the challenge?</h4>";
 
-        mbconfirm(html, function(result) {
+        bootbox.confirm(html, function(result) {
             socket.emit('lobby:challenge:respond', result);
         }, "Yes", "No");
     }
@@ -265,20 +272,20 @@ var LobbyManager = (function() {
             console.log("requesting game start...");
             socket.emit('lobby:startgame');
         } else if (data.to != user.sid) {
-            mbalert("The opponent declined your challenge.");
+            bootbox.alert("The opponent declined your challenge.");
         }
     }
 
     self.challengeBlocked = function() {
         hasOutstandingChallenge = false;
-        mbalert("Sorry, this user has just challenged (or been challenged by) someone else. Try again in a moment.");
+        bootbox.alert("Sorry, this user has just challenged (or been challenged by) someone else. Try again in a moment.");
     }
 
     self.cancelChallenge = function() {
         // user cancelled their challenge against us
         // presumably we've got a modal in our face, so get rid
         $(".modal").modal("hide");
-        mbalert("The opponent withdrew their challenge.");
+        bootbox.alert("The opponent withdrew their challenge.");
     }
 
     self.couldNotCancelChallenge = function() {
@@ -287,7 +294,7 @@ var LobbyManager = (function() {
     }
 
     self.confirmChallenge = function(to) {
-        mbmodal(
+        bootbox.dialog(
             "<p>You challenge has been issued. If your opponent accepts it your game will begin immediately. You'll be notified if they reject it.</p>"+
             "<p>You can't challenge anyone else - and nobody can challenge you - while you wait for your opponent's decision. If "+
             "you don't hear anything you can cancel this challenge whenever you wish.</p>"

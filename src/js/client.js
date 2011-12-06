@@ -89,7 +89,7 @@ var Client = (function(enabled) {
          * very crude message handling for now
          */
         socket.on('msg', function(msg) {
-            mbalert(msg);
+            bootbox.alert(msg);
         });
 
         loadScript("/shared/js/utils.js");
