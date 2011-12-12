@@ -1,4 +1,3 @@
-require.paths.unshift(__dirname+"/../");
 
 /**
  * struggling to make DB reliant tests work
@@ -12,12 +11,12 @@ db.open(function(err, client) {
 });
 */
 
-var Socket = require('spec/stubs/socket');
-var io = require('spec/stubs/io');
-require('app/managers/socket').setIO(io);
+var Socket = require('./stubs/socket');
+var io = require('./stubs/io');
+require('../app/managers/socket').setIO(io);
 
-var StateManager = require("app/managers/state");
-var WelcomeController = require('app/controllers/welcome');
+var StateManager = require("../app/managers/state");
+var WelcomeController = require('../app/controllers/welcome');
 
 describe('Welcome Controller', function() {
     var socket;
@@ -25,8 +24,8 @@ describe('Welcome Controller', function() {
     beforeEach(function() {
         socket = new Socket("1234");
         if (db == null) {
-            require("app/db").open(function(err, client) {
-                require("spec/helpers/fixtures").import(__dirname+'/fixtures/users.js', function() {
+            require("../app/db").open(function(err, client) {
+                require("./helpers/fixtures").import(__dirname+'/fixtures/users.js', function() {
                     db = client;
                     asyncSpecDone();
                 });
