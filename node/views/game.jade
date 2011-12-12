@@ -8,6 +8,8 @@ block content
     p #{game.outcome}
     p Game duration: #{game.elapsed}
 
+    p Ranking change: #{game.challenger.username} #{game.challenger.rank.change}, #{game.challengee.username} #{game.challengee.rank.change}
+
     h3 Timeline
 
     ol#timeline
