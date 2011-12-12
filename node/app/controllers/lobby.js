@@ -94,7 +94,12 @@ var LobbyController = {
                             "v"         : Math.floor(Math.random()* 150) + 25,
                             "score"     : 0,
                             "shots"     : 0,
-                            "hits"      : 0
+                            "hits"      : 0,
+                            "rank"      : {
+                                "start"  : StateManager.getUserForSocket([challenge.from]).rank,
+                                "end"    : null,
+                                "change" : null
+                            }
                         },
                         "challengee" : {
                             "db_id"     : StateManager.getUserForSocket([challenge.to])._id,
@@ -106,7 +111,12 @@ var LobbyController = {
                             "v"         : Math.floor(Math.random()* 150) + 25,
                             "score"     : 0,
                             "shots"     : 0,
-                            "hits"      : 0
+                            "hits"      : 0,
+                            "rank"      : {
+                                "start"  : StateManager.getUserForSocket([challenge.to]).rank,
+                                "end"    : null,
+                                "change" : null
+                            }
                         },
                         "entityId" : 0,
                         "duration": 90,

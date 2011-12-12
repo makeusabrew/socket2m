@@ -151,10 +151,6 @@ var StateManager = {
         game.isFinished = true;
         game.finished = new Date();
 
-        db.collection('games', function(err, collection) {
-            collection.update({_id: game._id}, game);
-        });
-
         winner.rank = winner.rank != null ? winner.rank : 0;
         loser.rank = loser.rank != null ? loser.rank : 0;
 
@@ -186,6 +182,13 @@ var StateManager = {
         }
         winner.rank += increase;
         loser.rank  -= decrease;
+
+        // update game stats stuff
+        loseObject.rank.end = loser.rank;
+        loseObject.rank.change = loseObject.rank.end - loseObject.rank.start;
+
+        winObject.rank.end = winner.rank;
+        winObject.rank.change = winObject.rank.end - winObject.rank.start;
 
 
         // add their kills and deaths
@@ -234,6 +237,10 @@ var StateManager = {
 
         console.log("end game - deleting game ID "+game._id);
         io.sockets.in('lobby').emit('lobby:game:end', game._id);
+
+        db.collection('games', function(err, collection) {
+            collection.update({_id: game._id}, game);
+        });
 
         delete games[game._id];
 
@@ -338,12 +345,19 @@ var StateManager = {
             if (player.rank > 0) {
                 player.rank--;
             }
+
+            playerObject.rank.end = player.rank;
+            playerObject.rank.change = playerObject.rank.end - playerObject.rank.start;
+
             player.defaults = player.defaults != null ? player.defaults : 0;
             player.defaults ++;
 
             // we can avoid updating the whole opponent by simply doing a mongo $inc,
             // but we still want to increment the rank to keep our authedUsers array up to date
             opponent.rank ++;
+
+            opponentObject.rank.end = opponent.rank;
+            opponentObject.rank.change = opponentObject.rank.end - opponentObject.rank.start;
             console.log("incrementing "+opponent.username+" rank");
 
             authedUsers[opponent.sid] = opponent;
