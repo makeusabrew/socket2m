@@ -8,7 +8,9 @@ var socket = socket || null;
 var gSurface = null;
 
 var Client = (function(enabled) {
-    var self = {};
+    var self = {},
+        _recentPings = [];
+
     self.start = function() {
         if (!enabled) {
             $("#wrapper").html("<h2>The socket2m server is not running at the moment. Please come back later.</h2>");
@@ -102,6 +104,41 @@ var Client = (function(enabled) {
     self.iOS = function() {
        // this is obviously wrong, but it's a start
        return  ('ontouchstart' in document.documentElement);
+    }
+
+    self.calculateLatency = function(cb) {
+        var max = 10;
+        _recentPings = [];
+        self.ping(0, max, function() {
+            _recentPings.sort();
+            var median = (_recentPings[Math.floor(max / 2)]);
+            var i = _recentPings.length;
+            var threshold = median * 1.5;
+            var finalCount = 0;
+            var total = 0;
+            while (i--) {
+                if (_recentPings[i] <= threshold) {
+                    finalCount ++;
+                    total += _recentPings[i];
+                }
+            }
+            var avgLatency = total / finalCount;
+            cb(avgLatency);
+        });
+    }
+
+    self.ping = function(iteration, max, cb) {
+        var sent = new Date().getTime();
+        socket.emit('ping', function(timestamp) {
+            var latency = (new Date().getTime() - sent) / 2;
+            //console.log(latency);
+            _recentPings.push(latency);
+            if (iteration < max) {
+                self.ping(++iteration, max, cb);
+            } else {
+                cb();
+            }
+        });
     }
 
     return self;

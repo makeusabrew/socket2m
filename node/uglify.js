@@ -51,7 +51,7 @@ var compile = function(file, cb) {
         }
         // we have to now recompress to shrink the top level names
         var ast = jsp.parse(output);
-        ast = pro.ast_mangle(ast, {"toplevel":true, "except": ["ga", "la", "ra", "wa", "ia"]});
+        ast = pro.ast_mangle(ast, {"toplevel":true, "except": ["ga", "la", "ra", "wa", "ia", "Client"]});
         var final_code = pro.gen_code(ast);
         cb(final_code);
     }

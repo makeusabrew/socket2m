@@ -36,6 +36,8 @@ var GameManager = (function() {
 
         _chatting = false,
 
+        _latency = 0,
+
         /* dom optimisations */
         _fpsElem = null,
         _countDownElem = null;
@@ -797,6 +799,11 @@ var GameManager = (function() {
             console.log("retrying timeup...");
             socket.emit('game:timeup');
         }, wait);
+    }
+
+    self.setLatency = function(latency) {
+        console.log("setting latency: "+latency);
+        _latency = latency;
     }
 
     return self;
