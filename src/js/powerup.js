@@ -24,7 +24,8 @@ Powerup.prototype = {
     },
     
     render: function() {
-        gSurface.circle(this.x, this.y, this.r, "rgb(0, 255, 128)");
+        gSurface.setFillStyle("rgb(0, 255, 128)");
+        gSurface.circle(this.x, this.y, this.r);
         gSurface.fillText(this.x + this.r, this.y + 1, this.letter, "rgb(100, 100, 100)", {
             "font": "bold 13px sans-serif",
             "textBaseline": "hanging",

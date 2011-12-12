@@ -21,8 +21,7 @@ Surface = function(elemId) {
         _buffer.stroke();
     }
 
-    this.fillRect = function(x, y, w, h, colour) {
-        _buffer.fillStyle = colour;
+    this.fillRect = function(x, y, w, h) {
         _buffer.fillRect(x, y, w, h);
     }
 
@@ -34,13 +33,11 @@ Surface = function(elemId) {
         return _buffer.canvas.clientHeight;
     }
 
-    this.pixel = function(x, y, colour) {
-        _buffer.fillStyle = colour;
+    this.pixel = function(x, y) {
         this.fillRect(x, y, 1, 1);
     }
 
-    this.square = function(x, y, size, colour) {
-        _buffer.fillStyle = colour;
+    this.square = function(x, y, size) {
         this.fillRect(x, y, size, size);
     }
 
@@ -56,8 +53,7 @@ Surface = function(elemId) {
         _buffer.clearRect(x, y, w, h);
     }
 
-    this.circle = function(x, y, r, colour) {
-        _buffer.fillStyle = colour;
+    this.circle = function(x, y, r) {
         _buffer.beginPath();
         _buffer.arc(x+r, y+r, r, 0, Math.PI*2, true);
         _buffer.closePath();
@@ -76,5 +72,9 @@ Surface = function(elemId) {
             _buffer.textAlign = options.textAlign;
         }
         _buffer.fillText(text, x, y);
+    }
+
+    this.setFillStyle = function(style) {
+        _buffer.fillStyle = style;
     }
 };

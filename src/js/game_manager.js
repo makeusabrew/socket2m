@@ -274,11 +274,13 @@ var GameManager = (function() {
         var i = 0;
 
         i = _platforms.length;
+        gSurface.setFillStyle("rgb(0, 0, 0)");
         while (i--) {
             _platforms[i].render();
         }
 
         i = _entities.length;
+        gSurface.setFillStyle("rgb(255, 0, 0)");
         while (i--) {
             _entities[i].render();
         }

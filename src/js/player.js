@@ -47,7 +47,8 @@ Player = function(options) {
     }
 
     this.render = function() {
-        gSurface.fillRect(this._x | 0, this._y | 0, 16, 32, this._c);
+        gSurface.setFillStyle(this._c);
+        gSurface.fillRect(this._x | 0, this._y | 0, 16, 32);
     }
 
     this.renderSight = function() {
@@ -55,7 +56,8 @@ Player = function(options) {
         this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
         this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
 
-        gSurface.square(this.aim.x, this.aim.y, 5, "rgb(0, 0, 0)");
+        gSurface.setFillStyle("rgb(0, 0, 0)");
+        gSurface.square(this.aim.x, this.aim.y, 5);
     }
 
     this.fireWeapon = function() {

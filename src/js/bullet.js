@@ -58,7 +58,7 @@ Bullet.prototype = {
     },
 
     render: function() {
-        gSurface.square(this._x | 0, this._y | 0, this._w, "rgb(255, 0, 0)");
+        gSurface.square(this._x | 0, this._y | 0, this._w);
     },
 
     kill: function() {
@@ -85,3 +85,4 @@ Bullet.prototype = {
 Bullet.factory = function() {
     return new Bullet();
 };
+
