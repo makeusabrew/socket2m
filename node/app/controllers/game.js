@@ -254,6 +254,10 @@ var GameController = {
             console.log("could not find game for socket ID "+socket.id+" in "+arguments.callee);
             return;
         }
+        if (game.isFinished) {
+            console.log("ignoring timeup for finished game");
+            return;
+        }
         if (game.timeup != null) {
             console.log("ignoring duplicate game:timeup message");
             return;

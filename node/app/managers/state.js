@@ -130,148 +130,18 @@ var StateManager = {
             return;
         }
 
-        var winner = loser = null;
-        var winObject = loseObject = null;
+        var winner = null,
+            loser  = null;
 
         if (game.challenger.score > game.challengee.score) {
             winner = authedUsers[game.challenger.socket_id];
             loser  = authedUsers[game.challengee.socket_id];
-            winObject  = game.challenger;
-            loseObject = game.challengee;
         } else {
             winner = authedUsers[game.challengee.socket_id];
             loser  = authedUsers[game.challenger.socket_id];
-            winObject  = game.challengee;
-            loseObject = game.challenger;
         }
 
-        ChatManager.botChat(winner.username+" beat "+loser.username+" ("+winObject.score+" - "+loseObject.score+")", "game-finished");
-
-        game.winner = winner._id;
-        game.isFinished = true;
-        game.finished = new Date();
-
-        winner.rank = winner.rank != null ? winner.rank : 0;
-        loser.rank = loser.rank != null ? loser.rank : 0;
-
-        var increase = 0,
-            decrease = 0;
-
-        if (winner.rank < loser.rank) {
-            // they were better, so i get lots of points
-            increase = 3;
-            decrease = 2;
-        } else if (winner.rank == loser.rank) {
-            // even stevens
-            increase = 2;
-            decrease = 1;
-        } else {
-            // well, I should have won
-            increase = 1;
-            decrease = 0;
-            // loser rank not affected
-        }
-
-        console.log("increase: "+increase+" Vs decrease: "+decrease+" (ranks: "+winner.rank+" beat "+loser.rank+")");
-
-        if (loser.rank - decrease < 0) {
-            // ensure we can't be THAT bad - take some edge off the decrease
-            // obviously the gap will be negative, so *add* it instead
-            decrease += (loser.rank - decrease);
-            console.log("capping decrease: "+decrease);
-        }
-        winner.rank += increase;
-        loser.rank  -= decrease;
-
-        // update game stats stuff
-        loseObject.rank.end = loser.rank;
-        loseObject.rank.change = loseObject.rank.end - loseObject.rank.start;
-
-        winObject.rank.end = winner.rank;
-        winObject.rank.change = winObject.rank.end - winObject.rank.start;
-
-
-        // add their kills and deaths
-        winner.kills = winner.kills != null ? winner.kills : 0;
-        winner.deaths = winner.deaths != null ? winner.deaths : 0;
-        winner.shots = winner.shots != null ? winner.shots : 0;
-        winner.hits = winner.hits != null ? winner.hits : 0;
-
-        loser.kills = loser.kills != null ? loser.kills : 0;
-        loser.deaths = loser.deaths != null ? loser.deaths : 0;
-        loser.shots = loser.shots != null ? loser.shots : 0;
-        loser.hits = loser.hits != null ? loser.hits : 0;
-
-        winner.kills += winObject.score;
-        winner.deaths += loseObject.score;
-
-        loser.kills += loseObject.score;
-        loser.deaths += winObject.score;
-
-        winner.shots += winObject.shots;
-        winner.hits += winObject.hits;
-
-        loser.shots += loseObject.shots;
-        loser.hits += loseObject.hits;
-
-        // and finally their, er, wins and losses
-        winner.wins = winner.wins != null ? winner.wins+1 : 1;
-        loser.losses = loser.losses != null ? loser.losses+1 : 1;
-
-        io.sockets.sockets[winObject.socket_id].emit('game:win', {
-            "rank": winner.rank,
-            "increase": increase,
-            "scores": {
-                "win": winObject.score,
-                "lose": loseObject.score
-            }
-        });
-        io.sockets.sockets[loseObject.socket_id].emit('game:lose', {
-            "rank": loser.rank,
-            "decrease": decrease,
-            "scores": {
-                "win": winObject.score,
-                "lose": loseObject.score
-            }
-        });
-
-        console.log("end game - deleting game ID "+game._id);
-        io.sockets.in('lobby').emit('lobby:game:end', game._id);
-
-        db.collection('games', function(err, collection) {
-            collection.update({_id: game._id}, game);
-        });
-
-        delete games[game._id];
-
-        // update our player cache
-        authedUsers[winObject.socket_id] = winner;
-        authedUsers[loseObject.socket_id] = loser;
-
-        StateManager.getGamePlayers(game, function(docs) {
-            var wUpdate = {
-                kills: winner.kills,
-                deaths: winner.deaths,
-                wins: winner.wins,
-                rank: winner.rank,
-                shots: winner.shots,
-                hits: winner.hits
-            };
-
-            var lUpdate = {
-                kills: loser.kills,
-                deaths: loser.deaths,
-                losses: loser.losses,
-                rank: loser.rank,
-                shots: loser.shots,
-                hits: loser.hits
-            };
-
-            db.collection('users', function(err, collection) {
-                collection.update({_id: winner._id},   {$set: wUpdate});
-                collection.update({_id: loser._id}, {$set: lUpdate});
-            });
-        });
+        StateManager.terminateGame('end', winner, loser, game);
     },
 
     // an individual socket will cancel a game
@@ -281,126 +151,30 @@ var StateManager = {
             return;
         }
 
-        var player, opponent;
-        var playerObject, opponentObject;
+        var player      = authedUser,
+            opponent    = null,
+            scoreReason = false;
 
-        player = authedUser;
-
+        // work out which of the *game* players we are
         if (authedUser.sid == game.challenger.socket_id) {
-            playerObject = game.challenger;
-            opponentObject = game.challengee;
-            opponent  = authedUsers[game.challengee.socket_id];
+            opponent    = authedUsers[game.challengee.socket_id];
+            scoreReason = game.challenger.score < game.challengee.score;
         } else {
-            playerObject = game.challengee;
-            opponentObject = game.challenger;
-            opponent  = authedUsers[game.challenger.socket_id];
+            opponent    = authedUsers[game.challenger.socket_id];
+            scoreReason = game.challengee.score < game.challenger.score;
         }
 
-        game.cancelled = true;
-        game.isFinished = true;
-        game.finished = new Date();
+        var now = new Date();
+        var timeReason = now - game.started > ((game.duration*1000) * 0.50);
 
-        player.kills = player.kills != null ? player.kills : 0;
-        player.deaths = player.deaths != null ? player.deaths : 0;
-        player.shots = player.shots != null ? player.shots : 0;
-        player.hits = player.hits != null ? player.hits : 0;
-
-        opponent.kills = opponent.kills != null ? opponent.kills : 0;
-        opponent.deaths = opponent.deaths != null ? opponent.deaths : 0;
-        opponent.shots = opponent.shots != null ? opponent.shots : 0;
-        opponent.hits = opponent.hits != null ? opponent.hits : 0;
-
-        player.kills += playerObject.score;
-        player.deaths += opponentObject.score;
-
-        opponent.kills += opponentObject.score;
-        opponent.deaths += playerObject.score;
-
-        player.shots += playerObject.shots;
-        player.hits += playerObject.hits;
-
-        opponent.shots += opponentObject.shots;
-        opponent.hits += opponentObject.hits;
-
-
-        // game > 50% complete?
-        // OR - was this player losing?
-        var scoreReason = playerObject.score < opponentObject.score;
-        var timeReason = game.finished - game.started > ((game.duration*1000) * 0.50);
-
+        // was this player losing?
+        // OR game > 50% complete?
         if (scoreReason || timeReason) {
-            console.log(player.username+" has forfeited!");
-
-            // naughty naughty. you won't get away with that!
-            ChatManager.botChat(player.username+" forfeited the game against "+opponent.username+"!", 'game-defaulted');
-
-            io.sockets.in('game_'+game._id).emit('game:cancel', {
-                "defaulted": true,
-                "scoreReason": scoreReason,
-                "timeReason": timeReason
-            });
-            game.defaulted = true;
-            game.defaulter = player._id;
-
-            if (player.rank > 0) {
-                player.rank--;
-            }
-
-            playerObject.rank.end = player.rank;
-            playerObject.rank.change = playerObject.rank.end - playerObject.rank.start;
-
-            player.defaults = player.defaults != null ? player.defaults : 0;
-            player.defaults ++;
-
-            // we can avoid updating the whole opponent by simply doing a mongo $inc,
-            // but we still want to increment the rank to keep our authedUsers array up to date
-            opponent.rank ++;
-
-            opponentObject.rank.end = opponent.rank;
-            opponentObject.rank.change = opponentObject.rank.end - opponentObject.rank.start;
-            console.log("incrementing "+opponent.username+" rank");
-
-            authedUsers[opponent.sid] = opponent;
-
+            StateManager.terminateGame('forfeit', opponent, player, game);
         } else {
             // ok, the scores were even and less than half the game had elapsed. So, fair enough.
-            ChatManager.botChat("The game between "+player.username+" and "+opponent.username+" has been cancelled", 'game-cancelled');
-            io.sockets.in('game_'+game._id).emit('game:cancel', {
-                "defaulted": false
-            });
-            game.defaulted = false;
+            StateManager.terminateGame('cancel', opponent, player, game);
         }
-
-        StateManager.getGamePlayers(game, function(docs) {
-            var pUpdate = {
-                kills: player.kills,
-                deaths: player.deaths,
-                rank: player.rank,
-                shots: player.shots,
-                hits: player.hits
-            };
-
-            var oUpdate = {
-                kills: opponent.kills,
-                deaths: opponent.deaths,
-                rank: opponent.rank,
-                shots: opponent.shots,
-                hits: opponent.hits
-            };
-
-            db.collection('users', function(err, collection) {
-                collection.update({_id: player._id},   {$set: pUpdate});
-                collection.update({_id: opponent._id}, {$set: oUpdate});
-            });
-        });
-
-        db.collection('games', function(err, collection) {
-            collection.update({_id: game._id}, game);
-        });
-
-        console.log("cancel game - deleting game ID "+game._id);
-        io.sockets.in('lobby').emit('lobby:game:end', game._id);
-        delete games[game._id];
     },
 
     // retrieve actual player objects from collection
@@ -520,6 +294,199 @@ var StateManager = {
 
     removeUser: function(id) {
         delete authedUsers[id];
+    },
+
+    /**
+     * @private
+     */
+    terminateGame: function(reason, winner, loser, game) {
+        var gameWinner = null,
+            gameLoser  = null;
+
+        // common stuff
+        if (winner.sid == game.challenger.socket_id) {
+            gameWinner = game.challenger;
+            gameLoser  = game.challengee;
+        } else {
+            gameWinner = game.challengee;
+            gameLoser  = game.challenger;
+        }
+
+        game.isFinished = true;
+        game.finished = new Date();
+
+        winner.kills  = winner.kills  != null ? winner.kills : 0;
+        winner.deaths = winner.deaths != null ? winner.deaths : 0;
+        winner.shots  = winner.shots  != null ? winner.shots : 0;
+        winner.hits   = winner.hits   != null ? winner.hits : 0;
+
+        loser.kills   = loser.kills   != null ? loser.kills : 0;
+        loser.deaths  = loser.deaths  != null ? loser.deaths : 0;
+        loser.shots   = loser.shots   != null ? loser.shots : 0;
+        loser.hits    = loser.hits    != null ? loser.hits : 0;
+
+        winner.shots  += gameWinner.shots;
+        winner.hits   += gameWinner.hits;
+        winner.kills  += gameWinner.score;
+        winner.deaths += gameLoser.score;
+
+        loser.shots  += gameLoser.shots;
+        loser.hits   += gameLoser.hits;
+        loser.kills  += gameLoser.score;
+        loser.deaths += gameWinner.score;
+
+        switch (reason) {
+            case 'forfeit':
+                console.log(loser.username+" has forfeited!");
+
+                // naughty naughty. you won't get away with that!
+                ChatManager.botChat(loser.username+" forfeited the game against "+winner.username+"!", 'game-defaulted');
+
+                io.sockets.in('game_'+game._id).emit('game:cancel', {
+                    "defaulted": true
+                });
+                game.cancelled = true;
+                game.defaulted = true;
+                game.defaulter = loser._id;
+
+                if (loser.rank > 0) {
+                    loser.rank--;
+                }
+
+                loser.defaults = loser.defaults != null ? loser.defaults : 0;
+                loser.defaults ++;
+
+                // we can avoid updating the whole opponent by simply doing a mongo $inc,
+                // but we still want to increment the rank to keep our authedUsers array up to date
+                winner.rank ++;
+
+                console.log("incrementing "+winner.username+" rank");
+                break;
+            case 'cancel':
+                // do stuff
+                ChatManager.botChat("The game between "+loser.username+" and "+winner.username+" has been cancelled", 'game-cancelled');
+                io.sockets.in('game_'+game._id).emit('game:cancel', {
+                    "defaulted": false
+                });
+                game.defaulted = false;
+                game.cancelled = true;
+                break;
+            case 'end':
+            default:
+                ChatManager.botChat(winner.username+" beat "+loser.username+" ("+gameWinner.score+" - "+gameLoser.score+")", "game-finished");
+                game.winner = winner._id;
+
+                winner.rank = winner.rank != null ? winner.rank : 0;
+                loser.rank  = loser.rank  != null ? loser.rank : 0;
+
+                var increase = 0,
+                    decrease = 0;
+
+                if (winner.rank < loser.rank) {
+                    // they were better, so i get lots of points
+                    increase = 3;
+                    decrease = 2;
+                } else if (winner.rank == loser.rank) {
+                    // even stevens
+                    increase = 2;
+                    decrease = 1;
+                } else {
+                    // well, I should have won
+                    increase = 1;
+                    decrease = 0;
+                    // loser rank not affected
+                }
+
+                console.log("increase: "+increase+" Vs decrease: "+decrease+" (ranks: "+winner.rank+" beat "+loser.rank+")");
+
+                if (loser.rank - decrease < 0) {
+                    // ensure we can't be THAT bad - take some edge off the decrease
+                    // obviously the gap will be negative, so *add* it instead
+                    decrease += (loser.rank - decrease);
+                    console.log("capping decrease: "+decrease);
+                }
+                winner.rank += increase;
+                loser.rank  -= decrease;
+
+                winner.wins  = winner.wins  != null ? winner.wins+1  : 1;
+                loser.losses = loser.losses != null ? loser.losses+1 : 1;
+                io.sockets.sockets[winner.sid].emit('game:win', {
+                    "rank": winner.rank,
+                    "increase": increase,
+                    "scores": {
+                        "win": gameWinner.score,
+                        "lose": gameLoser.score
+                    }
+                });
+                io.sockets.sockets[loser.sid].emit('game:lose', {
+                    "rank": loser.rank,
+                    "decrease": decrease,
+                    "scores": {
+                        "win": gameWinner.score,
+                        "lose": gameLoser.score
+                    }
+                });
+
+                break;
+        }
+
+        // update our player cache
+        authedUsers[winner.sid] = winner;
+        authedUsers[loser.sid]  = loser;
+
+        // update game stats stuff
+        gameLoser.rank.end = loser.rank;
+        gameLoser.rank.change = gameLoser.rank.end - gameLoser.rank.start;
+
+        gameWinner.rank.end = winner.rank;
+        gameWinner.rank.change = gameWinner.rank.end - gameWinner.rank.start;
+
+        /**
+         * Update Game DB
+         */
+        db.collection('games', function(err, collection) {
+            collection.update({_id: game._id}, game);
+        });
+
+        console.log("terminating game - deleting game ID "+game._id);
+        io.sockets.in('lobby').emit('lobby:game:end', game._id);
+
+        // remove the game from the in-memory cache
+        delete games[game._id];
+
+        /**
+         * Update Player DB
+         */
+        StateManager.getGamePlayers(game, function(docs) {
+            var wUpdate = {
+                kills  : winner.kills,
+                deaths : winner.deaths,
+                wins   : winner.wins,
+                rank   : winner.rank,
+                shots  : winner.shots,
+                hits   : winner.hits
+            };
+
+            var lUpdate = {
+                kills  : loser.kills,
+                deaths : loser.deaths,
+                losses : loser.losses,
+                rank   : loser.rank,
+                shots  : loser.shots,
+                hits   : loser.hits
+            };
+
+            if (reason == 'forfeit') {
+                console.log("adding defaults count to update list");
+                lUpdate.defaults = loser.defaults;
+            }
+
+            // ensure we only update the relevant bits and bobs.
+            db.collection('users', function(err, collection) {
+                collection.update({_id: winner._id},   {$set: wUpdate});
+                collection.update({_id: loser._id}, {$set: lUpdate});
+            });
+        });
     }
 };
 
