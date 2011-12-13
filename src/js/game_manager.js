@@ -37,6 +37,7 @@ var GameManager = (function() {
         _chatting = false,
 
         _latency = 0,
+        _clockOffset = 0,
 
         /* dom optimisations */
         _fpsElem = null,
@@ -801,9 +802,30 @@ var GameManager = (function() {
         }, wait);
     }
 
-    self.setLatency = function(latency) {
-        console.log("setting latency: "+latency);
-        _latency = latency;
+    self.calculateLatencyAndOffset = function(cb) {
+        Client.ping(10, function(results) {
+            results.sort(function(a, b) {
+                return a.latency - b.latency;
+            });
+            var median = (results[Math.floor(results.length / 2)].latency);
+            var i = results.length;
+            var threshold = median * 1.5;
+            var finalCount = 0;
+            var total = 0;
+            while (i--) {
+                if (results[i].latency <= threshold) {
+                    finalCount ++;
+                    total += results[i].latency;
+                }
+            }
+            var avgLatency = total / finalCount;
+            console.log("setting latency: "+avgLatency);
+            _latency = avgLatency;
+            Client.ping(1, function(result) {
+                _clockOffset = result[0].timestamp - (new Date().getTime()) + _latency;
+                console.log("setting clock offset:" +_clockOffset);
+            });
+        });
     }
 
     return self;

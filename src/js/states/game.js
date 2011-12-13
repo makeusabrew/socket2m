@@ -78,8 +78,7 @@ var ga = (function() {
             SoundManager.toggleSounds();
         });
 
-        Client.calculateLatency(function(latency) {
-            GameManager.setLatency(latency);
+        GameManager.calculateLatencyAndOffset(function() {
             socket.emit('game:ready');
         });
     }

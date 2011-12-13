@@ -8,8 +8,7 @@ var socket = socket || null;
 var gSurface = null;
 
 var Client = (function(enabled) {
-    var self = {},
-        _recentPings = [];
+    var self = {};
 
     self.start = function() {
         if (!enabled) {
@@ -106,39 +105,34 @@ var Client = (function(enabled) {
        return  ('ontouchstart' in document.documentElement);
     }
 
-    self.calculateLatency = function(cb) {
-        var max = 10;
-        _recentPings = [];
-        self.ping(0, max, function() {
-            _recentPings.sort();
-            var median = (_recentPings[Math.floor(max / 2)]);
-            var i = _recentPings.length;
-            var threshold = median * 1.5;
-            var finalCount = 0;
-            var total = 0;
-            while (i--) {
-                if (_recentPings[i] <= threshold) {
-                    finalCount ++;
-                    total += _recentPings[i];
-                }
-            }
-            var avgLatency = total / finalCount;
-            cb(avgLatency);
-        });
-    }
+    self.ping = function(limit, cb) {
+        var results = [];
 
-    self.ping = function(iteration, max, cb) {
-        var sent = new Date().getTime();
-        socket.emit('ping', function(timestamp) {
-            var latency = (new Date().getTime() - sent) / 2;
-            //console.log(latency);
-            _recentPings.push(latency);
-            if (iteration < max) {
-                self.ping(++iteration, max, cb);
-            } else {
-                cb();
-            }
-        });
+        (function _doPing(iteration) {
+            var sent = new Date().getTime();
+
+            // ping the server - we always expect just a timestamp in return
+            socket.emit('ping', function(timestamp) {
+
+                // take a best-guess at latency based on half the round trip
+                var latency = (new Date().getTime() - sent) / 2;
+
+                // let's store both the returned timestamp and latency for completeness
+                results.push({
+                    "latency": latency,
+                    "timestamp": timestamp
+                });
+
+                // check if we need to go again or if we've got enough results
+                if (iteration < limit) {
+                    _doPing(iteration+1);
+                } else {
+                    cb(results);
+                }
+            });
+
+        // always execute the function on iteration 1. Yeah, non zero indexed, but hey...
+        })(1);
     }
 
     return self;
