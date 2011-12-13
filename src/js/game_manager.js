@@ -354,11 +354,11 @@ var GameManager = (function() {
         var x = options.x;
         var o = options.o;
         var y = self.getCoordinateForPlatform(options.platform);
+        var t = options.t;
 
         if (options.o == _player.getId()) {
             _player.setReloadTime(options.reloadIn);
         }
-
         for (var i = 0, j = options.bullets.length; i < j; i++) {
             var bullet = Bullet.factory();
             var opts = options.bullets[i];

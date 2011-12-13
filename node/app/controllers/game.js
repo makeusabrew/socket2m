@@ -276,7 +276,38 @@ var GameController = {
             console.log("could not find game powerup "+options.id);
             return;
         }
+
+        // first off - is this bullet legit for this game?
+        var bullet = StateManager.findBulletById(game, options.eId);
+        if (bullet == null || bullet.o != socket.id) {
+            console.log("Invalid bullet!");
+            return;
+        }
         var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee;
+
+        // these here equations work in seconds
+        var t = (new Date().getTime() - bullet.t) / 1000;
+
+        var x = (bullet.vx * t) + bullet.x;
+        var y = (bullet.vy * t + 0.5 * 20.0 * (t*t)) + bullet.y;
+
+        var bRect = {
+            "left": x,
+            "right": x + 3,  // @todo config / isomorphic
+            "top": y,
+            "bottom": y + 3  // @todo as above
+        };
+        var pRect = {
+            "left": powerup.x,
+            "right": powerup.x + (powerup.r*2),
+            "top": powerup.y,
+            "bottom": powerup.y + (powerup.r*2)
+        };
+
+        if (!GameController.entitiesTouching(bRect, pRect)) {
+            console.log("NO HIT");
+            return;
+        }
 
         player.hits ++;
 
