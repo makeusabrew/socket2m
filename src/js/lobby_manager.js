@@ -97,7 +97,13 @@ var LobbyManager = (function() {
         });
     }
 
-    self.addChatLine = function(msg) {
+    self.addChatLine = function(msg, mentions) {
+        if (mentions == null || mentions == true) {
+            var regex = new RegExp("@"+user.username);
+            if (regex.test(msg.msg)) {
+                SoundManager.playSound("lobby:mention");
+            }
+        }
         var time = new Date(msg.timestamp);
         var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
@@ -179,7 +185,7 @@ var LobbyManager = (function() {
         }
 
         for (i = 0, j = data.chatlines.length; i < j; i++) {
-           self.addChatLine(data.chatlines[i]); 
+           self.addChatLine(data.chatlines[i], false);
         }
 
         bindListeners();
@@ -263,6 +269,8 @@ var LobbyManager = (function() {
         "<p>You've received a challenge from <strong>"+from.username+"</strong>. "+
         stakeBlurb+
         "<h4 class='challenge'>Accept the challenge?</h4>";
+
+        SoundManager.playSound("lobby:challenge");
 
         bootbox.confirm(html, function(result) {
             clearInterval(titleHandler);

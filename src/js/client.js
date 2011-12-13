@@ -154,6 +154,8 @@ $(function() {
         SoundManager.preloadSound("/sounds/teleport.wav", "player:teleport");
         SoundManager.preloadSound("/sounds/weapon.wav", "weapon:change");
         SoundManager.preloadSound("/sounds/powerup.wav", "game:powerup:spawn");
+        SoundManager.preloadSound("/sounds/mention.wav", "lobby:mention");
+        SoundManager.preloadSound("/sounds/challenge.wav", "lobby:challenge");
     }
     Client.start();
 });
