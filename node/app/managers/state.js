@@ -441,6 +441,24 @@ var StateManager = {
         gameWinner.rank.end = winner.rank;
         gameWinner.rank.change = gameWinner.rank.end - gameWinner.rank.start;
 
+        // remove temporary in-memory game data
+        delete game.challenger.platform;
+        delete game.challenger.x;
+        delete game.challenger.a;
+        delete game.challenger.v;
+        delete game.challenger.firedAt;
+        delete game.challenger.weapon;
+
+        delete game.challengee.platform;
+        delete game.challengee.x;
+        delete game.challengee.a;
+        delete game.challengee.v;
+        delete game.challengee.firedAt;
+        delete game.challengee.weapon;
+
+        delete game.entityId;
+        delete game.timeup;
+
         /**
          * Update Game DB
          */
