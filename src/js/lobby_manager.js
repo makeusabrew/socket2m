@@ -6,6 +6,8 @@ var LobbyManager = (function() {
     var serverTime = null;
     var gameHandlers = {};
     var hasOutstandingChallenge = false;
+    var titleHandler = null;
+    var oldTitle = null;
 
     function addUser(_user) {
         if ($("td[data-id='"+_user.sid+"']").length) {
@@ -241,6 +243,20 @@ var LobbyManager = (function() {
     }
 
     self.receiveChallenge = function(from) {
+        oldTitle = $("title").html();
+        var titles = [
+            "Incoming challenge!",
+            oldTitle
+        ];
+        var cTitle = 0;
+        $("title").html(titles[cTitle]);
+        titleHandler = setInterval(function() {
+            if (++cTitle >= titles.length) {
+                cTitle = 0;
+            }
+            $("title").html(titles[cTitle]);
+        }, 2000);
+            
         var stakeBlurb = getStakes(user, from);
         var html = 
         "<h2>Incoming challenge!</h2>"+
@@ -249,6 +265,8 @@ var LobbyManager = (function() {
         "<h4 class='challenge'>Accept the challenge?</h4>";
 
         bootbox.confirm(html, function(result) {
+            clearInterval(titleHandler);
+            $("title").html(oldTitle);
             socket.emit('lobby:challenge:respond', result);
         }, "Yes", "No");
     }
@@ -273,6 +291,8 @@ var LobbyManager = (function() {
     self.cancelChallenge = function() {
         // user cancelled their challenge against us
         // presumably we've got a modal in our face, so get rid
+        clearInterval(titleHandler);
+        $("title").html(oldTitle);
         $(".modal").modal("hide");
         bootbox.alert("The opponent withdrew their challenge.");
     }
