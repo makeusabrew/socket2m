@@ -194,6 +194,8 @@ var GameController = {
 
         StateManager.trackGameEvent(game, 'player_kill', data);
 
+        StateManager.removeBullet(game, bullet);
+
         io.sockets.in('game_'+game._id).emit('game:player:kill', data);
         io.sockets.in('lobby').emit('lobby:game:scorechange', {
             "id": game._id,
@@ -202,9 +204,12 @@ var GameController = {
         });
         if (game.suddendeath) {
             StateManager.endGame(game);
+        } else {
+            GameController.respawnGamePlayer(game, opponent.socket_id);
         }
     },
 
+    /*
     respawnPlayer: function(socket) {
         var game = StateManager.findGameForSocketId(socket.id);
         if (game == null) {
@@ -213,6 +218,7 @@ var GameController = {
         }
         GameController.respawnGamePlayer(game, socket);
     },
+    */
 
     chat: function(socket, msg) {
         var game = StateManager.findGameForSocketId(socket.id);
@@ -324,7 +330,7 @@ var GameController = {
         console.log("player claiming powerup type "+powerup.type);
         if (powerup.type == 0) {
             // teleport
-            GameController.respawnGamePlayer(game, socket, true);
+            GameController.respawnGamePlayer(game, socket.id, true);
         } else if (powerup.type == 1) {
             // shotgun
             player.weapon = 1;
@@ -381,11 +387,11 @@ var GameController = {
     /**
      * private - could declare at top outside the scope of this object?
      */
-    respawnGamePlayer: function(game, socket, teleport) {
+    respawnGamePlayer: function(game, socket_id, teleport) {
         if (teleport == null) {
             teleport = false;
         }
-        var player = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
+        var player = game.challenger.socket_id == socket_id ? game.challenger : game.challengee; 
         player.platform = StateManager.getRandomPlatform(player.platform);
 
         var data = {

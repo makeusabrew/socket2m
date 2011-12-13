@@ -333,6 +333,7 @@ var GameManager = (function() {
     */
 
     self.spawnPowerup = function() {
+        console.log("requesting powerup");
         socket.emit("game:powerup:spawn");
     }
 
@@ -433,7 +434,7 @@ var GameManager = (function() {
 
             if (data.doRespawn) {
                 SoundManager.playSound("player:die");
-                socket.emit("game:player:respawn");
+                //socket.emit("game:player:respawn");
             }
 
             console.log("queuing entity death "+data.eId);
