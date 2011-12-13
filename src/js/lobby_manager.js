@@ -270,7 +270,7 @@ var LobbyManager = (function() {
         stakeBlurb+
         "<h4 class='challenge'>Accept the challenge?</h4>";
 
-        SoundManager.playSound("lobby:challenge");
+        //SoundManager.playSound("lobby:challenge");
 
         bootbox.confirm(html, function(result) {
             clearInterval(titleHandler);
