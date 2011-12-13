@@ -367,6 +367,8 @@ var GameManager = (function() {
             opts.y = y;
 
             bullet.spawn(opts);
+            // @todo IMPORTANT! In much the same way as we can't remove entities from the array mid-loop, surely
+            // we can't add them either? Otherwise why have we bothered with the powerups / respawn queues either?
             _entities.push(bullet);
         }
         SoundManager.playSound("weapon:fire");
@@ -376,12 +378,6 @@ var GameManager = (function() {
     self.reloadPlayerWeaponIn = function(msec) {
         _player.setReloadTime(msec);
     }
-
-    /*
-    self.getSurface = function() {
-        return _surface;
-    }
-    */
 
     self.getLeft = function() {
         return 0;
@@ -824,6 +820,7 @@ var GameManager = (function() {
             Client.ping(1, function(result) {
                 _clockOffset = result[0].timestamp - (new Date().getTime()) + _latency;
                 console.log("setting clock offset:" +_clockOffset);
+                cb();
             });
         });
     }
