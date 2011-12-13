@@ -170,6 +170,26 @@ var LobbyController = {
         }
 
         socket.emit('state:change', 'game');
+    },
+
+    markIdle: function(socket) {
+        var user = StateManager.getUserForSocket([socket.id]);
+        if (user == null) {
+            console.log("no user found to mark idle");
+            return;
+        }
+        user.idle = true;
+        io.sockets.in('lobby').emit('lobby:user:idle', socket.id);
+    },
+
+    markActive: function(socket) {
+        var user = StateManager.getUserForSocket([socket.id]);
+        if (user == null) {
+            console.log("no user found to mark active");
+            return;
+        }
+        user.idle = false;
+        io.sockets.in('lobby').emit('lobby:user:active', socket.id);
     }
 };
 

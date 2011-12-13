@@ -43,6 +43,12 @@ var la = (function() {
             },
             'lobby:chat': function(msg) {
                 LobbyManager.addChatLine(msg);
+            },
+            'lobby:user:idle': function(id) {
+                LobbyManager.markIdle(id);
+            },
+            'lobby:user:active': function(id) {
+                LobbyManager.markActive(id);
             }
         };
 

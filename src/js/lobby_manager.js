@@ -8,6 +8,8 @@ var LobbyManager = (function() {
     var hasOutstandingChallenge = false;
     var titleHandler = null;
     var oldTitle = null;
+    var _idle = false;
+    var _idleHandler = null;
 
     function addUser(_user) {
         if ($("td[data-id='"+_user.sid+"']").length) {
@@ -17,6 +19,7 @@ var LobbyManager = (function() {
 
         var _class = (_user.sid == user.sid) ? "me" : "opponent";
         var profileText = (_user.sid == user.sid) ? "your" : ""+_user.username+'\'s';
+        var _status = _user.idle ? "idle" : "";
 
         if (_user.rank == null) {
             _user.rank = 0;
@@ -27,12 +30,14 @@ var LobbyManager = (function() {
         if (_user.losses == null) {
             _user.losses = 0;
         }
+
         return $(
             "<tr>"+
             "<td data-id='"+_user.sid+"' "+
             "data-username='"+_user.username+"' "+
             "data-rank='"+_user.rank+"' "+
-            "class='"+_class+"'>"+_user.username+" "+
+            "class='"+_class+"'><span>"+_user.username+"</span> "+
+            "<span class='status'>"+_status+"</span> "+
             "<a title=\"View "+profileText+" profile in a new window\" href='/user/"+_user.username+"' target='_blank'><img src='/img/profile.png' alt='View "+_user.username+"\'s profile' /></a>"+
             "<td>"+_user.rank+"</td>"+
             "<td>"+_user.wins+"</td>"+
@@ -139,9 +144,34 @@ var LobbyManager = (function() {
         "<p>Your ranking will "+losePoints+".</p>";
     }
 
+    self.resetIdleTimer = function() {
+        if (_idle) {
+            // let the server know we're alive again
+            socket.emit('lobby:active');
+            _idle = false;
+        }
+
+        clearTimeout(_idleHandler);
+        self.startIdleTimer();
+    }
+
+    self.startIdleTimer = function() {
+        _idleHandler = setTimeout(function() {
+            socket.emit('lobby:idle');
+            _idle = true;
+        }, 30000);
+    }
+
     self.init = function(data) {
+        self.startIdleTimer();
+
+        $("#lobby").mousemove(function(e) {
+            self.resetIdleTimer();
+        });
+
         $("#lobby form").submit(function(e) {
             e.preventDefault();
+            self.resetIdleTimer();
             var input = $(this).find("input");
             var val = $.trim(input.val());
             if (val.length) {
@@ -218,6 +248,16 @@ var LobbyManager = (function() {
                 }));
                 $("#tweet-challengers").fadeIn('slow');
             }
+        });
+    }
+
+    self.markIdle = function(id) {
+        $("#users table tbody tr td[data-id='"+id+"'] span.status").hide().html("idle").fadeIn('normal');
+    }
+
+    self.markActive = function(id) {
+        $("#users table tbody tr td[data-id='"+id+"'] span.status").fadeOut('normal', function() {
+            $(this).html('');
         });
     }
 

@@ -222,3 +222,7 @@ dl dt:after {
 #ranking_chart {
     height:500px;
 }
+
+#users table span.status {
+    font-size:80%;
+}

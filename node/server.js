@@ -123,7 +123,20 @@ io.sockets.on('connection', function(socket) {
     socket.on('lobby:chat', function(msg) {
         LobbyController.chat(socket, msg);
     });
-        
+
+    /**
+     * lobby - user has gone idle
+     */
+    socket.on('lobby:idle', function() {
+        LobbyController.markIdle(socket);
+    });
+
+    /**
+     * lobby - user has become active 
+     */
+    socket.on('lobby:active', function() {
+        LobbyController.markActive(socket);
+    });
 
     /**
      * receive challenge request
@@ -179,13 +192,6 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('game:player:kill', function(data) {
         GameController.killPlayer(socket, data);
-    });
-
-    /**
-     * game - player is requesting respawn. no ID needed as we will infer it
-     */
-    socket.on('game:player:respawn', function() {
-        GameController.respawnPlayer(socket);
     });
 
     /**
