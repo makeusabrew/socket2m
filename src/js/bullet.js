@@ -1,8 +1,6 @@
 Bullet = function() {
     this._x = 0;
     this._y = 0;
-    this._a = 0;
-    this._v = 0;
     this._alive = false;
     this._owner = 0;
     this._vx = 0;
@@ -15,15 +13,15 @@ Bullet.prototype = {
     spawn: function(options) {
         this._x = options.x;
         this._y = options.y;
-        this._a = options.a;
-        this._v = options.v;
         this._owner = options.o;
         this._id = options.id;
         this._alive = true;
         this._w = 3;
 
-        this._vx = Math.cos((this._a/180)*Math.PI) * this._v;
-        this._vy = Math.sin((this._a/180)*Math.PI) * this._v;
+        // bullets no longer infer their own vx / vy, we let the server do it
+        this._vx = options.vx;
+        this._vy = options.vy;
+
     },
 
     getOwner: function() {

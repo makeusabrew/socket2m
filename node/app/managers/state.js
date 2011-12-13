@@ -45,6 +45,7 @@ var powerups = {
 
 // keep track of the active powerups in each game
 var activePowerups = {};
+var activeBullets = {};
 
 var StateManager = {
     
@@ -256,6 +257,22 @@ var StateManager = {
         }
     },
 
+    spawnBullet: function(game, bullet) {
+        if (activeBullets[game._id] == null) {
+            activeBullets[game._id] = [];
+        }
+        activeBullets[game._id].push(bullet);
+    },
+
+    removeBullet: function(game, bullet) {
+        for (var i = 0; i < activeBullets[game._id].length; i++) {
+            if (activeBullets[game._id][i].id == bullet.id) {
+                activeBullets[game._id].splice(i, 1);
+                return;
+            }
+        }
+    },
+
     getPowerupForType: function(type) {
         return powerups[type];
     },
@@ -264,6 +281,19 @@ var StateManager = {
         for (var i = 0; i < activePowerups[game._id].length; i++) {
             if (activePowerups[game._id][i].id == id) {
                 return activePowerups[game._id][i];
+            }
+        }
+        return null;
+    },
+
+    findBulletById: function(game, id) {
+        if (activeBullets[game._id] == null) {
+            return null;
+        }
+
+        for (var i = 0; i < activeBullets[game._id].length; i++) {
+            if (activeBullets[game._id][i].id == id) {
+                return activeBullets[game._id][i];
             }
         }
         return null;

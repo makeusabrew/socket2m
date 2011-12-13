@@ -206,7 +206,7 @@ var GameManager = (function() {
                     _entities[i].kill();
 
                     // signal to the server, and the opponent, that they and this bullet should die
-                    self.killPlayer(_opponent.getId(), _entities[i].getId());
+                    self.killOpponent(_entities[i].getId());
 
                 } else if (_entities[i].getOwner() == _opponent.getId() &&
                     self.entitiesTouching(_entities[i], _player)) {
@@ -416,25 +416,20 @@ var GameManager = (function() {
         _deadEntities.push(data.eId);
     }
 
-    self.killPlayer = function(id, eId) {
-        console.log("requesting kill player "+id+" from bullet "+eId);
-        // @todo we could omit the ID if we restrict "player"
-        // to literally only be the player object (or opponent)
-        // in which case the server can infer it...
+    self.killOpponent = function( eId) {
+        console.log("requesting kill opponent from bullet "+eId);
         socket.emit("game:player:kill", {
-            "id": id,
             "eId": eId
         });
     }
 
     self.actuallyKillPlayer = function(data) {
-        var id = data.id;
-        console.log("actually killing player "+id);
+        var kId = data.kId;
 
         $("#game #p1").html(data.scores[0]);
         $("#game #p2").html(data.scores[1]);
 
-        if (id == _player.getId()) {
+        if (kId == _opponent.getId()) {
 
             if (data.doRespawn) {
                 SoundManager.playSound("player:die");
@@ -444,12 +439,8 @@ var GameManager = (function() {
             console.log("queuing entity death "+data.eId);
             _deadEntities.push(data.eId);
 
-        } else if (id == _opponent.getId()) {
-            if (data.doRespawn) {
-                SoundManager.playSound("player:kill");
-            }
-        } else {
-            console.log("unknown ID "+id);
+        } else if (kId == _player.getId() && data.doRespawn) {
+            SoundManager.playSound("player:kill");
         }
     }
 

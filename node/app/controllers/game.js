@@ -51,6 +51,17 @@ var GameController = {
         }
     },
 
+    entitiesTouching: function(e1, e2) {
+        return (e1.left <= e2.right  &&
+                e2.left <= e1.right  &&
+                e1.top  <= e2.bottom &&
+                e2.top  <= e1.bottom);
+    },
+
+    getCoordinateForPlatform: function(platform) {
+        return ((platform+1)*200)-32;
+    },
+
     fireWeapon: function(socket, options) {
         var game = StateManager.findGameForSocketId(socket.id);
         if (game == null) {
@@ -75,6 +86,7 @@ var GameController = {
 
             options.x = player.x;
             options.o = socket.id;
+            options.t = now;
             options.platform = player.platform;
             options.reloadIn = weapon.reload;
 
@@ -84,11 +96,25 @@ var GameController = {
                 if (weapon.fuzz) {
                     fuzz = (-weapon.fuzz + Math.random()*weapon.fuzz);
                 }
-                bullets.push({
-                    "a" : options.a + fuzz,
-                    "v" : options.v + fuzz,
-                    "id": ++game.entityId
-                });
+                var a = options.a + fuzz;
+                var v = options.v + fuzz;
+                var b = {
+                    "id": ++game.entityId,
+                    "vx": Math.cos((a/180)*Math.PI) * v,
+                    "vy": Math.sin((a/180)*Math.PI) * v,
+                };
+                bullets.push(b);
+
+                var bClone = {};
+                for (var j in b) {
+                    bClone[j] = b[j];
+                }
+                bClone.t = options.t;
+                bClone.o = socket.id;
+                bClone.x = player.x;
+                // @todo platform -> coordinate calc should be isomorphic, this is lifted from game_manager.js!
+                bClone.y = GameController.getCoordinateForPlatform(player.platform);
+                StateManager.spawnBullet(game, bClone);
             }
 
             options.bullets = bullets;
@@ -114,10 +140,42 @@ var GameController = {
             return;
         }
 
-        /**
-         * @todo - verify authenticity of the kill request!
-         */
-        var killer = game.challenger.socket_id == data.id ? game.challengee : game.challenger; 
+        // first off - is this bullet legit for this game?
+        var bullet = StateManager.findBulletById(game, data.eId);
+        if (bullet == null || bullet.o != socket.id) {
+            console.log("Invalid bullet!");
+            return;
+        }
+
+        // these here equations work in seconds
+        var t = (new Date().getTime() - bullet.t) / 1000;
+
+        var x = (bullet.vx * t) + bullet.x;
+        var y = (bullet.vy * t + 0.5 * 20.0 * (t*t)) + bullet.y;
+
+        var killer   = game.challenger.socket_id == socket.id ? game.challenger : game.challengee; 
+        var opponent = game.challenger.socket_id == socket.id ? game.challengee : game.challenger;
+
+        var bRect = {
+            "left": x,
+            "right": x + 3,  // @todo config / isomorphic
+            "top": y,
+            "bottom": y + 3  // @todo as above
+        };
+        var pRect = {
+            "left": opponent.x,
+            "right": opponent.x + 16, // @todo as above
+            "top": GameController.getCoordinateForPlatform(opponent.platform),
+            "bottom": GameController.getCoordinateForPlatform(opponent.platform) + 32
+        };
+
+        if (!GameController.entitiesTouching(bRect, pRect)) {
+            console.log("NO HIT");
+            return;
+        }
+
+        console.log("Bullet hitting player!");
+        console.log(bRect, pRect);
 
         killer.score ++;
         killer.hits ++;
@@ -125,7 +183,7 @@ var GameController = {
         var respawn = game.suddendeath ? false : true;
 
         var data = {
-            "id": data.id,
+            "kId": socket.id,
             "scores": [
                 game.challenger.score,
                 game.challengee.score
@@ -195,7 +253,8 @@ var GameController = {
                 "type": t,
                 "letter": StateManager.getPowerupForType(t).letter,
                 "r": r,
-                "id": ++game.entityId
+                "id": ++game.entityId,
+                "t": new Date().getTime()
             };
             StateManager.spawnPowerup(game, powerup);
             StateManager.trackGameEvent(game, 'powerup_spawn', powerup);
