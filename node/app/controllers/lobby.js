@@ -80,13 +80,19 @@ var LobbyController = {
             ];
             if (accepted) {
                 db.collection('games', function(err, collection) {
-                    
+                    var challenger = StateManager.getUserForSocket([challenge.from]);
+                    var challengee = StateManager.getUserForSocket([challenge.to]);
+
+                    // ensure both players are no longer marked as idle
+                    challenger.idle = false;
+                    challengee.idle = false;
+
                     var game = {
                         "created"       : new Date(),
                         "started"       : null,
                         "challenger" : {
-                            "db_id"     : StateManager.getUserForSocket([challenge.from])._id,
-                            "username"  : StateManager.getUserForSocket([challenge.from]).username,
+                            "db_id"     : challenger._id,
+                            "username"  : challenger.username,
                             "socket_id" : challenge.from,
                             "platform"  : StateManager.getRandomPlatform(),
                             "x"         : 16,
@@ -96,14 +102,14 @@ var LobbyController = {
                             "shots"     : 0,
                             "hits"      : 0,
                             "rank"      : {
-                                "start"  : StateManager.getUserForSocket([challenge.from]).rank,
+                                "start"  : challenger.rank,
                                 "end"    : null,
                                 "change" : null
                             }
                         },
                         "challengee" : {
-                            "db_id"     : StateManager.getUserForSocket([challenge.to])._id,
-                            "username"  : StateManager.getUserForSocket([challenge.to]).username,
+                            "db_id"     : challengee._id,
+                            "username"  : challengee.username,
                             "socket_id" : challenge.to,
                             "platform"  : StateManager.getRandomPlatform(),
                             "x"         : 908,
@@ -113,7 +119,7 @@ var LobbyController = {
                             "shots"     : 0,
                             "hits"      : 0,
                             "rank"      : {
-                                "start"  : StateManager.getUserForSocket([challenge.to]).rank,
+                                "start"  : challengee.rank,
                                 "end"    : null,
                                 "change" : null
                             }

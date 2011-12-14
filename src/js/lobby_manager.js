@@ -185,6 +185,7 @@ var LobbyManager = (function() {
     }
 
     self.init = function(data) {
+        _idle = false;
         self.startIdleTimer();
 
         $("#lobby").mousemove(function(e) {
