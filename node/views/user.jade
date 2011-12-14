@@ -10,6 +10,13 @@ block content
         dt Ranking
         dd #{user.rank}
 
+
+        dt Position
+        - if (user.position > 0)
+            dd #{user.position}
+        - else
+            dd -
+
         dt Games Played
         dd #{user.gamesPlayed}
 

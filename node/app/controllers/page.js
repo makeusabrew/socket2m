@@ -68,7 +68,7 @@ var PageController = {
             collection
             .find()
             .limit(100)
-            .sort({rank: -1})
+            .sort({position: 1})
             .toArray(function(err, docs) {
                 var players = [];
                 res.render('top-users', {

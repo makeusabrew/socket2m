@@ -26,7 +26,8 @@ db.open(function(err, client) {
                     wins: doc.wins || 0,
                     losses: doc.losses || 0,
                     kills: doc.kills || 0,
-                    defaults: doc.defaults || 0
+                    defaults: doc.defaults || 0,
+                    position: docs.position || 0
                 };
                 collection
                 .update({user_id: doc._id}, {$push: {"stats": stats}}, {upsert:true});
@@ -35,4 +36,3 @@ db.open(function(err, client) {
     });
 
 });
-

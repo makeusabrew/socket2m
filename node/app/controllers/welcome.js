@@ -107,6 +107,7 @@ var WelcomeController = {
                     details.losses = 0;
                     details.shots = 0;
                     details.hits = 0;
+                    details.position = 0;
                     details.registered = new Date();
 
                     collection.insert(details, function(err, result) {
