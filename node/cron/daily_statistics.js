@@ -1,6 +1,6 @@
 #!/usr/local/bin/node
 
-var db = require('./app/db');
+var db = require('../app/db');
 db.open(function(err, client) {
     if (err) {
         console.log(err);
