@@ -36,7 +36,7 @@ var LobbyManager = (function() {
             "<td data-id='"+_user.sid+"' "+
             "data-username='"+_user.username+"' "+
             "data-rank='"+_user.rank+"' "+
-            "class='"+_class+"'><span>"+_user.username+"</span> "+
+            "class='"+_class+"'><span class='username'>"+_user.username+"</span> "+
             "<span class='status'>"+_status+"</span> "+
             "<span class='extra'>";
 
@@ -52,7 +52,7 @@ var LobbyManager = (function() {
                 str += "<img src='/img/winning_streak.png' alt='' title='Winning Streak' />";
             }
 
-            if (_user.accuracy >= 20) {
+            if (_user.accuracy >= 25) {
                 str += "<img src='/img/sharp_shooter.png' alt='' title='Sharp Shooter' />";
             }
             str +=
@@ -96,6 +96,9 @@ var LobbyManager = (function() {
         $("#users table").unbind('click');
         $("#users table").bind('click', function(e) {
             var elem = $(e.target);
+            if (elem.hasClass('username')) {
+                elem = elem.parent();
+            }
             // jQuery.data() barfs at large ID values, so we have to use attr. Oh well.
             var targetId = elem.attr("data-id");
 
