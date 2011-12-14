@@ -2,6 +2,7 @@ console.log("load state");
 var ChatManager = require('../managers/chat');
 var io          = require('../managers/socket').getIO();
 var db          = require('../db');
+var Utils       = require('../shared/utils');
 
 /**
  * private
@@ -390,6 +391,10 @@ var StateManager = {
                 // but we still want to increment the rank to keep our authedUsers array up to date
                 winner.rank ++;
 
+                // reset in-memory winning streaks
+                winner.winning_streak = 0;
+                loser.winning_streak = 0;
+
                 console.log("incrementing "+winner.username+" rank");
                 break;
             case 'cancel':
@@ -400,6 +405,10 @@ var StateManager = {
                 });
                 game.defaulted = false;
                 game.cancelled = true;
+
+                // reset in-memory winning streaks
+                winner.winning_streak = 0;
+                loser.winning_streak = 0;
                 break;
             case 'end':
             default:
@@ -456,6 +465,11 @@ var StateManager = {
                         "lose": gameLoser.score
                     }
                 });
+
+                // reset in-memory winning streak of loser
+                loser.winning_streak = 0;
+                // add one on for the winner
+                winner.winning_streak ++;
 
                 break;
         }

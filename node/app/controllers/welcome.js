@@ -22,11 +22,28 @@ function _authUser(collection, result, socket) {
     delete result.password;
 
     // calculate win streak
+    result.winning_streak = 0;
+    db.collection('games', function(err, collection) {
+        collection
+        .find({isFinished: true, $or : [{"challenger.db_id": result._id}, {"challengee.db_id": result._id}]})
+        .limit(3)
+        .sort({started: -1})
+        .toArray(function(err, docs) {
+            // a for instead of an each, so we can break if needs be
+            for (var i = 0; i < docs.length; i++) {
+                if (docs[i].winner != result._id.toString()) {
+                    break;
+                }
+                result.winning_streak ++;
+            }
+            console.log("streak: "+result.winning_streak);
+            // calculate accuracy
+            result.accuracy = Utils.calculateAccuracy(result);
 
-    // calculate accuracy
-    result.accuracy = Utils.calculateAccuracy(result);
+            StateManager.addUser(result);
+        });
+    });
 
-    StateManager.addUser(result);
 }
 
 var WelcomeController = {
