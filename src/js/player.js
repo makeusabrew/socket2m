@@ -24,14 +24,13 @@ Player = function(options) {
         y: 0
     },
 
-    this.oldAim = {
-        x: 0,
-        y: 0
+    this._lastAim = {
+        x: -1,
+        y: -1
     };
 
-    this.oldX = this._x;
-    this.oldY = this._y;
-
+    this._lastX = -1;
+    this._lastY = -1;
 
     this.tick = function() {
         //
@@ -41,20 +40,40 @@ Player = function(options) {
         return this._id;
     }
 
+    /*
     this.preRender = function() {
-        gSurface.clearRect(this.aim.x | 0, this.aim.y | 0, 5, 5);
+        gSurface.clearRect(this.aim.x, this.aim.y, 5, 5);
         gSurface.clearRect(this._x | 0, this._y | 0, 16, 32);
     }
+    */
 
     this.render = function() {
+        var rx = this._x,
+            ry = this._y;
+
+        if (rx != this._lastX || ry != this._lastY) {
+            gSurface.clearRect(this._lastX, this._lastY, 16, 32);
+            this._lastX = rx;
+            this._lastY = ry;
+        }
+
         gSurface.setFillStyle(this._c);
-        gSurface.fillRect(this._x | 0, this._y | 0, 16, 32);
+        gSurface.fillRect(this._x, this._y, 16, 32);
     }
 
     this.renderSight = function() {
         // draw where I'm aiming
         this.aim.x = (this._x + Math.cos((this._a/180)*Math.PI) * this._v) | 0;
         this.aim.y = (this._y + Math.sin((this._a/180)*Math.PI) * this._v) | 0;
+
+        var rx = this.aim.x,
+            ry = this.aim.y;
+
+        if (rx != this._lastAim.x || ry != this._lastAim.y) {
+            gSurface.clearRect(this._lastAim.x, this._lastAim.y, 5, 5);
+            this._lastAim.x = this.aim.x;
+            this._lastAim.y = this.aim.y;
+        }
 
         gSurface.setFillStyle("rgb(0, 0, 0)");
         gSurface.square(this.aim.x, this.aim.y, 5);

@@ -1,6 +1,5 @@
 var GameManager = (function() { 
-    var self = {},
-        _frame = 0,
+    var _frame = 0,
         _lastTick = 0,
         _tickTime = 0,
         _lastFps = 0,
@@ -32,16 +31,40 @@ var GameManager = (function() {
 
         _suddenDeath = false,
 
+        /**
+         * whether we've got an outstanding kill request with the server
+         */
         _killPending = false,
 
+        /**
+         * whether the user is in chat mode or not
+         */
         _chatting = false,
 
+        /**
+         * average client / server latency
+         */
         _latency = 0,
+
+        /**
+         * client clock's offset Vs the server's
+         */
         _clockOffset = 0,
 
-        /* dom optimisations */
+        /**
+         * grab the actual DOM element to show the FPS
+         */
         _fpsElem = null,
-        _countDownElem = null;
+
+        /**
+         * grab the actual DOM element to show the timer countdown
+         */
+        _countDownElem = null,
+
+        /**
+         * always last but never least, our public object
+         */
+        self = {};
 
         
     
@@ -78,7 +101,7 @@ var GameManager = (function() {
             }
         }
 
-        self.preRender();       // any clean up from the last frame
+        //self.preRender();       // any clean up from the last frame
         self.handleInput();     // process any input which might affect tick
         self.tick();            // think, move, die, etc
         self.render();          // render frame outcome
@@ -186,7 +209,6 @@ var GameManager = (function() {
 
         // we need a backwards loop to allow for deletion of multiple
         // array indices during each iteration
-        // this means it isn't fast - anything we can do? @todo
         i = _entities.length;
         while (i--) {
             _entities[i].tick(_delta);

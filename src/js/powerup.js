@@ -19,10 +19,6 @@ Powerup.prototype = {
         this.letter = options.letter;
     },
 
-    preRender: function() {
-        gSurface.clearRect(this.x-1, this.y-1, (this.r+1)*2, (this.r+1)*2);
-    },
-    
     render: function() {
         gSurface.setFillStyle("rgb(0, 255, 128)");
         gSurface.circle(this.x, this.y, this.r);
@@ -54,6 +50,7 @@ Powerup.prototype = {
     },
 
     kill: function() {
+        gSurface.clearRect(this.x-1, this.y-1, (this.r+1)*2, (this.r+1)*2);
         this.alive = false;
     },
 

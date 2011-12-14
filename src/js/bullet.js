@@ -22,6 +22,9 @@ Bullet.prototype = {
         this._vx = options.vx;
         this._vy = options.vy;
 
+        this._lastX = -1;
+        this._lastY = -1;
+
     },
 
     getOwner: function() {
@@ -43,7 +46,7 @@ Bullet.prototype = {
             this._y < GameManager.getTop()    ||
             this._y > GameManager.getBottom()) {
             
-            this._alive = false;
+            this.kill();
         }
     },
 
@@ -51,15 +54,26 @@ Bullet.prototype = {
         return !this._alive;
     },
 
+    /*
     preRender: function() {
         gSurface.clearRect(this._x | 0, this._y | 0, this._w, this._w);
     },
+    */
 
     render: function() {
-        gSurface.square(this._x | 0, this._y | 0, this._w);
+        var rx = this._x | 0,
+            ry = this._y | 0;
+
+        if (rx != this._lastX || ry != this._lastY) {
+            gSurface.clearRect(this._lastX, this._lastY, this._w, this._w);
+            this._lastX = rx;
+            this._lastY = ry;
+        }
+        gSurface.square(rx, ry, this._w);
     },
 
     kill: function() {
+        gSurface.clearRect(this._lastX, this._lastY, this._w, this._w);
         this._alive = false;
     },
 
