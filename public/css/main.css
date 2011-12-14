@@ -219,6 +219,14 @@ dl dt:after {
     float:right;
 }
 
+#users table td span.extra img {
+    cursor:default;
+}
+
+#users table td span.extra a img {
+    cursor:pointer;
+}
+
 #ranking_chart {
     height:500px;
 }

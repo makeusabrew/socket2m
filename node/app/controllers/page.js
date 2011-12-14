@@ -1,5 +1,6 @@
 var utils   = require('../shared/utils'),
-    db      = require('../db');
+    db      = require('../db'),
+    Utils   = require('../shared/utils');
 
 var app = null;
 /**
@@ -88,12 +89,9 @@ var PageController = {
                     res.send("Invalid user");
                     return;
                 }
-                if (!user.shots) {
-                    user.accuracy = 0;
-                } else {
-                    var hits = user.hits || 0;
-                    user.accuracy = Math.round((hits / user.shots)*100);
-                }
+
+                user.accuracy = Utils.calculateAccuracy(user);
+
                 db.collection('games', function(err, collection) {
                     collection
                     .find({isFinished: true, $or : [{"challenger.db_id": user._id}, {"challengee.db_id": user._id}]})

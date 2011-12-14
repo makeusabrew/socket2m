@@ -41,19 +41,19 @@ var LobbyManager = (function() {
             "<span class='extra'>";
 
             if (_user.position == 1) {
-                str += "<img src='/img/gold.png' alt='' title='"+_user.username+" is the top ranked player of the game!' />";
+                str += "<img src='/img/gold.png' alt='' title='Ranked 1st overall!' />";
             } else if (_user.position == 2) {
-                str += "<img src='/img/silver.png' alt='' title='"+_user.username+" is the 2nd best ranked player of the game' />";
+                str += "<img src='/img/silver.png' alt='' title='Ranked 2nd overall' />";
             } else if (_user.position == 3) {
-                str += "<img src='/img/bronze.png' alt='' title='"+_user.username+" is the 3rd best ranked player of the game' />";
+                str += "<img src='/img/bronze.png' alt='' title='Ranked 3rd overall' />";
             }
 
             if (_user.winning_streak >= 3) {
-                str += "<img src='/img/winning_streak.png' alt='' title='"+_user.username+"' is on a winning streak' />";
+                str += "<img src='/img/winning_streak.png' alt='' title='Winning Streak' />";
             }
 
             if (_user.accuracy >= 20) {
-                str += "<img src='/img/sharp_shooter.png' alt='' title='"+_user.username+"' is a sharp shooter - their accuracy is above 20%' />";
+                str += "<img src='/img/sharp_shooter.png' alt='' title='Sharp Shooter' />";
             }
             str +=
                 "<a title=\"View "+profileText+" profile in a new window\" href='/user/"+_user.username+"' target='_blank'><img src='/img/profile.png' alt='View "+_user.username+"\'s profile' /></a>"+

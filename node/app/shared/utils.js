@@ -25,7 +25,17 @@ var Utils = {
             s = "0"+s;
         }
         return h+":"+m+":"+s;
+    },
+
+    calculateAccuracy: function(user) {
+        var accuracy = 0;
+        if (user.shots) {
+            var hits = user.hits || 0;
+            accuracy = Math.round((hits / user.shots)*100);
+        }
+        return accuracy;
     }
+
 };
 
 if (typeof exports != 'undefined') {

@@ -460,6 +460,10 @@ var StateManager = {
                 break;
         }
 
+        // remember, we don't *save* accuracy, but we still want to update the in-memory store of it
+        winner.accuracy = Utils.calculateAccuracy(winner);
+        loser.accuracy  = Utils.calculateAccuracy(loser);
+
         // update our player cache
         authedUsers[winner.sid] = winner;
         authedUsers[loser.sid]  = loser;

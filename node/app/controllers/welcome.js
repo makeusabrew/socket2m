@@ -1,9 +1,11 @@
 var qs     = require('querystring'),
     crypto = require('crypto');
 
-var StateManager = require('../managers/state');
-    ChatManager  = require('../managers/chat');
-    db           = require('../db');
+var StateManager = require('../managers/state'),
+    ChatManager  = require('../managers/chat'),
+    db           = require('../db'),
+    Utils        = require('../shared/utils');
+
 
 // private
 var io = require('../managers/socket').getIO();
@@ -18,6 +20,11 @@ function _authUser(collection, result, socket) {
     collection.update({_id: result._id}, {$set: {lastLogin: new Date(), logins: result.logins}});
     result.sid = socket.id;
     delete result.password;
+
+    // calculate win streak
+
+    // calculate accuracy
+    result.accuracy = Utils.calculateAccuracy(result);
 
     StateManager.addUser(result);
 }
