@@ -215,7 +215,7 @@ dl dt:after {
     content:": ";
 }
 
-#users table td a {
+#users table td span.extra {
     float:right;
 }
 
