@@ -101,23 +101,9 @@ var GameManager = (function() {
             }
         }
 
-        //self.preRender();       // any clean up from the last frame
         self.handleInput();     // process any input which might affect tick
         self.tick();            // think, move, die, etc
         self.render();          // render frame outcome
-    }
-
-    self.preRender = function() {
-        _player.preRender();
-        _opponent.preRender();
-        var i = _entities.length;
-        while (i--) {
-            _entities[i].preRender();
-        }
-        i = _powerups.length;
-        while (i--) {
-            _powerups[i].preRender();
-        }
     }
 
     self.handleInput = function() {
@@ -164,7 +150,7 @@ var GameManager = (function() {
                 });
                 if (user.getId() == _opponent.getId()) {
                     // it's our opponent, so clear our pending kill flag
-                    _killPending = false;
+                    //_killPending = false;
                 }
                 _respawns = [];
             }
@@ -218,11 +204,11 @@ var GameManager = (function() {
                 // what about players? let's cheat temporarily because
                 // we know all entities are bullets, and we also know
                 // that all bullets want to do is hit their opponents and platforms...
-                if (_killPending == false &&
+                if (/*_killPending == false && */
                     _entities[i].getOwner() == _player.getId() &&
                     self.entitiesTouching(_entities[i], _opponent)) {
 
-                    _killPending = true;
+                    //_killPending = true;
 
                     // we know the bullet should die, so remove it immediately
                     _entities[i].kill();
