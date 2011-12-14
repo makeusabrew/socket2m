@@ -52,10 +52,16 @@ var GameController = {
     },
 
     entitiesTouching: function(e1, e2) {
-        return (e1.left <= e2.right  &&
-                e2.left <= e1.right  &&
-                e1.top  <= e2.bottom &&
-                e2.top  <= e1.bottom);
+        return GameController.horizontalIntersect(e1, e2) &&
+               GameController.verticalIntersect(e1, e2);
+    },
+
+    horizontalIntersect: function(e1, e2) {
+        return (e1.left <= e2.right && e2.left <= e1.right);
+    },
+
+    verticalIntersect: function(e1, e2) {
+        return (e1.top <= e2.bottom && e2.top  <= e1.bottom);
     },
 
     getCoordinateForPlatform: function(platform) {
@@ -100,8 +106,8 @@ var GameController = {
                 var v = options.v + fuzz;
                 var b = {
                     "id": ++game.entityId,
-                    "vx": Math.cos((a/180)*Math.PI) * v,
-                    "vy": Math.sin((a/180)*Math.PI) * v,
+                    "vx": Math.round(Math.cos((a/180)*Math.PI) * v),
+                    "vy": Math.round(Math.sin((a/180)*Math.PI) * v)
                 };
                 bullets.push(b);
 
@@ -118,6 +124,9 @@ var GameController = {
             }
 
             options.bullets = bullets;
+
+            delete options.a;
+            delete options.v;
 
             StateManager.trackGameEvent(game, 'weapon_fire', options);
 
@@ -171,11 +180,45 @@ var GameController = {
 
         if (!GameController.entitiesTouching(bRect, pRect)) {
             console.log("NO HIT");
-            return;
+
+            /*
+            console.log(bRect);
+            console.log(pRect);
+
+            console.log("Bullet time server:" +t);
+            console.log("bullet?");
+            console.log(data.bullet);
+            */
+
+            var dx = 0,
+                dy = 0;
+
+            if (!GameController.horizontalIntersect(bRect, pRect)) {
+                dx = Math.min(
+                    Math.abs(bRect.left - pRect.left),
+                    Math.abs(bRect.left - pRect.right),
+                    Math.abs(bRect.right - pRect.left),
+                    Math.abs(bRect.right - pRect.right)
+                );
+            }
+
+            if (!GameController.verticalIntersect(bRect, pRect)) {
+                dy = Math.min(
+                    Math.abs(bRect.top - pRect.top),
+                    Math.abs(bRect.top - pRect.bottom),
+                    Math.abs(bRect.bottom - pRect.top),
+                    Math.abs(bRect.bottom - pRect.bottom)
+                );
+            }
+
+            if (dx > 1 || dy > 1) {
+                console.log("difference too large, marking no hit");
+                return;
+            }
+            console.log("difference < 1, allowing hit");
         }
 
         console.log("Bullet hitting player!");
-        console.log(bRect, pRect);
 
         killer.score ++;
         killer.hits ++;
@@ -312,7 +355,32 @@ var GameController = {
 
         if (!GameController.entitiesTouching(bRect, pRect)) {
             console.log("NO HIT");
-            return;
+            var dx = 0,
+                dy = 0;
+
+            if (!GameController.horizontalIntersect(bRect, pRect)) {
+                dx = Math.min(
+                    Math.abs(bRect.left - pRect.left),
+                    Math.abs(bRect.left - pRect.right),
+                    Math.abs(bRect.right - pRect.left),
+                    Math.abs(bRect.right - pRect.right)
+                );
+            }
+
+            if (!GameController.verticalIntersect(bRect, pRect)) {
+                dy = Math.min(
+                    Math.abs(bRect.top - pRect.top),
+                    Math.abs(bRect.top - pRect.bottom),
+                    Math.abs(bRect.bottom - pRect.top),
+                    Math.abs(bRect.bottom - pRect.bottom)
+                );
+            }
+
+            if (dx > 1 || dy > 1) {
+                console.log("difference too large, marking no hit");
+                return;
+            }
+            console.log("difference < 1, allowing hit");
         }
 
         player.hits ++;

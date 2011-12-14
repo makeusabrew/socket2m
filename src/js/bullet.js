@@ -7,6 +7,9 @@ Bullet = function() {
     this._vy = 0;
     this._w = 0;
     this._id = 0;
+    this._t = 0;
+    this._sx = 0;
+    this._sy = 0;
 }
 
 Bullet.prototype = {
@@ -24,6 +27,10 @@ Bullet.prototype = {
 
         this._lastX = -1;
         this._lastY = -1;
+        this._t = new Date().getTime();
+
+        this._sx = options.x;
+        this._sy = options.y;
 
     },
 
@@ -35,16 +42,22 @@ Bullet.prototype = {
         return this._id;
     },
 
-    tick: function(delta) {
+    tick: function(tickTime) {
+        /*
         this._x += this._vx * delta;
         this._y += this._vy * delta;
 
         this._vy += 20 * delta;
+        */
 
-        if (this._x < GameManager.getLeft()   ||
-            this._x > GameManager.getRight()  ||
-            this._y < GameManager.getTop()    ||
-            this._y > GameManager.getBottom()) {
+        var t = (tickTime - this._t) / 1000;
+        this._x = (this._vx * t) + this._sx;
+        this._y = (this._vy * t + 0.5 * 20.0 * (t*t)) + this._sy;
+
+        if (this.getLeft() < GameManager.getLeft()   ||
+            this.getRight() > GameManager.getRight()  ||
+            this.getTop() < GameManager.getTop()    ||
+            this.getBottom() > GameManager.getBottom()) {
             
             this.kill();
         }
@@ -90,7 +103,7 @@ Bullet.prototype = {
     },
 
     getBottom: function() {
-        return this.getTop () + this._w;
+        return this.getTop() + this._w;
     }
 };
 

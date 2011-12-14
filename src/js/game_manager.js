@@ -197,7 +197,7 @@ var GameManager = (function() {
         // array indices during each iteration
         i = _entities.length;
         while (i--) {
-            _entities[i].tick(_delta);
+            _entities[i].tick(_tickTime);
 
             // check the entity didn't die during its tick method
             if (!_entities[i].isDead()) {
@@ -211,17 +211,17 @@ var GameManager = (function() {
                     //_killPending = true;
 
                     // we know the bullet should die, so remove it immediately
-                    _entities[i].kill();
+                    //_entities[i].kill();
 
                     // signal to the server, and the opponent, that they and this bullet should die
-                    self.killOpponent(_entities[i].getId());
+                    self.killOpponent(_entities[i].getId()/*, _entities[i]*/);
 
                 } else if (_entities[i].getOwner() == _opponent.getId() &&
                     self.entitiesTouching(_entities[i], _player)) {
 
                     // ok, kill the bullet, but do nothing else, since the 
                     // player will trigger the server request
-                    _entities[i].kill();
+                    //_entities[i].kill();
                 }
 
                 if (!_entities[i].isDead()) {
@@ -234,7 +234,7 @@ var GameManager = (function() {
                             self.entitiesTouching(_entities[i], _powerups[j])) {
 
                             // we know the bullet should die, so remove it immediately
-                            _entities[i].kill();
+                            //_entities[i].kill();
                             //_powerups[j].kill();
 
                             // grab it and remove powerup
@@ -243,7 +243,7 @@ var GameManager = (function() {
                         } else if (_entities[i].getOwner() == _opponent.getId() &&
                             self.entitiesTouching(_entities[i], _powerups[j])) {
 
-                            _entities[i].kill();
+                            //_entities[i].kill();
                             //_powerups[j].kill();
                         }
 
@@ -425,10 +425,18 @@ var GameManager = (function() {
         _deadEntities.push(data.eId);
     }
 
-    self.killOpponent = function( eId) {
+    self.killOpponent = function(eId/*, bullet*/) {
         console.log("requesting kill opponent from bullet "+eId);
         socket.emit("game:player:kill", {
             "eId": eId
+            /* DEBUG - MUST REMOVE!!!!*/
+            /*
+            "bullet": {
+                "x": bullet._x,
+                "y": bullet._y,
+                "t": bullet._e
+            }
+            */
         });
     }
 
@@ -445,12 +453,12 @@ var GameManager = (function() {
                 //socket.emit("game:player:respawn");
             }
 
-            console.log("queuing entity death "+data.eId);
-            _deadEntities.push(data.eId);
 
         } else if (kId == _player.getId() && data.doRespawn) {
             SoundManager.playSound("player:kill");
         }
+        console.log("queuing entity death "+data.eId);
+        _deadEntities.push(data.eId);
     }
 
     self.actuallyRespawnPlayer = function(options) {
