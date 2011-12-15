@@ -10,7 +10,7 @@ db.open(function(err, client) {
     // in case this script takes aaaaaaaaaaaages, cache the date
     var updateDate = new Date();
 
-    console.log("Updating daily rankings...");
+    console.log("Updating daily statistics...");
     db.collection('users', function(err, collection) {
         collection
         .find()
@@ -27,7 +27,7 @@ db.open(function(err, client) {
                     losses: doc.losses || 0,
                     kills: doc.kills || 0,
                     defaults: doc.defaults || 0,
-                    position: docs.position || 0
+                    position: doc.position || 0
                 };
                 collection
                 .update({user_id: doc._id}, {$push: {"stats": stats}}, {upsert:true});
