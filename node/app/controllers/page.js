@@ -178,6 +178,21 @@ var PageController = {
                                     title += " respawned";
                                 }
                                 break;
+                            case "game_start":
+                                title = "game started";
+                                break;
+                            case "game_end":
+                                title = "game finished";
+                                break;
+                            case "game_forfeit":
+                                title = event.data.username+" forfeited the game";
+                                break;
+                            case "game_cancel":
+                                title = event.data.username+" cancelled the game";
+                                break;
+                            case "game_sudden_death":
+                                title = "game entered sudden death";
+                                break;
                             default:
                                 title = game.events[i].type;
                                 break;

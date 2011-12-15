@@ -368,6 +368,7 @@ var StateManager = {
 
         switch (reason) {
             case 'forfeit':
+                StateManager.trackGameEvent(game, 'game_forfeit', loser);
                 console.log(loser.username+" has forfeited!");
 
                 // naughty naughty. you won't get away with that!
@@ -399,6 +400,7 @@ var StateManager = {
                 break;
             case 'cancel':
                 // do stuff
+                StateManager.trackGameEvent(game, 'game_cancel', loser);
                 ChatManager.botChat("The game between "+loser.username+" and "+winner.username+" has been cancelled", 'game-cancelled');
                 io.sockets.in('game_'+game._id).emit('game:cancel', {
                     "defaulted": false
@@ -412,6 +414,7 @@ var StateManager = {
                 break;
             case 'end':
             default:
+                StateManager.trackGameEvent(game, 'game_end', null);
                 ChatManager.botChat(winner.username+" beat "+loser.username+" ("+gameWinner.score+" - "+gameLoser.score+")", "game-finished");
                 game.winner = winner._id;
 

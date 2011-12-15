@@ -45,6 +45,7 @@ var GameController = {
 
             console.log("both players prepared - let's go!");
             ChatManager.botChat("Game on! "+game.challenger.username+" Vs "+game.challengee.username, 'game');
+            StateManager.trackGameEvent(game, 'game_start', null);
             io.sockets.in('game_'+game._id).emit('game:start');
             // notify the lobby dwellers
             io.sockets.in('lobby').emit('lobby:game:start', game);
@@ -428,6 +429,7 @@ var GameController = {
                 // draw - sudden death
                 game.suddendeath = true;
                 console.log("scores are tied - sudden death mode");
+                StateManager.trackGameEvent(game, 'game_sudden_death', null);
                 io.sockets.in('game_'+game._id).emit('game:suddendeath');
             }
         } else {
