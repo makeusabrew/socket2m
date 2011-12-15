@@ -15,4 +15,6 @@ block content
     ol#timeline
         - each event in game.events
             li(class=event.type)
-                time(datetime=event.timestamp) #{event.friendlyTitle}
+                time(datetime=event.timestamp)
+                    span(class='relative-time') #{event.offset} 
+                    #{event.friendlyTitle}

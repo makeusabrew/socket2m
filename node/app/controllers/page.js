@@ -145,6 +145,7 @@ var PageController = {
                         var title = "";
                         // @todo make it friendly
                         var event = game.events[i];
+                        event.offset = Utils.formatTime(Math.round((event.timestamp.getTime() - game.started.getTime()) / 1000));
                         switch (event.type) {
                             case "weapon_fire":
                                 var player = event.data.o == game.challenger.socket_id ?
@@ -159,9 +160,9 @@ var PageController = {
                                 title = "teleport powerup claimed";
                                 break;
                             case "player_kill":
-                                var victim = event.data.id == game.challenger.socket_id ?
-                                    game.challenger :
-                                    game.challengee;
+                                var victim = event.data.kId == game.challenger.socket_id ?
+                                    game.challengee :
+                                    game.challenger;
                                 title = victim.username+" was killed!";
                                 break;
                             case "player_chat":

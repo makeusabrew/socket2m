@@ -234,3 +234,11 @@ dl dt:after {
 #users table span.status {
     font-size:80%;
 }
+
+ol#timeline {
+    list-style:none;
+}
+
+#timeline .relative-time {
+    font-weight:bold;
+}
