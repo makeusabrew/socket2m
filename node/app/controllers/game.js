@@ -141,7 +141,7 @@ var GameController = {
     killPlayer: function(socket, data) {
         var game = StateManager.findGameForSocketId(socket.id);
         if (game == null) {
-            console.log("could not find game for socket ID "+socket.id+" in "+arguments.callee);
+            console.log("could not find game for socket ID "+socket.id+" in killPlayer");
             return;
         }
         if (game.isFinished != null) {
@@ -158,6 +158,14 @@ var GameController = {
 
         // these here equations work in seconds
         var t = (new Date().getTime() - bullet.t) / 1000;
+        var clientTime = data.t;
+        var variance = Math.abs(clientTime - t);
+        if (variance <= 0.3) {
+            // client within 300ms
+            console.log("Client timestamp acceptable, using instead of server time");
+            console.log(clientTime+ " VS "+t+ " - "+variance);
+            t = clientTime;
+        }
 
         var x = (bullet.vx * t) + bullet.x;
         var y = (bullet.vy * t + 0.5 * 20.0 * (t*t)) + bullet.y;
@@ -180,6 +188,7 @@ var GameController = {
 
         if (!GameController.entitiesTouching(bRect, pRect)) {
             console.log("NO HIT");
+            return;
 
             /*
             console.log(bRect);
@@ -190,6 +199,7 @@ var GameController = {
             console.log(data.bullet);
             */
 
+            /*
             var dx = 0,
                 dy = 0;
 
@@ -216,9 +226,8 @@ var GameController = {
                 return;
             }
             console.log("difference < 1, allowing hit");
+            */
         }
-
-        console.log("Bullet hitting player!");
 
         killer.score ++;
         killer.hits ++;
@@ -336,6 +345,14 @@ var GameController = {
 
         // these here equations work in seconds
         var t = (new Date().getTime() - bullet.t) / 1000;
+        var clientTime = options.t;
+        var variance = Math.abs(clientTime - t);
+        if (variance <= 0.3) {
+            // client within 300ms
+            console.log("Client timestamp acceptable, using instead of server time");
+            console.log(clientTime+ " VS "+t+ " - "+variance);
+            t = clientTime;
+        }
 
         var x = (bullet.vx * t) + bullet.x;
         var y = (bullet.vy * t + 0.5 * 20.0 * (t*t)) + bullet.y;
@@ -355,32 +372,6 @@ var GameController = {
 
         if (!GameController.entitiesTouching(bRect, pRect)) {
             console.log("NO HIT");
-            var dx = 0,
-                dy = 0;
-
-            if (!GameController.horizontalIntersect(bRect, pRect)) {
-                dx = Math.min(
-                    Math.abs(bRect.left - pRect.left),
-                    Math.abs(bRect.left - pRect.right),
-                    Math.abs(bRect.right - pRect.left),
-                    Math.abs(bRect.right - pRect.right)
-                );
-            }
-
-            if (!GameController.verticalIntersect(bRect, pRect)) {
-                dy = Math.min(
-                    Math.abs(bRect.top - pRect.top),
-                    Math.abs(bRect.top - pRect.bottom),
-                    Math.abs(bRect.bottom - pRect.top),
-                    Math.abs(bRect.bottom - pRect.bottom)
-                );
-            }
-
-            if (dx > 1 || dy > 1) {
-                console.log("difference too large, marking no hit");
-                return;
-            }
-            console.log("difference < 1, allowing hit");
         }
 
         player.hits ++;

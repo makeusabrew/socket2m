@@ -184,6 +184,7 @@ var LobbyController = {
             console.log("no user found to mark idle");
             return;
         }
+        console.log("marking idle");
         user.idle = true;
         io.sockets.in('lobby').emit('lobby:user:idle', socket.id);
     },

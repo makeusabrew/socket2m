@@ -25,6 +25,9 @@ var Client = (function(enabled) {
         });
 
         socket.on('state:change', function(state) {
+            if (currentState != null && typeof window[currentState.charAt(0)+"a"].destroy == 'function') {
+                window[currentState.charAt(0)+"a"].destroy();
+            }
 
             var faded    = false,
                 data     = null,

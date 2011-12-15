@@ -211,17 +211,17 @@ var GameManager = (function() {
                     //_killPending = true;
 
                     // we know the bullet should die, so remove it immediately
-                    //_entities[i].kill();
+                    _entities[i].kill();
 
                     // signal to the server, and the opponent, that they and this bullet should die
-                    self.killOpponent(_entities[i].getId()/*, _entities[i]*/);
+                    self.killOpponent(_entities[i]);
 
                 } else if (_entities[i].getOwner() == _opponent.getId() &&
                     self.entitiesTouching(_entities[i], _player)) {
 
                     // ok, kill the bullet, but do nothing else, since the 
                     // player will trigger the server request
-                    //_entities[i].kill();
+                    _entities[i].kill();
                 }
 
                 if (!_entities[i].isDead()) {
@@ -234,17 +234,16 @@ var GameManager = (function() {
                             self.entitiesTouching(_entities[i], _powerups[j])) {
 
                             // we know the bullet should die, so remove it immediately
-                            //_entities[i].kill();
-                            //_powerups[j].kill();
+                            _entities[i].kill();
 
                             // grab it and remove powerup
-                            self.claimPowerup(_powerups[j].getId(), _entities[i].getId());
+                            self.claimPowerup(_powerups[j].getId(), _entities[i]);
 
                         } else if (_entities[i].getOwner() == _opponent.getId() &&
                             self.entitiesTouching(_entities[i], _powerups[j])) {
 
-                            //_entities[i].kill();
-                            //_powerups[j].kill();
+                            _entities[i].kill();
+                            _powerups[j].kill();
                         }
 
                         if (_powerups[j].isDead()) {
@@ -411,11 +410,12 @@ var GameManager = (function() {
                 e2.getTop()  <= e1.getBottom());
     }
 
-    self.claimPowerup = function(id, eId) {
-        console.log("requesting claim powerup "+id+" from bullet "+eId);
+    self.claimPowerup = function(id, bullet) {
+        console.log("requesting claim powerup "+id+" from bullet "+bullet.getId());
         socket.emit("game:powerup:claim", {
             "id" : id,
-            "eId": eId
+            "eId": bullet.getId(),
+            "t"  : bullet.getTime()
         });
     }
 
@@ -425,10 +425,11 @@ var GameManager = (function() {
         _deadEntities.push(data.eId);
     }
 
-    self.killOpponent = function(eId/*, bullet*/) {
-        console.log("requesting kill opponent from bullet "+eId);
+    self.killOpponent = function(bullet) {
+        console.log("requesting kill opponent from bullet "+bullet.getId());
         socket.emit("game:player:kill", {
-            "eId": eId
+            "eId": bullet.getId(),
+            "t": bullet.getTime()
             /* DEBUG - MUST REMOVE!!!!*/
             /*
             "bullet": {

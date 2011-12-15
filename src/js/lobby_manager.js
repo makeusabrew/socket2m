@@ -186,6 +186,7 @@ var LobbyManager = (function() {
 
     self.init = function(data) {
         _idle = false;
+        clearTimeout(_idleHandler);
         self.startIdleTimer();
 
         $("#lobby").mousemove(function(e) {
@@ -242,6 +243,11 @@ var LobbyManager = (function() {
         }
 
         bindListeners();
+    }
+
+    self.destroy = function() {
+        console.log("lobby cleanup");
+        clearTimeout(_idleHandler);
     }
 
     self.addUser = function(user) {

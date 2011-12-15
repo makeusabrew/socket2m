@@ -54,5 +54,10 @@ var la = (function() {
 
         socket.emit('lobby:ready');
     }
+
+    self.destroy = function() {
+        LobbyManager.destroy();
+    }
+
     return self;
 })();

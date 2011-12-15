@@ -7,6 +7,7 @@ Bullet = function() {
     this._vy = 0;
     this._w = 0;
     this._id = 0;
+    this._spawnTime = 0;
     this._t = 0;
     this._sx = 0;
     this._sy = 0;
@@ -27,7 +28,7 @@ Bullet.prototype = {
 
         this._lastX = -1;
         this._lastY = -1;
-        this._t = new Date().getTime();
+        this._spawnTime = new Date().getTime();
 
         this._sx = options.x;
         this._sy = options.y;
@@ -50,17 +51,21 @@ Bullet.prototype = {
         this._vy += 20 * delta;
         */
 
-        var t = (tickTime - this._t) / 1000;
-        this._x = (this._vx * t) + this._sx;
-        this._y = (this._vy * t + 0.5 * 20.0 * (t*t)) + this._sy;
+        this._t = (tickTime - this._spawnTime) / 1000;
+        this._x = (this._vx * this._t) + this._sx;
+        this._y = (this._vy * this._t + 0.5 * 20.0 * (this._t*this._t)) + this._sy;
 
-        if (this.getLeft() < GameManager.getLeft()   ||
-            this.getRight() > GameManager.getRight()  ||
-            this.getTop() < GameManager.getTop()    ||
+        if (this.getLeft()   < GameManager.getLeft()   ||
+            this.getRight()  > GameManager.getRight()  ||
+            this.getTop()    < GameManager.getTop()    ||
             this.getBottom() > GameManager.getBottom()) {
             
             this.kill();
         }
+    },
+
+    getTime: function() {
+        return this._t;
     },
 
     isDead: function() {

@@ -57,7 +57,7 @@ io.configure(function() {
 
 io.configure('development', function() {
     console.log("configuring development io options");
-    io.set('log level', 3); // debug
+    io.set('log level', 2); // debug
 });
 
 require('./app/routes')(app);
