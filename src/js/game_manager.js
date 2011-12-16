@@ -143,15 +143,11 @@ var GameManager = (function() {
         if (i) {
             while (i--) {
                 var player = _respawns[i];
-                var user = player.socket_id == _player.getId() ? _player : _opponent;
+                var user = player.id == _player.getId() ? _player : _opponent;
                 user.spawn({
                     "x" : player.x,
                     "y" : self.getCoordinateForPlatform(player.platform)
                 });
-                if (user.getId() == _opponent.getId()) {
-                    // it's our opponent, so clear our pending kill flag
-                    //_killPending = false;
-                }
                 _respawns = [];
             }
         }
@@ -559,7 +555,6 @@ var GameManager = (function() {
 
     self.prepare = function(data) {
         // set up
-        console.log(data);
         var challenger = data.challenger;
         var challengee = data.challengee;
         $("#state-title").html("Game On: "+challenger.username+" Vs "+challengee.username);

@@ -59,7 +59,19 @@ var GameController = {
             StateManager.trackGameEvent(game, 'game_start', null);
             io.sockets.in('game_'+game._id).emit('game:start');
             // notify the lobby dwellers
-            io.sockets.in('lobby').emit('lobby:game:start', game);
+            io.sockets.in('lobby').emit('lobby:game:start', {
+                "_id": game._id,
+                "started": game.started,
+                "duration": game.duration,
+                "challenger": {
+                    "username": game.challenger.username,
+                    "score": game.challenger.score
+                },
+                "challengee": {
+                    "username": game.challengee.username,
+                    "score": game.challengee.score
+                }
+            });
         }
     },
 
@@ -467,7 +479,7 @@ var GameController = {
         player.platform = StateManager.getRandomPlatform(player.platform);
 
         var data = {
-            "player": player,
+            "player": _stripGameUser(player),
             "teleport": teleport
         };
 
