@@ -242,3 +242,7 @@ ol#timeline {
 #timeline .relative-time {
     font-weight:bold;
 }
+
+#chat .msg img {
+    vertical-align:middle;
+}
