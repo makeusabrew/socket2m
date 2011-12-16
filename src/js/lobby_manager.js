@@ -229,7 +229,7 @@ var LobbyManager = (function() {
 
         var games = $("#games table tbody");
         games.hide();
-        // @todo change this! it's just an array, not an object
+
         for (i = 0, j = data.games.length; i < j; i++) {
             games.append(addGame(data.games[i]));
         }
@@ -246,12 +246,10 @@ var LobbyManager = (function() {
     }
 
     self.destroy = function() {
-        console.log("lobby cleanup");
         clearTimeout(_idleHandler);
     }
 
     self.addUser = function(user) {
-        console.log("user joining lobby", user);
         var u = addUser(user);
         if (u) {
             $("#users table tbody").append(u);

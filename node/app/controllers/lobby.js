@@ -3,6 +3,36 @@ var ChatManager  = require('../managers/chat'),
     db           = require('../db'),
     io           = require('../managers/socket').getIO();
 
+var _stripUser = function(user) {
+    return {
+        "sid": user.sid,
+        "username": user.username,
+        "idle": user.idle,
+        "rank": user.rank,
+        "wins": user.wins,
+        "losses": user.losses,
+        "position": user.position,
+        "winning_streak": user.winning_streak,
+        "accuracy": user.accuracy
+    }
+}
+
+var _stripGame = function(game) {
+    return {
+        "_id": game._id,
+        "started": game.started,
+        "duration": game.duration,
+        "challenger": {
+            "username": game.challenger.username,
+            "score": game.challenger.score
+        },
+        "challengee": {
+            "username": game.challengee.username,
+            "score": game.challengee.score
+        }
+    };
+}
+
 var LobbyController = {
     init: function(socket) {
         // @see #639 - lobby join race condition
@@ -11,14 +41,18 @@ var LobbyController = {
         // so if they emit lobby:ready as we emit lobby:user:join, they might
         // get us in LobbyController.init AND as a result of emit() below
         // hmm
-        socket.broadcast.to('lobby').emit('lobby:user:join', StateManager.getUserForSocket(socket.id));
+        socket.broadcast.to('lobby').emit('lobby:user:join',
+            _stripUser(StateManager.getUserForSocket(socket.id))
+        );
         ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" joined the lobby");
         socket.join('lobby');
 
         var _sockets = io.sockets.clients('lobby');
         var users = [];
         for (var i = 0, j = _sockets.length; i < j; i++) {
-            users.push(StateManager.getUserForSocket([_sockets[i].id]));
+            users.push(
+                _stripUser(StateManager.getUserForSocket([_sockets[i].id]))
+            );
         }
 
         // simply convert the games object to an array
@@ -27,13 +61,15 @@ var LobbyController = {
         for (var i in games) {
             if (games[i].started != null) {
                 // we only care about games which have been *started*, not necessarily "created"
-                activeGames.push(games[i]);
+                activeGames.push(
+                    _stripGame(games[i])
+                );
             }
         }
 
         socket.emit('lobby:users', {
             "timestamp": new Date(),
-            "user": StateManager.getUserForSocket([socket.id]),
+            "user": {"sid":socket.id},
             "users": users,
             "games": activeGames,
             "chatlines": ChatManager.getChatlines()
