@@ -133,6 +133,15 @@
     border-color: #000 transparent transparent;
 }
 
+.chatbubble.intro {
+    background:#ff0;
+    color:#000;
+}
+
+.chatbubble.intro:after {
+    border:none;
+}
+
 .chatbubble.left:after {
     left:11px;
 }

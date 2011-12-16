@@ -520,7 +520,7 @@ var GameManager = (function() {
         return _chatting;
     }
 
-    self.showChatMessage = function(data) {
+    self.showChatMessage = function(data, introMsg) {
         var offset = $("#viewport").offset();
         var user = _opponent.getId() == data.id ? _opponent : _player;
 
@@ -530,6 +530,9 @@ var GameManager = (function() {
         );
 
         bubble.addClass(user.getSide());
+        if (introMsg) {
+            bubble.addClass("intro");
+        }
         
         $("body").append(bubble);
 
@@ -547,7 +550,7 @@ var GameManager = (function() {
                 });
             }, 3500);
         });
-        if (user.getId() == _opponent.getId()) {
+        if (!introMsg && user.getId() == _opponent.getId()) {
             // chat came from them, so sound it out
             SoundManager.playSound("chat");
         }
@@ -668,6 +671,16 @@ var GameManager = (function() {
         // save the delta calculation til the last possible moment
         _lastTick = new Date().getTime();
         _lastFps = _lastTick;
+
+        self.showChatMessage({
+            "id": _player.getId(),
+            "msg": "You"
+        }, true);
+
+        self.showChatMessage({
+            "id": _opponent.getId(),
+            "msg": "Opponent"
+        }, true);
     }
 
     self.handleWin = function(stats) {
