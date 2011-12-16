@@ -31,19 +31,16 @@ var ChatManager = {
             chatlines.splice(0, 1);
         }
 
-        // @todo we can't emit here because IO is undefined...
-        // simply because State includes Chat, and we can't assign StateManager.io
-        // until after we've required state.... hum
-        // FIXME is to surely break the dependency on StateManager simply for IO object...
         io.sockets.in('lobby').emit('lobby:chat', line);
 
         // see if socketbot fancies a chat
-        var response = SocketBot.respondTo(msg);
-        if (response) {
-            setTimeout(function() {
-                ChatManager.botChat(response.text);
-            }, response.delay);
-        }
+        SocketBot.respondTo(msg, function(response) {
+            if (response != null) {
+                setTimeout(function() {
+                    ChatManager.botChat(response.text);
+                }, response.delay);
+            }
+        });
     },
 
     botChat: function(msg, type) {
