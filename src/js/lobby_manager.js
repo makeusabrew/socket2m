@@ -132,6 +132,9 @@ var LobbyManager = (function() {
             }
         }
         var time = new Date(msg.timestamp);
+        if (msg.type != 'bot') {
+            msg.msg = String(msg.msg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
         var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
     }
@@ -205,7 +208,7 @@ var LobbyManager = (function() {
                     input.prop("disabled", false);
                 }, 250);
                     
-                socket.emit('lobby:chat', val);
+                socket.emit('lobby:chat', val.replace(/(<([^>]+)>)/ig,""));
             }
         });
 

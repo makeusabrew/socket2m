@@ -496,8 +496,7 @@ var GameManager = (function() {
             e.preventDefault();
             var val = $.trim($("input", form).val());
             if (val.length) {
-                console.log("chatting: "+val);
-                socket.emit('game:player:chat', val);
+                socket.emit('game:player:chat', val.replace(/(<([^>]+)>)/ig,""));
                 self.endChatting();
             }
         });
@@ -525,6 +524,7 @@ var GameManager = (function() {
         var offset = $("#viewport").offset();
         var user = _opponent.getId() == data.id ? _opponent : _player;
 
+        data.msg = String(data.msg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         var bubble = $(
             "<div class='chatbubble' style='display:none;'>"+data.msg+"</div>"
         );

@@ -15,6 +15,11 @@ var ChatManager = {
             type = 'normal';
         }
 
+        if (type != 'bot') {
+            // only socketbot is allowed html entities...
+            msg = msg.replace(/(<([^>]+)>)/ig,"");
+        }
+
         var line = {
             'timestamp': new Date(),
             'author' : author,

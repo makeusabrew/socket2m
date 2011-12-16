@@ -304,7 +304,7 @@ var GameController = {
         }
         var data = {
             "id" : socket.id,
-            "msg": msg
+            "msg": msg.replace(/(<([^>]+)>)/ig,"")
         };
         StateManager.trackGameEvent(game, 'player_chat', data);
         io.sockets.in('game_'+game._id).emit('game:player:chat', data);
