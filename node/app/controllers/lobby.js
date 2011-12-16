@@ -41,9 +41,8 @@ var LobbyController = {
         // so if they emit lobby:ready as we emit lobby:user:join, they might
         // get us in LobbyController.init AND as a result of emit() below
         // hmm
-        socket.broadcast.to('lobby').emit('lobby:user:join',
-            _stripUser(StateManager.getUserForSocket(socket.id))
-        );
+        var newUser = _stripUser(StateManager.getUserForSocket(socket.id));
+        socket.broadcast.to('lobby').emit('lobby:user:join', newUser);
         ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" joined the lobby", "bot", "/user/"+StateManager.getUserForSocket(socket.id).username);
         socket.join('lobby');
 
@@ -69,7 +68,7 @@ var LobbyController = {
 
         socket.emit('lobby:users', {
             "timestamp": new Date(),
-            "user": {"sid":socket.id},
+            "user": newUser,
             "users": users,
             "games": activeGames,
             "chatlines": ChatManager.getChatlines()
