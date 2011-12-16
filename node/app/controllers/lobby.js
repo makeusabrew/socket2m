@@ -83,8 +83,14 @@ var LobbyController = {
     issueChallenge: function(socket, to) {
         // make sure the ID we're challenging is in the lobby
         // FIXME this line won't work - this gets us all sockets which means we can challenge ANYONE!
-        var _sockets = io.sockets.in('lobby').sockets;
-        if (_sockets[to] != null) {
+        var _sockets = io.sockets.clients('lobby');
+        var _socket = null;
+        for (var i = 0, j = _sockets.length; i < j; i++) {
+            if (_sockets[i].id == to) {
+                _socket = _sockets[i];
+            }
+        }
+        if (_socket) {
             var challenge = StateManager.findChallenge('any', to);
             if (challenge == null) {
                 // excellent! Issue the challenge from the challenger's user object
@@ -92,7 +98,7 @@ var LobbyController = {
                     "from" : socket.id,
                     "to"   : to 
                 });
-                _sockets[to].emit('lobby:challenge:receive', StateManager.getUserForSocket([socket.id]));
+                _socket.emit('lobby:challenge:receive', _stripUser(StateManager.getUserForSocket([socket.id])));
                 socket.emit('lobby:challenge:confirm', to);
             } else {
                 // can't challenge, already got one

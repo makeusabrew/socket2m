@@ -25,13 +25,18 @@ var ChatManager = {
         db.collection('chatlines', function(err, collection) {
             collection.insert(line);
         });
-
-        chatlines.push(line);
+        var simpleline = {
+            "timestamp": line.timestamp,
+            "author": line.author.username,
+            "msg": line.msg,
+            "type": line.type
+        };
+        chatlines.push(simpleline);
         if (chatlines.length > 10) {
             chatlines.splice(0, 1);
         }
 
-        io.sockets.in('lobby').emit('lobby:chat', line);
+        io.sockets.in('lobby').emit('lobby:chat', simpleline);
 
         // see if socketbot fancies a chat
         SocketBot.respondTo(msg, function(response) {

@@ -132,7 +132,7 @@ var LobbyManager = (function() {
             }
         }
         var time = new Date(msg.timestamp);
-        var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author.username+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
+        var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
     }
 
