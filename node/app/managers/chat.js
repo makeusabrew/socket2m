@@ -7,7 +7,7 @@ var io        = require('../managers/socket').getIO();
 var chatlines = [];
 
 var ChatManager = {
-    lobbyChat: function(author, msg, type) {
+    lobbyChat: function(author, msg, type, extra) {
         /**
          * @todo - any sweary mary filtering?
          */
@@ -15,16 +15,14 @@ var ChatManager = {
             type = 'normal';
         }
 
-        if (type != 'bot') {
-            // only socketbot is allowed html entities...
-            msg = msg.replace(/(<([^>]+)>)/ig,"");
-        }
+        msg = msg.replace(/(<([^>]+)>)/ig,"");
 
         var line = {
             'timestamp': new Date(),
             'author' : author,
             'msg'    : msg,
-            'type'   : type
+            'type'   : type,
+            'extra'  : extra
         };
 
         db.collection('chatlines', function(err, collection) {
@@ -34,7 +32,8 @@ var ChatManager = {
             "timestamp": line.timestamp,
             "author": line.author.username,
             "msg": line.msg,
-            "type": line.type
+            "type": line.type,
+            "extra": line.extra
         };
         chatlines.push(simpleline);
         if (chatlines.length > 10) {
@@ -53,11 +52,11 @@ var ChatManager = {
         });
     },
 
-    botChat: function(msg, type) {
+    botChat: function(msg, type, extra) {
         if (type == null) {
             type = 'bot';
         }
-        ChatManager.lobbyChat(SocketBot.object, msg, type);
+        ChatManager.lobbyChat(SocketBot.object, msg, type, extra);
     },
 
     getChatlines: function() {

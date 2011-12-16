@@ -44,7 +44,7 @@ var LobbyController = {
         socket.broadcast.to('lobby').emit('lobby:user:join',
             _stripUser(StateManager.getUserForSocket(socket.id))
         );
-        ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" joined the lobby");
+        ChatManager.botChat(StateManager.getUserForSocket(socket.id).username+" joined the lobby", "bot", "/user/"+StateManager.getUserForSocket(socket.id).username);
         socket.join('lobby');
 
         var _sockets = io.sockets.clients('lobby');

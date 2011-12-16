@@ -132,8 +132,9 @@ var LobbyManager = (function() {
             }
         }
         var time = new Date(msg.timestamp);
-        if (msg.type != 'bot') {
-            msg.msg = String(msg.msg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        msg.msg = String(msg.msg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        if (msg.extra) {
+            msg.msg += " (<a href='"+msg.extra+"' target='_blank'>info</a>)";
         }
         var div = $("<div class='chatline "+msg.type+"'><time datetime='"+msg.timestamp+"'>"+Utils.formatDate(time)+"</time><span class='author'>"+msg.author+"</span>: <span class='msg'>"+msg.msg+"</span></div>");
         $("#lobby #chat").append(div);
