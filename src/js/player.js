@@ -161,6 +161,5 @@ Player = function(options) {
 };
 
 Player.factory = function(options) {
-    console.log("Player::factory", options);
     return new Player(options);
 };

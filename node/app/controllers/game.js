@@ -4,6 +4,17 @@ var StateManager = require('../managers/state');
 // private variables
 var io = require('../managers/socket').getIO();
 
+function _stripGameUser(object) {
+    return {
+        "id"       : object.socket_id,
+        "x"        : object.x,
+        "platform" : object.platform,
+        "a"        : object.a,
+        "v"        : object.v,
+        "username" : object.username
+    };
+}
+
 var GameController = {
     init: function(socket) {
         var game = StateManager.findGameForSocketId(socket.id);
@@ -21,9 +32,9 @@ var GameController = {
 
             for (var i = 0; i < 2; i++) {
                 _sockets[i].emit('game:prepare', {
-                    "user"      : StateManager.getUserForSocket(_sockets[i].id),
-                    "challenger": game.challenger,
-                    "challengee": game.challengee,
+                    "user_id"   : _sockets[i].id,
+                    "challenger": _stripGameUser(game.challenger),
+                    "challengee": _stripGameUser(game.challengee),
                     "started"   : game.started,
                     "duration"  : game.duration
                 });

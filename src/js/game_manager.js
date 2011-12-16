@@ -559,6 +559,7 @@ var GameManager = (function() {
 
     self.prepare = function(data) {
         // set up
+        console.log(data);
         var challenger = data.challenger;
         var challengee = data.challengee;
         $("#state-title").html("Game On: "+challenger.username+" Vs "+challengee.username);
@@ -568,7 +569,7 @@ var GameManager = (function() {
 
 
         var p1 = Player.factory({
-            "id": challenger.socket_id,
+            "id": challenger.id,
             "x" : challenger.x,
             "y" : self.getCoordinateForPlatform(challenger.platform),
             "a" : challenger.a,
@@ -578,7 +579,7 @@ var GameManager = (function() {
             "username" : challenger.username
         });
         var p2 = Player.factory({
-            "id": challengee.socket_id,
+            "id": challengee.id,
             "x" : challengee.x,
             "y" : self.getCoordinateForPlatform(challengee.platform),
             "a" : challengee.a,
@@ -588,7 +589,7 @@ var GameManager = (function() {
             "username" : challengee.username
         });
 
-        if (challenger.socket_id == data.user.sid) {
+        if (challenger.id == data.user_id) {
             // we're "player 1" - face right
             self.setPlayer(p1);
             self.setOpponent(p2);
